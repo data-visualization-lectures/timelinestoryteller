@@ -88,7 +88,7 @@ module.exports = function (timeline_vis, annotationText, x_pos, y_pos, x_offset,
   }
 
 
-  var min_label_width = d3.min([annotationText.length * 10, 100]);
+  var min_label_width = utils.labelWidth(annotationText);
 
   var leader_line_path = [];
   var drawLeaderLine = d3.svg.line()
@@ -369,31 +369,31 @@ module.exports = function (timeline_vis, annotationText, x_pos, y_pos, x_offset,
     .call(wrap, label_width - 7.5);
 
   function wrap(text, width) {
-    var words = text.text().split(/\s+/).reverse(),
-      word,
-      line = [],
+    var pieces = utils.splitForWrapping(text.text()),
+      line = "",
       line_number = 0,
       letter_width = 4.5,
-      max_letters = Math.floor(width / letter_width) - 2,
+      max_letters = Math.max(3, Math.floor(width / letter_width) - 2),
       dy = parseFloat(text.attr("dy")),
       tspan = text.text(null).append("tspan")
         .attr("dy", dy + "em")
         .attr("x", x_pos + x_anno_offset + 7.5)
         .attr("y", y_pos + y_anno_offset + annotation_buffer);
-    while (word = words.pop()) { // eslint-disable-line no-cond-assign
-      word = ellipsize(word, max_letters);
-      line.push(word);
-      tspan.text(line.join(" "));
-      if (tspan.node().getComputedTextLength() > width) {
-        line.pop();
-        tspan.text(line.join(" "));
-        line = [word];
+    pieces.forEach(function (piece) {
+      var word = utils.isWideChar(piece.text.charAt(0)) ? piece.text : ellipsize(piece.text, max_letters);
+      var candidate = line === "" ? word : line + (piece.space ? " " : "") + word;
+      tspan.text(candidate);
+      if (line !== "" && tspan.node().getComputedTextLength() > width) {
+        tspan.text(line);
+        line = word;
         tspan = text.append("tspan")
           .attr("x", x_pos + x_anno_offset + 7.5)
           .attr("y", y_pos + y_anno_offset + annotation_buffer)
           .attr("dy", ++line_number + dy + "em").text(word);
+      } else {
+        line = candidate;
       }
-    }
+    });
     annotation_frame.attr("height", ((line_number + 3) * 12) + "px");
     if (annotation_drag_area !== undefined) {
       annotation_drag_area.attr("height", ((line_number + 3) * 12) + "px");

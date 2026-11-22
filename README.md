@@ -1,50 +1,57 @@
 # Timeline Storyteller
 
-!["The Daily Routines of Famous Creative People": A Story made with Timeline Storyteller](https://github.com/Microsoft/timelinestoryteller/blob/master/public/img/dailyroutines.gif "'The Daily Routines of Famous Creative People': A Story made with Timeline Storyteller")
-
-[Timeline Storyteller](https://timelinestoryteller.com/) is an expressive visual storytelling environment for presenting timelines in the browser or in [Microsoft Power BI](https://powerbi.microsoft.com/en-us/).
+Timeline Storyteller is an expressive visual storytelling environment for presenting timelines in the browser.
 
 Use it to present different aspects of timeline data using a palette of timeline representations, scales, and layouts, as well as controls for filtering, highlighting, and annotation.
 
-![Timeline Design dimensions](https://github.com/Microsoft/timelinestoryteller/blob/master/public/img/dims.png "Timeline Design dimensions")
+![Timeline Design dimensions](docs/img/dims.png "Timeline Design dimensions")
 
-To learn more about the research that informed this project, see [timelinesrevisited.github.io](https://timelinesrevisited.github.io/), which includes a survey of timeline tools and more than 200 bespoke timelines.
+## About this fork
 
-See [these examples](https://timelinestoryteller.com/#examples) of timelines and timeline stories made with Timeline Storyteller.
+This repository is a fork of [microsoft/timelinestoryteller](https://github.com/microsoft/timelinestoryteller) (MIT License, © Microsoft Corporation), originally developed at Microsoft Research by Matthew Brehmer, Bongshin Lee, Nathalie Henry Riche, Darren Edge, Christopher White, Kate Lytvynets, and David Tittsworth. It is not affiliated with or endorsed by Microsoft.
 
-## Project Team
+Changes from the original:
 
-- [Matthew Brehmer](http://mattbrehmer.github.io/)
-- [Bonghsin Lee](http://research.microsoft.com/en-us/um/people/bongshin/)
-- [Nathalie Henry Riche](http://research.microsoft.com/en-us/um/people/nath/)
-- [Darren Edge](https://www.microsoft.com/en-us/research/people/daedge/)
-- [Christopher White](https://www.microsoft.com/en-us/research/people/chwh/)
-- [Kate Lytvynets](mailto:kalytv@microsoft.com)
-- [David Tittsworth](mailto:David.Tittsworth@microsoft.com)
+- The app runs as static files and does not send data to a server. The research logging over socket.io was removed.
+- The email / consent step before exporting was removed.
+- Microsoft branding, policy links, and contact links were removed from the app. The original landing page was replaced by a usage guide in Japanese (`docs/help.html`).
+- d3 and moment are served from `docs/js/vendor` instead of a CDN.
+- The guided tour (intro.js, AGPL-3.0 / commercial licence) was removed. Its explanations were moved into the usage guide.
+- Loading from Google Spreadsheets was removed, because the Google API it relied on no longer exists.
+
+## dataviz.jp integration
+
+| Item | Value |
+|---|---|
+| `appName` | `timeline-storyteller` |
+| Public host | `https://timeline-storyteller.dataviz.jp/` (the app is served from the root of the host) |
+| Shared sign-in | `supabase.v1.js` and `dataviz-auth-client.v1.js` from `id.data-viz-lectures.com`, loaded in `docs/index.html` |
+| Saved projects | Not supported yet |
+| Share pages | Not supported |
+
+Visitors who are not signed in are redirected to the sign-in page after a few seconds. Add `?auth_debug` to the URL to stay on the page, both locally and on a preview host.
+
+To learn more about the research that informed the original project, see [timelinesrevisited.github.io](https://timelinesrevisited.github.io/).
 
 ## Setup / Testing
 
-1. Clone the main branch of this repository: `git clone https://github.com/Microsoft/timelinestoryteller.git`
+1. Ensure that [nodejs](https://nodejs.org/) and [npm](https://www.npmjs.com/) are installed. The build was last checked with Node.js 22.
 
-2. Ensure that [nodejs](https://nodejs.org/), [npm](https://www.npmjs.com/), and [yarn](https://yarnpkg.com/en/) are installed.
+2. Install node modules: `npm ci`
 
-3. Open a terminal at the root of the repository and install node modules: `yarn` OR `npm_install`.
+3. Start the development server: `npm start`, then open [localhost:8000/?auth_debug](http://localhost:8000/?auth_debug). In development the server builds the app from `src/` on the fly.
 
-4. Build public/app/timelinestoryteller.js: `npm test`
+4. Build the files that are served in production: `npm run package`. This writes `docs/js/timelinestoryteller.js` and copies d3 and moment into `docs/js/vendor`. Commit the result.
 
-5. Start the node server: `npm start`
+5. The site is published with GitHub Pages from the `docs/` directory of the default branch. `docs/.nojekyll` turns off Jekyll processing. The app is `docs/index.html` and the usage guide is `docs/help.html`. The usage guide does not load the shared sign-in.
 
-6. Open [localhost:8000](http://localhost:8000/)
+`npm test` runs lint, the unit tests, and the build. The unit tests are configured for PhantomJS, which no longer runs on current systems, so that step needs a different karma browser.
 
-The application source code can be found in the [src/](https://github.com/Microsoft/timelinestoryteller/tree/master/src) directory.
-
-## The Timeline Storyteller Power BI custom visual
-
-This respository contains the source for Timeline Storyteller as a standalone web application. To generate the Timeline Storyteller custom visual for Power BI, refer to [github.com/Microsoft/PowerBI-visuals-TimelineStoryteller](https://github.com/Microsoft/PowerBI-visuals-TimelineStoryteller). 
+The application source code can be found in the [src/](src) directory.
 
 ## Preparing your data
 
-Timeline Storyteller currently supports datasets of events in CSV, JSON, or Google Spreadsheet format.
+Timeline Storyteller supports datasets of events in CSV or JSON format.
 
 Each event is specified by the following attributes:
 
@@ -74,21 +81,11 @@ example event row:
 
 `1775,1783,American Revolutionary War: an armed struggle for secession from the British Empire by the Thirteen Colonies that would subsequently become the United States.,North America,North America`
 
-### Example CSV / Google Spreadsheet
-
-Here is the [The Daily Routines of Famous Creative People](https://podio.com/site/creative-routines) demo dataset used in Timeline Storyteller's demo in a [Google Sheet](https://docs.google.com/spreadsheets/d/1x8N7Z9RUrA9Jmc38Rvw1VkHslp8rgV2Ws3h_5iM-I8M/pubhtml).
-
-- Ensure that the spreadsheet is published (open the Google Spreadsheet 'File' menu, select 'Publish to the Web').
-- Ensure that `start_date` and `end_date` columns are formatted as text and not as dates (e.g., `'1926-06-29`).
-- __Required__: Spreadsheet URL
-- __Optional__: Worksheet title (i.e., tab name) for this dataset: `dailyroutines`
-- Enter the spreadsheet URL and worksheet title into Timeline Storyteller's load dialog.
-
 ## Usage
 
-Note that more detailed usage instructions are available at [timelinestoryteller.com](https://timelinestoryteller.com/)
+A usage guide in Japanese is included at `docs/help.html`.
 
-1. Load timeline data (demo dataset, JSON, CSV, Google Spreadsheet) or saved timeline story (a JSON Blob with extension .cdc; see step 6)
+1. Load timeline data (demo dataset, JSON, CSV) or saved timeline story (a JSON Blob with extension .cdc; see step 6)
 
 2. Select a combination of representation, scale, and layout from the menu at the top of the screen; only some combinations are valid; see [our guidance on selecting appropriate combinations for your story](http://timelinesrevisited.github.io/supplemental/gallery/). Mouseover these options to view a tooltip that describes how they might be useful.
 
@@ -126,9 +123,9 @@ THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ## Acknowledgements
 
-### Citing us
+### Citing the original work
 
-If you use Timeline Storyteller to make a timeline for a research paper, you can cite us in two ways. You can cite the tool itself:
+If you use Timeline Storyteller to make a timeline for a research paper, please cite the original authors. You can cite the tool itself:
 
 `@misc{TimelineStoryteller,
 author = {Matthew Brehmer and Bongshin Lee and Nathalie Henry Riche and Darren Edge and Christopher White and Kate Lytvynets and David Tittsworth},
@@ -137,7 +134,7 @@ year = {2017},
 note = {\url{https://timelinestoryteller.com}}
 }`
 
-Or you can cite our recent journal paper about the timeline design space:
+Or you can cite their journal paper about the timeline design space:
 
 `@article{Brehmer2016,
 author = {Matthew Brehmer and Bongshin Lee and Benjamin Bach and Nathalie Henry Riche and Tamara Munzner},
@@ -185,7 +182,6 @@ All Icons [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/us/), by name 
 - [svg-file](https://thenounproject.com/term/svg-file/446904) (Pranav Grover)
 - [json-file](https://thenounproject.com/term/json-file/446959) (Pranav Grover)
 - [csv-file](https://thenounproject.com/term/csv-file/446962) (Pranav Grover)
-- [drive](https://thenounproject.com/term/drive/128372) (Denis Klyuchnikov)
 - [grid](https://thenounproject.com/term/grid/539919) (Doejo)
 - [folder](https://thenounproject.com/term/folder/43216) (iconoci)
 - [filter](https://thenounproject.com/term/filter/132317) (Creative Shell)

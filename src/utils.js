@@ -316,6 +316,120 @@ var utils = {
       };
       img.src = url;
     });
+  },
+
+  /**
+   * Whether a character is drawn about as wide as it is tall (CJK ideographs, kana, hangul, full-width forms)
+   * @param {string} ch A single character
+   * @returns {boolean} true if the character is a wide character
+   */
+  isWideChar: function (ch) {
+    return /[\u1100-\u115F\u2E80-\uA4CF\uAC00-\uD7A3\uF900-\uFAFF\uFE30-\uFE4F\uFF00-\uFF60\uFFE0-\uFFE6]/.test(ch);
+  },
+
+  /**
+   * Estimates the rendered width of a piece of text
+   * @param {string} text The text to measure
+   * @param {number} narrowWidth The width of a narrow (e.g. Latin) character
+   * @param {number} wideWidth The width of a wide (e.g. CJK) character
+   * @returns {number} The estimated width in pixels
+   */
+  estimateTextWidth: function (text, narrowWidth, wideWidth) {
+    var width = 0;
+    String(text).split("").forEach(function (ch) {
+      width += utils.isWideChar(ch) ? wideWidth : narrowWidth;
+    });
+    return width;
+  },
+
+  /**
+   * The initial width of a text box, wide enough for short text and capped for long text
+   * @param {string} text The text shown in the box
+   * @param {number} narrowWidth The width of a narrow character
+   * @param {number} wideWidth The width of a wide character
+   * @param {number} minWidth The smallest width of the box
+   * @param {number} maxWidth The largest initial width of the box
+   * @returns {number} The width in pixels
+   */
+  textBoxWidth: function (text, narrowWidth, wideWidth, minWidth, maxWidth) {
+    return Math.min(maxWidth, Math.max(minWidth, utils.estimateTextWidth(text, narrowWidth, wideWidth)));
+  },
+
+  /**
+   * The initial width of an event label
+   * @param {string} text The label text
+   * @returns {number} The width in pixels
+   */
+  labelWidth: function (text) {
+    return utils.textBoxWidth(text, 10, 14, 40, 100);
+  },
+
+  /**
+   * The initial width of a caption
+   * @param {string} text The caption text
+   * @returns {number} The width in pixels
+   */
+  captionWidth: function (text) {
+    return utils.textBoxWidth(text, 10, 20, 60, 200);
+  },
+
+  /**
+   * Splits text into pieces that a line may be broken between.
+   * Text breaks at whitespace, and also between wide characters, which are written without spaces.
+   * @param {string} text The text to split
+   * @returns {{text: string, space: boolean}[]} The pieces; space is true if a space precedes the piece
+   */
+  splitForWrapping: function (text) {
+    var pieces = [];
+    var closing = "、。，．・：；！？）］｝」』】〉》ー々ぁぃぅぇぉっゃゅょァィゥェォッャュョ";
+    String(text).split(/\s+/).forEach(function (word) {
+      var current = "";
+      var first = true;
+      var push = function () {
+        if (current !== "") {
+          pieces.push({ text: current, space: first && pieces.length > 0 });
+          first = false;
+          current = "";
+        }
+      };
+      word.split("").forEach(function (ch) {
+        if (!utils.isWideChar(ch)) {
+          if (current !== "" && utils.isWideChar(current.charAt(current.length - 1))) {
+            push();
+          }
+          current += ch;
+        } else if (closing.indexOf(ch) !== -1 && current !== "") {
+          current += ch;
+        } else {
+          push();
+          current = ch;
+        }
+      });
+      push();
+    });
+    return pieces;
+  },
+
+  /**
+   * Shortens text so that its estimated width fits the available length
+   * @param {string} text The text to shorten
+   * @param {number} available The available length in pixels
+   * @param {number} narrowWidth The width of a narrow character
+   * @param {number} wideWidth The width of a wide character
+   * @returns {string} The text, cut where it would no longer fit
+   */
+  fitText: function (text, available, narrowWidth, wideWidth) {
+    var width = 0;
+    var result = "";
+    String(text).split("").some(function (ch) {
+      width += utils.isWideChar(ch) ? wideWidth : narrowWidth;
+      if (width > available) {
+        return true;
+      }
+      result += ch;
+      return false;
+    });
+    return result;
   }
 };
 

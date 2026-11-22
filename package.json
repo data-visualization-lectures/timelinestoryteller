@@ -36,21 +36,18 @@
     "karma-webpack": "^2.0.3",
     "mocha": "^3.2.0",
     "phantomjs-prebuilt": "^2.1.14",
-    "socket.io": "^1.7.2",
     "webpack": "^2.3.1",
     "webpack-dev-middleware": "^1.10.1"
   },
   "optionalDependencies": {
     "d3": "^3.5.5",
-    "intro.js": "^2.3.0",
-    "moment": "^2.18.1",
-    "socket.io": "^1.7.2"
+    "moment": "^2.18.1"
   },
   "scripts": {
     "start": "node app.js",
     "lint": "eslint src",
     "karma": "karma start",
-    "package": "webpack && copyfiles -u 1 \"dist/*.js\" public/app/js && babel src --out-dir lib --copy-files",
+    "package": "webpack && copyfiles -u 1 \"dist/*.js\" docs/js && copyfiles -f node_modules/d3/d3.min.js node_modules/moment/min/moment.min.js docs/js/vendor && babel src --out-dir lib --copy-files",
     "test": "npm run lint && npm run karma && npm run package"
   },
   "repository": {

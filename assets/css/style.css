@@ -336,8 +336,10 @@ select > option:hover {
 #option_div {
   top: 10px;
   left: 50%;
-  width:712px;
-  margin-left: -356px;
+  width: 740px;
+  margin-left: -370px;
+  display: flex;
+  flex-wrap: nowrap;
   position: absolute;
   padding-bottom: 5px;
   padding-left: 0px;
@@ -503,10 +505,6 @@ select > option:hover {
   display: inline-flex;
 }
 
-#opt_out_div {
-  margin-top: 10px;
-}
-
 #import_div {
   text-align: center;
   position: absolute;
@@ -648,25 +646,6 @@ input[type="color"]::-moz-color-swatch {
   text-decoration: none;
 }
 
-#logo_div {
-  left: 10px;
-  top: 10px;
-  position: absolute;
-  width: 34px;
-  height: 34px;
-  padding: 5px;
-  transition: all 0.5s ease;
-  -webkit-transition: all 0.5s ease;
-  user-select: none;
-}
-
-.ms-logo {
-  height: 23px;
-  max-height: 23px;
-  display: block;
-  vertical-align: baseline;
-}
-
 #data_picker {
   width: 650px;
   transition: all 0.5s ease;
@@ -753,55 +732,6 @@ input[type="color"]::-moz-color-swatch {
   background-image: -ms-linear-gradient(top, #da6600, #ff7f0e);
   background-image: -o-linear-gradient(top, #da6600, #ff7f0e);
   background-image: linear-gradient(to bottom, #da6600, #ff7f0e);
-}
-
-#gdocs_info {
-  width: 650px;
-  height: 0px;
-  justify-content: center;
-  transition: all 0.5s ease;
-  -webkit-transition: all 0.5s ease;
-  padding-left: 0px;
-  padding-right: 0px;
-  padding-top: 0px;
-  padding-bottom: 0px;
-  float: left;
-}
-
-.gdocs_info_element {
-  display: none;
-  vertical-align: middle;
-  text-align: center;
-  transition: all 0.5s ease;
-  -webkit-transition: all 0.5s ease;
-  margin: 0px;
-  float: left;
-  height: 27px;
-}
-
-.gdocs_info_element .text_input {
-  padding: 0;
-  padding-left: 5px;
-  margin-bottom: 5px;
-  border-top: 1px solid #999;
-  border-bottom: 1px solid #999;
-  border-right: 1px solid #999;
-  border-left: none;
-}
-
-#gdoc_spreadsheet_key_input {
-  margin-left: 0px;
-  width: 319px;
-}
-
-#gdoc_worksheet_title_input {
-  margin-left: 0px;
-  width: 295px;
-}
-
-.gdocs_info_element .img_btn_enabled {
-  margin-left: 2px;
-  margin-top: 0px;
 }
 
 .inputfile {

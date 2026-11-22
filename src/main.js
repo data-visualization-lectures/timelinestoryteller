@@ -8,8 +8,6 @@ require("../assets/css/style.css");
  */
 var d3 = require("d3");
 var moment = require("moment");
-var introJsLib = require("intro.js");
-var introJs = typeof introJsLib === "function" ? introJsLib : introJsLib.introJs;
 
 var configurableTL = require("./configurableTL");
 var addCaption = require("./addCaption");
@@ -18,7 +16,6 @@ var annotateEvent = require("./annotateEvent");
 var colorSchemes = require("./colors");
 var time = require("./lib/time.min");
 var GIF = require("./lib/gif").GIF;
-var gsheets = require("./lib/gsheets.min");
 var svgImageUtils = require("./lib/saveSvgAsPng");
 var imageUrls = require("./imageUrls");
 var utils = require("./utils");
@@ -81,15 +78,6 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
   this.options = clone(TimelineStoryteller.DEFAULT_OPTIONS);
 
   globals.serverless = isServerless;
-  if (typeof isServerless === "undefined" || isServerless === false) {
-    globals.socket = require("socket.io")({ transports: ["websocket"] });
-  }
-
-  if (globals.socket) {
-    globals.socket.on("hello_from_server", function (data) {
-      log(data);
-    });
-  }
 
   /**
    * Creates the import panel
@@ -149,10 +137,6 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
   window.addEventListener("load", function () {
     logEvent("Initializing Timeline Storyteller");
-
-    if (globals.socket) {
-      globals.socket.emit("hello_from_client", { hello: "server" });
-    }
 
     instance._onResized(false);
   });
@@ -322,38 +306,6 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       window.open(URL.createObjectURL(blob), "_temp", "menubar=no,toolbar=no,status=no");
     }
 
-    var reader = new window.FileReader(),
-      base64data = "";
-    reader.readAsDataURL(blob);
-    reader.onloadend = function () {
-      base64data = reader.result;
-      var research_copy = {};
-      if (!globals.opt_out) {
-        research_copy = {
-          "timeline_json_data": globals.timeline_json_data,
-          "name": "timeline_story.gif",
-          "usage_log": globals.usage_log,
-          "image": base64data,
-          "email_address": globals.email_address,
-          "timestamp": new Date().valueOf()
-        };
-      } else {
-        research_copy = {
-          "usage_log": globals.usage_log,
-          "email_address": globals.email_address,
-          "timestamp": new Date().valueOf()
-        };
-      }
-      var research_copy_json = JSON.stringify(research_copy);
-      // var research_blob = new Blob([research_copy_json], { type: "application/json" });
-
-      log(research_copy);
-
-      if (globals.socket) {
-        globals.socket.emit("export_event", research_copy_json); // raise an event on the server
-      }
-    };
-
     gif.running = false;
   });
 
@@ -403,205 +355,124 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
   export_div.append("div")
     .attr("id", "export_boilerplate")
-    .style("height", "120px")
-    .html("<span class='boilerplate_title'>Export options</span><hr>" +
-    "<span class='disclaimer_text'>By providing an email address you agree that <a title='Microsoft' href='http://microsoft.com'>Microsoft</a> may contact you to request feedback and for user research.<br>" +
-    "You may withdraw this consent at any time.</span><hr>");
+    .html("<span class='boilerplate_title'>Export options</span><hr>");
 
   var export_formats = export_div.append("div")
     .attr("id", "export_formats");
 
   export_formats.append("input")
     .attr({
-      type: "text",
-      placeholder: "email address",
-      class: "text_input",
-      id: "email_input"
-    })
-    .on("input", function () {
-      var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-      if (re.test(selectWithParent("#email_input").property("value"))) {
-        globals.email_address = selectWithParent("#email_input").property("value");
-        export_formats.selectAll(".img_btn_disabled")
-          .attr("class", "img_btn_enabled");
-
-        logEvent("valid email address: " + globals.email_address, "export");
-      } else {
-        export_formats.selectAll(".img_btn_enabled")
-          .attr("class", "img_btn_disabled");
-      }
-    });
-
-  export_formats.append("input")
-    .attr({
       type: "image",
       name: "Export PNG",
-      class: "img_btn_disabled export--image",
+      class: "img_btn_enabled export--image",
       src: imageUrls("png.png"),
       height: 30,
       width: 30,
       title: "Export PNG"
     })
     .on("click", function () {
-      if (globals.opt_out || globals.email_address !== "") {
-        selectAllWithParent("foreignObject").remove();
+      selectAllWithParent("foreignObject").remove();
 
-        logEvent("exporting main_svg as PNG", "export");
+      logEvent("exporting main_svg as PNG", "export");
 
-        svgImageUtils.saveSvgAsPng(document.querySelector(".timeline_storyteller #main_svg"), "timeline_image.png", { backgroundColor: "white" });
-      }
+      svgImageUtils.saveSvgAsPng(document.querySelector(".timeline_storyteller #main_svg"), "timeline_image.png", { backgroundColor: "white" });
     });
 
   export_formats.append("input")
     .attr({
       type: "image",
       name: "Export SVG",
-      class: "img_btn_disabled export--image",
+      class: "img_btn_enabled export--image",
       src: imageUrls("svg.png"),
       height: 30,
       width: 30,
       title: "Export SVG"
     })
     .on("click", function () {
-      if (globals.opt_out || globals.email_address !== "") {
-        selectAllWithParent("foreignObject").remove();
+      selectAllWithParent("foreignObject").remove();
 
-        logEvent("exporting main_svg as SVG", "export");
+      logEvent("exporting main_svg as SVG", "export");
 
-        svgImageUtils.saveSvg(document.querySelector(".timeline_storyteller #main_svg"), "timeline_image.svg", { backgroundColor: "white" });
-      }
+      svgImageUtils.saveSvg(document.querySelector(".timeline_storyteller #main_svg"), "timeline_image.svg", { backgroundColor: "white" });
     });
 
   export_formats.append("input")
     .attr({
       type: "image",
       name: "Export animated GIF",
-      class: "img_btn_disabled export--image",
+      class: "img_btn_enabled export--image",
       src: imageUrls("gif.png"),
       height: 30,
       width: 30,
       title: "Export animated GIF"
     })
     .on("click", function () {
-      if (globals.opt_out || globals.email_address !== "") {
-        selectAllWithParent("foreignObject").remove();
+      selectAllWithParent("foreignObject").remove();
 
-        gif.frames = [];
-        var gif_scenes = globals.scenes;
-        if (gif_scenes.length > 0) {
-          logEvent("exporting story as animated GIF", "export");
+      gif.frames = [];
+      var gif_scenes = globals.scenes;
+      if (gif_scenes.length > 0) {
+        logEvent("exporting story as animated GIF", "export");
 
-          gif_scenes.sort(function (a, b) {
-            return parseFloat(a.s_order) - parseFloat(b.s_order);
-          });
-          gif_scenes.forEach(function (d, i) {
-            var img = document.createElement("img");
-            img.style.display = "none";
-            img.id = "gif_frame" + i;
-            img.src = d.s_src;
-            document.querySelector(".timeline_storyteller").appendChild(img);
-            selectWithParent("#gif_frame" + i).attr("class", "gif_frame");
-            setTimeout(function () {
-              gif.addFrame(document.getElementById("gif_frame" + i), { delay: 1500 });
-            }, 150);
-          });
-        } else {
-          logEvent("exporting main_svg as GIF", "export");
-
-          svgImageUtils.svgAsPNG(document.querySelector(".timeline_storyteller #main_svg"), -1, { backgroundColor: "white" });
-
+        gif_scenes.sort(function (a, b) {
+          return parseFloat(a.s_order) - parseFloat(b.s_order);
+        });
+        gif_scenes.forEach(function (d, i) {
+          var img = document.createElement("img");
+          img.style.display = "none";
+          img.id = "gif_frame" + i;
+          img.src = d.s_src;
+          document.querySelector(".timeline_storyteller").appendChild(img);
+          selectWithParent("#gif_frame" + i).attr("class", "gif_frame");
           setTimeout(function () {
-            gif.addFrame(document.getElementById("gif_frame-1"));
+            gif.addFrame(document.getElementById("gif_frame" + i), { delay: 1500 });
           }, 150);
-        }
+        });
+      } else {
+        logEvent("exporting main_svg as GIF", "export");
+
+        svgImageUtils.svgAsPNG(document.querySelector(".timeline_storyteller #main_svg"), -1, { backgroundColor: "white" });
+
         setTimeout(function () {
-          gif.render();
-          selectAllWithParent(".gif_frame").remove();
-        }, 150 + 150 * gif.frames.length);
-        gif_scenes = [];
+          gif.addFrame(document.getElementById("gif_frame-1"));
+        }, 150);
       }
+      setTimeout(function () {
+        gif.render();
+        selectAllWithParent(".gif_frame").remove();
+      }, 150 + 150 * gif.frames.length);
+      gif_scenes = [];
     });
 
   export_formats.append("input")
     .attr({
       type: "image",
       name: "Export story",
-      class: "img_btn_disabled",
+      class: "img_btn_enabled",
       src: imageUrls("story.png"),
       height: 30,
       width: 30,
       title: "Export story"
     })
     .on("click", function () {
-      if (globals.opt_out || globals.email_address !== "") {
-        selectAllWithParent("foreignObject").remove();
+      selectAllWithParent("foreignObject").remove();
 
-        logEvent("exporting story as .cdc", "export");
+      logEvent("exporting story as .cdc", "export");
 
-        globals.timeline_story = instance.saveState();
+      globals.timeline_story = instance.saveState();
 
-        var story_json = JSON.stringify(globals.timeline_story);
-        var blob = new Blob([story_json], { type: "application/json" });
-        var url = URL.createObjectURL(blob);
+      var story_json = JSON.stringify(globals.timeline_story);
+      var blob = new Blob([story_json], { type: "application/json" });
+      var url = URL.createObjectURL(blob);
 
-        var a = document.createElement("a");
-        a.download = "timeline_story.cdc";
-        a.href = url;
-        a.textContent = "Download timeline_story.cdc";
-        document.querySelector(".timeline_storyteller").appendChild(a);
-        a.click();
-        document.querySelector(".timeline_storyteller").removeChild(a);
-
-        if (globals.opt_out) {
-          globals.timeline_story = {
-            "usage_log": globals.usage_log,
-            "author": globals.email_address,
-            "timestamp": new Date().valueOf()
-          };
-        }
-
-        story_json = JSON.stringify(globals.timeline_story);
-
-        log(story_json);
-
-        if (globals.socket) {
-          globals.socket.emit("export_event", story_json); // raise an event on the server
-        }
-      }
+      var a = document.createElement("a");
+      a.download = "timeline_story.cdc";
+      a.href = url;
+      a.textContent = "Download timeline_story.cdc";
+      document.querySelector(".timeline_storyteller").appendChild(a);
+      a.click();
+      document.querySelector(".timeline_storyteller").removeChild(a);
     });
-
-  var out_out_cb = export_formats.append("div")
-    .attr("id", "opt_out_div");
-
-  out_out_cb.append("input")
-    .attr({
-      type: "checkbox",
-      name: "opt_out_cb",
-      value: globals.opt_out
-    })
-    .property("checked", false)
-    .on("change", function () {
-      if (!globals.opt_out) {
-        logEvent("opting out of sharing content", "export");
-
-        globals.opt_out = true;
-        export_formats.selectAll(".img_btn_disabled")
-          .attr("class", "img_btn_enabled");
-      } else {
-        globals.opt_out = false;
-
-        logEvent("opting into sharing content", "export");
-
-        export_formats.selectAll(".img_btn_enabled")
-          .attr("class", "img_btn_disabled");
-      }
-    });
-
-  out_out_cb.append("label")
-    .attr("class", "menu_label")
-    .attr("for", "opt_out_cb")
-    .style("vertical-align", "text-top")
-    .text(" Don't share content with Microsoft");
 
 
   /**
@@ -643,24 +514,20 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
   --------------------------------------------------------------------------------------
   **/
 
-  selectWithParent().append("div")
-    .attr("id", "logo_div")
-    .html("<a href='https://microsoft.com'><img class='ms-logo' src='" + imageUrls("ms-logo.svg") + "'></a>");
-
   var footer = selectWithParent().append("div")
     .attr("id", "footer");
 
   footer.append("div")
     .attr("id", "footer_left")
-    .html("<span class='footer_text_left'><a title=About & getting started' href='../../' target='_blank'>About & getting started</a></span> <span class='footer_text_left'><a title='Contact the project team' href='mailto:timelinestoryteller@microsoft.com' target='_top'>Contact the project team</a>");
+    .html("<span class='footer_text_left'><a title='About & getting started' href='help.html' target='_blank'>About & getting started</a></span>");
 
   footer.append("div")
     .attr("id", "footer_right")
-    .html("<span class='footer_text'><a title='Privacy & cookies' href='https://go.microsoft.com/fwlink/?LinkId=521839' target='_blank'>Privacy & cookies</a></span><span class='footer_text'><a title='Terms of use' href='https://go.microsoft.com/fwlink/?LinkID=760869' target='_blank'>Terms of use</a></span><span class='footer_text'><a title='Trademarks' href='http://go.microsoft.com/fwlink/?LinkId=506942' target='_blank'>Trademarks</a></span><span class='footer_text'><a title='About our ads' href='http://choice.microsoft.com/' target='_blank'>About our ads</a></span><span class='footer_text'>© 2017 Microsoft</span>");
+    .html("<span class='footer_text'>Based on <a title='Timeline Storyteller on GitHub' href='https://github.com/microsoft/timelinestoryteller' target='_blank'>Timeline Storyteller</a>, © Microsoft Corporation, MIT License</span>");
 
   var boilerplate = instance.importPanel.element.append("div")
     .attr("id", "boilerplate")
-    .html("<span class='boilerplate_title'>Timeline Storyteller (Alpha)</span>");
+    .html("<span class='boilerplate_title'>Timeline Storyteller</span>");
 
   boilerplate.append("input")
     .attr({
@@ -678,98 +545,9 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       logEvent("hiding import panel", "load");
 
       instance.importPanel.hide();
-
-      selectWithParent("#gdocs_info").style("height", 0 + "px");
-      selectAllWithParent(".gdocs_info_element").style("display", "none");
     });
 
   instance._initializeImportPanel();
-
-  var gdocs_info = instance.importPanel.element.append("div")
-    .attr("id", "gdocs_info");
-
-  gdocs_info.append("div")
-    .attr("id", "gdoc_spreadsheet_key_div")
-    .attr("class", "gdocs_info_element")
-    .append("input")
-    .attr({
-      type: "text",
-      placeholder: "Published spreadsheet URL",
-      class: "text_input",
-      id: "gdoc_spreadsheet_key_input"
-    });
-
-  gdocs_info.append("div")
-    .attr("id", "gdoc_spreadsheet_title_div")
-    .attr("class", "gdocs_info_element")
-    .append("input")
-    .attr({
-      type: "text",
-      placeholder: "OPTIONAL: Worksheet title (tab name)",
-      class: "text_input",
-      id: "gdoc_worksheet_title_input"
-    });
-
-  gdocs_info.append("div")
-    .attr("id", "gdoc_spreadsheet_confirm_div")
-    .attr("class", "gdocs_info_element")
-    .style("width", "20px")
-    .append("input")
-    .attr({
-      type: "image",
-      name: "Confirm Google Spreadsheet Data",
-      id: "confirm_gdocs_btn",
-      class: "img_btn_enabled",
-      src: imageUrls("check.png"),
-      height: 20,
-      width: 20,
-      title: "Confirm Google Spreadsheet Data"
-    })
-    .on("click", function () {
-      globals.gdoc_key = selectWithParent("#gdoc_spreadsheet_key_input").property("value");
-      globals.gdoc_key = globals.gdoc_key.replace(/.*\/d\//g, "");
-      globals.gdoc_key = globals.gdoc_key.replace(/\/.*$/g, "");
-      globals.gdoc_worksheet = selectWithParent("#gdoc_worksheet_title_input").property("value");
-      logEvent("gdoc spreadsheet " + globals.gdoc_worksheet + " added using key \"" + globals.gdoc_key + "\"", "load");
-
-      if (globals.gdoc_worksheet !== "") {
-        gsheets.getWorksheet(globals.gdoc_key, globals.gdoc_worksheet, function (err, sheet) {
-          if (err !== null) {
-            alert(err); // eslint-disable-line no-alert
-            return true;
-          }
-          setTimeout(function () {
-            instance.load({ timeline_json_data: sheet.data }, false);
-          }, 500);
-        });
-      } else {
-        var worksheet_id;
-
-        gsheets.getSpreadsheet(globals.gdoc_key, function (err, sheet) {
-          if (err !== null) {
-            alert(err); // eslint-disable-line no-alert
-            return true;
-          }
-
-          log("worksheet id: " + sheet.worksheets[0].id);
-
-          setTimeout(function () {
-            worksheet_id = sheet.worksheets[0].id;
-            gsheets.getWorksheetById(globals.gdoc_key, worksheet_id, function (err2, sheetWithData) {
-              if (err2 !== null) {
-                alert(err2); // eslint-disable-line no-alert
-                return true;
-              }
-
-              globals.timeline_json_data = sheetWithData.data;
-              setTimeout(function () {
-                instance.load({ timeline_json_data: sheetWithData.data }, false);
-              }, 500);
-            });
-          }, 500);
-        });
-      }
-    });
 
   instance.importPanel.element.append("div")
     .attr("class", "loading_data_indicator")
@@ -778,9 +556,8 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
   instance.importPanel.element.append("div")
     .attr("id", "disclaimer")
-    .html("<span class='disclaimer_title'style='clear:both'>An expressive visual storytelling environment for presenting timelines.</span><span class='disclaimer_text'><br><strong>A note about privacy</strong>: </span>" +
-    "<span class='disclaimer_text'>Your data remains on your machine and is not shared with <a title='Microsoft' href='http://microsoft.com'>Microsoft</a> unless you export the content you create and provide your email address. If you share your content with <a title='Microsoft' href='http://microsoft.com'>Microsoft</a>, we will use it for research and to improve our products and services. We may also include it in a future research publication. " +
-    "By using this service, you agree to <a title='Microsoft' href='http://microsoft.com'>Microsoft</a>'s <a title='Privacy' href='https://go.microsoft.com/fwlink/?LinkId=521839'>Privacy Statement</a> and <a title='Terms of Use' href='https://go.microsoft.com/fwlink/?LinkID=760869'>Terms of Use</a>.</span>");
+    .html("<span class='disclaimer_title' style='clear:both'>An expressive visual storytelling environment for presenting timelines.</span><span class='disclaimer_text'><br><strong>A note about privacy</strong>: </span>" +
+    "<span class='disclaimer_text'>Your data is processed in your browser and is not uploaded to a server.</span>");
 
   var timeline_metadata = instance.importPanel.element.append("div")
     .attr("id", "timeline_metadata")
@@ -796,11 +573,6 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       title: "Draw Timeline"
     })
     .on("click", function () {
-      selectWithParent("#gdocs_info").style("height", 0 + "px");
-      selectWithParent("#gdoc_spreadsheet_key_input").property("value", "");
-      selectWithParent("#gdoc_worksheet_title_input").property("value", "");
-      selectAllWithParent(".gdocs_info_element").style("display", "none");
-
       drawTimeline(globals.active_data);
 
       instance.setPlaybackMode(false, false);
@@ -1081,13 +853,13 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
         caption_text: caption,
         x_rel_pos: 0.5,
         y_rel_pos: 0.25,
-        caption_width: d3.min([caption.length * 10, 200]),
+        caption_width: utils.captionWidth(caption),
         z_index: getNextZIndex()
       };
 
       globals.caption_list.push(caption_list_item);
 
-      addCaption(caption, d3.min([caption.length * 10, 200]), 0.5, 0.25, caption_list_item);
+      addCaption(caption, utils.captionWidth(caption), 0.5, 0.25, caption_list_item);
       selectWithParent("#add_caption_text_input").property("value", "");
     });
 
@@ -3899,197 +3671,19 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     }
   });
 
-  function importIntro() {
-    var import_intro = introJs();
-    var steps = [
-      {
-        intro: "This tour will describe the types of data that the tool can ingest."
-      }
-    ];
-
-    if (showDemoData()) {
-      steps.push({
-        element: ".timeline_storyteller #demo_dataset_picker_label",
-        intro: "Load one of several demonstration timeline datasets, featuring timelines that span astronomical epochs or just a single day.",
-        position: "right"
-      });
-    }
-
-    if (instance.options.showImportLoadDataOptions) {
-      steps = steps.concat([
-        {
-          element: ".timeline_storyteller #json_picker_label",
-          intro: "Load a timeline dataset in JSON format, where each event is specified by at least a start_date (in either YYYY, YYYY-MM, YYYY-MM-DD, or YYYY-MM-DD HH:MM format); optionally, events can also be specified by end_date, content_text (a text string that describes the event), category, and facet (a second categorical attribute used for distinguishing between multiple timelines).",
-          position: "right"
-        },
-        {
-          element: ".timeline_storyteller #csv_picker_label",
-          intro: "Load a timeline dataset in CSV format; ensure that the header row contains at least a start_date column; as with JSON datasets, end_date, content_text, category, and facet columns are optional.",
-          position: "right"
-        },
-        {
-          element: ".timeline_storyteller #gdocs_picker_label",
-          intro: "Load a timeline dataset from a published Google Spreadsheet; you will need to provide the spreadsheet key and worksheet title; the worksheet columns must be formatted as text.",
-          position: "right"
-        }
-      ]);
-    }
-
-    if (showDemoData()) {
-      steps.push({
-        element: ".timeline_storyteller #story_demo_label",
-        intro: "Load a demonstration timeline story.",
-        position: "right"
-      });
-    }
-    steps.push(
-      {
-        element: ".timeline_storyteller #story_picker_label",
-        intro: "Load a previously saved timeline story in .cdc format.",
-        position: "right"
-      }
-    );
-
-    import_intro.setOptions({
-      steps: steps
-    });
-    import_intro.start();
-  }
-
-  function mainIntro() {
-    var main_intro = introJs();
-    var steps = [
-      {
-        intro: "This tour will introduce the timeline story authoring features."
-      }
-    ];
-
-    if (instance.options.showViewOptions !== false) {
-      steps = steps.concat([
-        {
-          element: "#representation_picker",
-          intro: "Select the visual representation of the timeline or timelines here. Note that some representations are incompatible with some combinations of scales and layouts.",
-          position: "bottom"
-        },
-        {
-          element: "#scale_picker",
-          intro: "Select the scale of the timeline or timelines here. Note that some scales are incompatible with some combinations of representations and layouts.",
-          position: "bottom"
-        },
-        {
-          element: "#layout_picker",
-          intro: "Select the layout of the timeline or timelines here. Note that some layouts are incompatible with some combinations of representations and scales.",
-          position: "bottom"
-        }
-      ]);
-    }
-
-    if (instance.options.showImportOptions !== false) {
-      steps.push(
-        {
-          element: "#import_visible_btn",
-          intro: "This button toggles the import panel, allowing you to open a different timeline dataset or story.",
-          position: "right"
-        });
-    }
-
-    steps = steps.concat([
-      {
-        element: "#control_panel",
-        intro: "This panel contains controls for adding text or image annotations to a timeline, for highlighting and filtering events, and for exporting the timeline or timeline story.",
-        position: "right"
-      },
-      {
-        element: "#record_scene_btn",
-        intro: "This button records the current canvas of timeline or timelines, labels, and annotations as a scene in a story.",
-        position: "top"
-      }]);
-
-    main_intro.setOptions({
-      steps: steps
-    });
-
-    main_intro.start();
-  }
-
-  function playbackIntro() {
-    var playback_intro = introJs();
-    playback_intro.setOptions({
-      steps: [
-        {
-          intro: "This tour will introduce timeline story plaback features."
-        },
-        {
-          element: "#play_scene_btn",
-          intro: "You are now in story playback mode. Click this button to leave playback mode and restore the story editing tool panels.",
-          position: "top"
-        },
-        {
-          element: "#stepper_container",
-          intro: "Scenes in the story appear in this panel. Click on any scene thumbnail to jump to the corresponding scene.",
-          position: "top"
-        },
-        {
-          element: "#next_scene_btn",
-          intro: "Advance to the next scene by clicking this button.",
-          position: "top"
-        },
-        {
-          element: "#prev_scene_btn",
-          intro: "Return to the previous scene by clicking this button.",
-          position: "top"
-        }
-      ]
-    });
-    playback_intro.start();
-  }
-
 
   selectWithParent()
     .append("div")
     .attr("id", "hint_div")
-    .attr("data-hint", "Click on the [TOUR] button for a tour of the interface.")
-    .attr("data-hintPosition", "bottom-left")
-    .attr("data-position", "bottom-left-aligned")
     .attr("class", "control_div");
 
   var intro_div = selectWithParent("#hint_div")
     .append("div")
     .attr("id", "intro_div");
 
-  // Give it some time to load, then initialize the hints, otherwise the positioning is wierd
-  setTimeout(function () {
-    introJs().addHints();
-  }, 100);
-
-  intro_div.append("input")
-    .attr({
-      type: "image",
-      name: "Start tour",
-      id: "start_intro_btn",
-      class: "img_btn_enabled",
-      src: imageUrls("info.png"),
-      height: 30,
-      width: 30,
-      title: "Start tour"
-    })
-    .on("click", function () {
-      if (instance.importPanel.visible) {
-        importIntro();
-      } else if (!instance.playback_mode) {
-        mainIntro();
-      } else {
-        playbackIntro();
-      }
-    });
-
   intro_div.append("div")
     .attr("class", "intro_btn")
-    .html("<a title='About & getting started' href='../../' target='_blank'><img src='" + imageUrls("q.png") + "' width=30 height=30 class='img_btn_enabled'></img></a>");
-
-  intro_div.append("div")
-    .attr("class", "intro_btn")
-    .html("<a title='Contact the project team' href='mailto:timelinestoryteller@microsoft.com' target='_top'><img src='" + imageUrls("mail.png") + "' width=30 height=30 class='img_btn_enabled'></img></a>");
+    .html("<a title='About & getting started' href='help.html' target='_blank'><img src='" + imageUrls("q.png") + "' width=30 height=30 class='img_btn_enabled'></img></a>");
 
   /**
    * Sets the color for the given category
@@ -4193,11 +3787,6 @@ TimelineStoryteller.DEFAULT_OPTIONS = Object.freeze({
   showAbout: true,
 
   /**
-   * If true, the Microsoft logo is shown
-   */
-  showLogo: true,
-
-  /**
    * If true, the chart view options are shown
    */
   showViewOptions: true,
@@ -4249,8 +3838,6 @@ TimelineStoryteller.DEFAULT_OPTIONS = Object.freeze({
 
           if (instance.importPanel.visible) {
             instance.importPanel.hide();
-            selectWithParent("#gdocs_info").style("height", 0 + "px");
-            selectAllWithParent(".gdocs_info_element").style("display", "none");
           } else {
             instance.importPanel.show();
           }
@@ -4359,12 +3946,8 @@ TimelineStoryteller.DEFAULT_OPTIONS = Object.freeze({
             logEvent("demo story source", "load");
 
             selectWithParent("#timeline_metadata").style("display", "none");
-            selectAllWithParent(".gdocs_info_element").style("display", "none");
             instance.importPanel.hide();
 
-            selectWithParent("#gdocs_info").style("height", 0 + "px");
-            selectWithParent("#gdoc_spreadsheet_key_input").property("value", "");
-            selectWithParent("#gdoc_worksheet_title_input").property("value", "");
 
             setTimeout(function () {
               instance.load(window.timeline_story_demo_story, true);
@@ -4494,21 +4077,6 @@ TimelineStoryteller.DEFAULT_OPTIONS = Object.freeze({
                   }, 500);
                 };
               });
-          }
-        },
-        gdocs: {
-          name: "Load from Google Spreadsheet",
-          image: imageUrls("gdocs.png"),
-          click: () => {
-            if (selectAllWithParent(".gdocs_info_element").style("display") !== "none") {
-              selectWithParent("#gdocs_info").style("height", 0 + "px");
-              selectAllWithParent(".gdocs_info_element").style("display", "none");
-            } else {
-              selectWithParent("#gdocs_info").style("height", 27 + "px");
-              setTimeout(function () {
-                selectAllWithParent(".gdocs_info_element").style("display", "inline");
-              }, 500);
-            }
           }
         }
       }
@@ -4871,7 +4439,7 @@ TimelineStoryteller.prototype._recordScene = function () {
     scene_images.push(scene_image);
   });
 
-  this._main_svg.selectAll(".event_annotation").each(function () {
+  this._main_svg.selectAll(".event_annotation:not(.temporary_annotation)").each(function () {
     var scene_annotation = {
       annotation_id: Math.abs(parseInt(this.getAttribute("data-id"), 10))
     };
@@ -5326,7 +4894,6 @@ TimelineStoryteller.prototype.setUIScale = function (scale) {
   scale = typeof scale === "undefined" ? 1 : scale;
   this.scale = scale;
   selectWithParent("#footer").style("transform", "scale(" + scale + ")");
-  selectWithParent("#logo_div").style("transform", "scale(" + scale + ")");
   selectWithParent("#option_div").style("transform", "scale(" + scale + ")");
   this.importPanel.element.style("transform", "scale(" + scale + ")");
   selectWithParent("#navigation_div").style("transform", "scale(" + scale + ")");
@@ -5342,7 +4909,6 @@ TimelineStoryteller.prototype.setUIScale = function (scale) {
 TimelineStoryteller.prototype.applyOptions = function (updateMenu) {
   var options = this.options;
   selectWithParent("#footer").style("display", options.showAbout === false ? "none" : null);
-  selectWithParent("#logo_div").style("display", options.showLogo === false ? "none" : null);
   selectWithParent("#option_div").style("display", options.showViewOptions === false ? "none" : null);
   selectWithParent().classed("show-about-bar", options.showAbout);
   this.importPanel.element.style("display", this.onIntro && options.showIntro === false ? "none" : null);
@@ -5493,12 +5059,7 @@ TimelineStoryteller.prototype.load = function (state, storyMode, skipIntro, dela
         logEvent("story load", "load");
 
         selectWithParent("#timeline_metadata").style("display", "none");
-        selectAllWithParent(".gdocs_info_element").style("display", "none");
         that.importPanel.hide();
-
-        selectWithParent("#gdocs_info").style("height", 0 + "px");
-        selectWithParent("#gdoc_spreadsheet_key_input").property("value", "");
-        selectWithParent("#gdoc_worksheet_title_input").property("value", "");
       }
 
       if (delay > 0 || hasScenes) {
@@ -5527,7 +5088,7 @@ TimelineStoryteller.prototype.saveState = function () {
     "caption_list": globals.caption_list,
     "annotation_list": globals.annotation_list,
     "image_list": globals.image_list,
-    "author": globals.email_address,
+    "author": "",
     "timestamp": new Date().valueOf()
   };
 };
@@ -5573,15 +5134,11 @@ TimelineStoryteller.prototype.setPlaybackMode = function (isPlayback, addLog) {
       .style("top", "-" + importDiv.node().clientHeight + "px")
       .attr("class", "control_div onhover");
     optionDiv.attr("class", "control_div onhover");
-
-    d3.select(".introjs-hints").style("opacity", 0);
   } else {
     selectWithParent("#record_scene_btn").attr("class", "img_btn_enabled");
     optionDiv.attr("class", "control_div");
     importDiv.attr("class", "control_div");
     menuDiv.attr("class", "control_div");
-
-    d3.select(".introjs-hints").style("opacity", 1);
   }
   // Set read-only mode for annotation elements in playback mode
   d3.selectAll(".annotation_control, .annotation_drag_area, .image_drag_area, .caption_drag_area")
@@ -5592,7 +5149,6 @@ TimelineStoryteller.prototype.setPlaybackMode = function (isPlayback, addLog) {
   toggleElement(selectWithParent("#hint_div"), "top", 20);
   toggleElement(selectWithParent("#intro_div"), "top", 10);
   toggleElement(selectWithParent("#footer"), "bottom", 0);
-  toggleElement(selectWithParent("#logo_div"), "top", 10);
 
   // Toggle a playback-mode class
   selectWithParent().classed("playback_mode", isPlayback);
