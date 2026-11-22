@@ -8,6 +8,7 @@ anotateEvent: //on-demand persistent annotationText label for an event
 var imageUrls = require("./imageUrls");
 var d3 = require("d3");
 var globals = require("./globals");
+var tr = require("./i18n");
 
 var utils = require("./utils");
 var selectWithParent = utils.selectWithParent;
@@ -292,7 +293,7 @@ module.exports = function (timeline_vis, annotationText, x_pos, y_pos, x_offset,
     .call(resize);
 
   annotation_resizer.append("title")
-    .text("Resize label");
+    .text(tr("Resize label"));
 
   event_annotation.append("svg:image")
     .attr("class", "annotation_control annotation_delete")
@@ -338,7 +339,7 @@ module.exports = function (timeline_vis, annotationText, x_pos, y_pos, x_offset,
       d3.select(this.parentNode).remove();
     })
     .append("title")
-    .text("Remove label");
+    .text(tr("Remove label"));
 
   event_annotation.append("circle")
     .attr("class", "annotation_circle")

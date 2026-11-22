@@ -14,7 +14,7 @@ Changes from the original:
 
 - The app runs as static files and does not send data to a server. The research logging over socket.io was removed.
 - The email / consent step before exporting was removed.
-- Microsoft branding, policy links, and contact links were removed from the app. The original landing page was replaced by a usage guide in Japanese (`docs/help.html`).
+- Microsoft branding, policy links, and contact links were removed from the app. The original landing page was replaced by a usage guide in Japanese and English (`docs/help.html`).
 - d3 and moment are served from `docs/js/vendor` instead of a CDN.
 - The guided tour (intro.js, AGPL-3.0 / commercial licence) was removed. Its explanations were moved into the usage guide.
 - Loading from Google Spreadsheets was removed, because the Google API it relied on no longer exists.
@@ -26,6 +26,7 @@ Changes from the original:
 | `appName` | `timeline-storyteller` |
 | Public host | `https://timeline-storyteller.dataviz.jp/` (the app is served from the root of the host) |
 | Shared sign-in | `supabase.v1.js` and `dataviz-auth-client.v1.js` from `id.data-viz-lectures.com`, loaded in `docs/index.html` |
+| Languages | Japanese and English. The language follows the shared resolver `dataviz-locale.v1.js` (`?lang=ja` / `?lang=en`, an `/en` path, the `locale` cookie, then the browser language). UI text lives in `src/i18n.js` and `src/locales/ja.js`; English is the source language. |
 | Saved projects | Not supported yet |
 | Share pages | Not supported |
 
@@ -83,7 +84,7 @@ example event row:
 
 ## Usage
 
-A usage guide in Japanese is included at `docs/help.html`.
+A usage guide in Japanese and English is included at `docs/help.html`.
 
 1. Load timeline data (demo dataset, JSON, CSV) or saved timeline story (a JSON Blob with extension .cdc; see step 6)
 

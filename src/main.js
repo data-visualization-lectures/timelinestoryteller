@@ -27,6 +27,7 @@ var clone = utils.clone;
 var debounce = utils.debounce;
 var logEvent = utils.logEvent;
 var globals = require("./globals");
+var tr = require("./i18n");
 var addImagePopup = require("./dialogs/addImageDialog");
 var gif = new GIF({
   workers: 2,
@@ -35,6 +36,30 @@ var gif = new GIF({
   workerScript: URL.createObjectURL(new Blob([require("raw-loader!./lib/gif.worker.js")], { type: "text/javascript" })) // Creates a script url with the contents of "gif.worker.js"
 });
 var getNextZIndex = require("./annotations").getNextZIndex;
+var helpUrl = "help.html?lang=" + tr.locale();
+
+/**
+ * Describes the time between two dates in words, e.g. "158 years"
+ * @param {Date} start The earlier date
+ * @param {Date} end The later date
+ * @returns {string} The duration in the UI language
+ */
+function describeDuration(start, end) {
+  if (tr.locale() !== "ja") {
+    return moment(start).from(moment(end), true);
+  }
+  var duration = moment.duration(moment(end).diff(moment(start)));
+  if (duration.asYears() >= 1) {
+    return Math.round(duration.asYears()) + " 年";
+  } else if (duration.asMonths() >= 1) {
+    return Math.round(duration.asMonths()) + " か月";
+  } else if (duration.asDays() >= 1) {
+    return Math.round(duration.asDays()) + " 日";
+  } else if (duration.asHours() >= 1) {
+    return Math.round(duration.asHours()) + " 時間";
+  }
+  return Math.max(1, Math.round(duration.asMinutes())) + " 分";
+}
 var log = require("debug")("TimelineStoryteller:main");
 const isIE11 = !!window.MSInputMethodContext && !!document.documentMode;
 
@@ -338,13 +363,13 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
   selectWithParent("#export_div").append("input")
     .attr({
       type: "image",
-      name: "Hide export panel",
+      name: tr("Hide export panel"),
       id: "export_close_btn",
       class: "img_btn_enabled",
       src: imageUrls("close.png"),
       height: 15,
       width: 15,
-      title: "Hide export panel"
+      title: tr("Hide export panel")
     })
     .style("margin-top", "5px")
     .on("click", function () {
@@ -355,7 +380,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
   export_div.append("div")
     .attr("id", "export_boilerplate")
-    .html("<span class='boilerplate_title'>Export options</span><hr>");
+    .html("<span class='boilerplate_title'>" + tr("Export options") + "</span><hr>");
 
   var export_formats = export_div.append("div")
     .attr("id", "export_formats");
@@ -363,12 +388,12 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
   export_formats.append("input")
     .attr({
       type: "image",
-      name: "Export PNG",
+      name: tr("Export PNG"),
       class: "img_btn_enabled export--image",
       src: imageUrls("png.png"),
       height: 30,
       width: 30,
-      title: "Export PNG"
+      title: tr("Export PNG")
     })
     .on("click", function () {
       selectAllWithParent("foreignObject").remove();
@@ -381,12 +406,12 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
   export_formats.append("input")
     .attr({
       type: "image",
-      name: "Export SVG",
+      name: tr("Export SVG"),
       class: "img_btn_enabled export--image",
       src: imageUrls("svg.png"),
       height: 30,
       width: 30,
-      title: "Export SVG"
+      title: tr("Export SVG")
     })
     .on("click", function () {
       selectAllWithParent("foreignObject").remove();
@@ -399,12 +424,12 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
   export_formats.append("input")
     .attr({
       type: "image",
-      name: "Export animated GIF",
+      name: tr("Export animated GIF"),
       class: "img_btn_enabled export--image",
       src: imageUrls("gif.png"),
       height: 30,
       width: 30,
-      title: "Export animated GIF"
+      title: tr("Export animated GIF")
     })
     .on("click", function () {
       selectAllWithParent("foreignObject").remove();
@@ -447,12 +472,12 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
   export_formats.append("input")
     .attr({
       type: "image",
-      name: "Export story",
+      name: tr("Export story"),
       class: "img_btn_enabled",
       src: imageUrls("story.png"),
       height: 30,
       width: 30,
-      title: "Export story"
+      title: tr("Export story")
     })
     .on("click", function () {
       selectAllWithParent("foreignObject").remove();
@@ -519,11 +544,13 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
   footer.append("div")
     .attr("id", "footer_left")
-    .html("<span class='footer_text_left'><a title='About & getting started' href='help.html' target='_blank'>About & getting started</a></span>");
+    .html("<span class='footer_text_left'><a title='" + tr("About & getting started") + "' href='" + helpUrl + "' target='_blank'>" + tr("About & getting started") + "</a></span>");
 
   footer.append("div")
     .attr("id", "footer_right")
-    .html("<span class='footer_text'>Based on <a title='Timeline Storyteller on GitHub' href='https://github.com/microsoft/timelinestoryteller' target='_blank'>Timeline Storyteller</a>, © Microsoft Corporation, MIT License</span>");
+    .html("<span class='footer_text'>" + tr("Based on {link}, © Microsoft Corporation, MIT License", {
+      link: "<a title='" + tr("Timeline Storyteller on GitHub") + "' href='https://github.com/microsoft/timelinestoryteller' target='_blank'>Timeline Storyteller</a>"
+    }) + "</span>");
 
   var boilerplate = instance.importPanel.element.append("div")
     .attr("id", "boilerplate")
@@ -532,13 +559,13 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
   boilerplate.append("input")
     .attr({
       type: "image",
-      name: "Hide import panel",
+      name: tr("Hide import panel"),
       id: "import_close_btn",
       class: "img_btn_enabled",
       src: imageUrls("close.png"),
       height: 15,
       width: 15,
-      title: "Hide import panel"
+      title: tr("Hide import panel")
     })
     .style("margin-top", "5px")
     .on("click", function () {
@@ -552,12 +579,12 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
   instance.importPanel.element.append("div")
     .attr("class", "loading_data_indicator")
     .style("display", "none")
-    .html("<span>Loading data...</span>");
+    .html("<span>" + tr("Loading data...") + "</span>");
 
   instance.importPanel.element.append("div")
     .attr("id", "disclaimer")
-    .html("<span class='disclaimer_title' style='clear:both'>An expressive visual storytelling environment for presenting timelines.</span><span class='disclaimer_text'><br><strong>A note about privacy</strong>: </span>" +
-    "<span class='disclaimer_text'>Your data is processed in your browser and is not uploaded to a server.</span>");
+    .html("<span class='disclaimer_title' style='clear:both'>" + tr("An expressive visual storytelling environment for presenting timelines.") + "</span><span class='disclaimer_text'><br><strong>" + tr("A note about privacy") + "</strong>: </span>" +
+    "<span class='disclaimer_text'>" + tr("Your data is processed in your browser and is not uploaded to a server.") + "</span>");
 
   var timeline_metadata = instance.importPanel.element.append("div")
     .attr("id", "timeline_metadata")
@@ -570,7 +597,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     .attr({
       id: "draw_timeline",
       class: "img_btn_enabled import_label draw_timeline",
-      title: "Draw Timeline"
+      title: tr("Draw Timeline")
     })
     .on("click", function () {
       drawTimeline(globals.active_data);
@@ -584,7 +611,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     .style("color", "white")
     .style("cursor", "pointer")
     .style("position", "relative")
-    .text("Draw this timeline");
+    .text(tr("Draw this timeline"));
 
   /**
   --------------------------------------------------------------------------------------
@@ -601,7 +628,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
   representation_picker.append("text")
     .attr("class", "ui_label")
-    .text("Timeline representation");
+    .text(tr("Timeline representation"));
 
   var representation_rb = representation_picker.selectAll("div")
     .data(globals.representations)
@@ -666,7 +693,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
   representation_rb_label.append("span")
     .attr("class", "option_rb_label")
     .text(function (d) {
-      return d.name;
+      return tr(d.name);
     });
 
   // scale options
@@ -676,7 +703,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
   scale_picker.append("text")
     .attr("class", "ui_label")
-    .text("Scale");
+    .text(tr("Scale"));
 
   var scale_rb = scale_picker.selectAll("div")
     .data(globals.scales)
@@ -741,7 +768,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
   scale_rb_label.append("span")
     .attr("class", "option_rb_label")
     .text(function (d) {
-      return d.name;
+      return tr(d.name);
     });
 
   // layout options
@@ -752,7 +779,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
   layout_picker.append("text")
     .attr("class", "ui_label")
-    .text("Layout");
+    .text(tr("Layout"));
 
   var layout_rb = layout_picker.selectAll("div")
     .data(globals.layouts)
@@ -817,14 +844,14 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
   layout_rb_label.append("span")
     .attr("class", "option_rb_label")
     .text(function (d) {
-      return d.name;
+      return tr(d.name);
     });
 
   selectWithParent("#caption_div").append("textarea")
     .attr({
       cols: 37,
       rows: 5,
-      placeholder: "Caption text",
+      placeholder: tr("Caption text"),
       class: "text_input",
       maxlength: 140,
       id: "add_caption_text_input"
@@ -833,13 +860,13 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
   selectWithParent("#caption_div").append("input")
     .attr({
       type: "image",
-      name: "Add Caption",
+      name: tr("Add Caption"),
       id: "add_caption_btn",
       class: "img_btn_enabled",
       src: imageUrls("check.png"),
       height: 20,
       width: 20,
-      title: "Add Caption"
+      title: tr("Add Caption")
     })
     .on("click", function () {
       selectWithParent("#caption_div").style("display", "none");
@@ -983,7 +1010,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
               src: imageUrls("record.png"),
               height: 20,
               width: 20,
-              title: "Record Scene"
+              title: tr("Record Scene")
             })
             .on("click", function () {
               if (!instance.playback_mode) {
@@ -1000,7 +1027,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
             .attr("width", 20)
             .attr("src", imageUrls("prev.png"))
             .attr("class", "img_btn_disabled")
-            .attr("title", "Previous Scene")
+            .attr("title", tr("Previous Scene"))
             .on("click", function () {
               goPreviousScene();
             });
@@ -1014,7 +1041,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
             .attr("class", "img_btn_disabled")
             .attr("id", "next_scene_btn")
             .attr("src", imageUrls("next.png"))
-            .attr("title", "Next Scene")
+            .attr("title", tr("Next Scene"))
             .on("click", function () {
               goNextScene();
             });
@@ -1044,7 +1071,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
               src: imageUrls("play.png"),
               height: 20,
               width: 20,
-              title: "Toggle Playback Mode"
+              title: tr("Toggle Playback Mode")
             });
 
           playback_bar.append("div")
@@ -1058,7 +1085,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
             .attr("id", "stepper_svg_placeholder")
             .attr("y", 25)
             .attr("dy", "0.25em")
-            .text("Recorded timeline scenes will appear here.");
+            .text(tr("Recorded timeline scenes will appear here."));
 
           window.addEventListener("resize", function () {
             selectWithParent("#stepper_container").style("width", function () {
@@ -1268,13 +1295,13 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     filter_div.append("input")
       .attr({
         type: "image",
-        name: "Hide filter panel",
+        name: tr("Hide filter panel"),
         id: "export_close_btn",
         class: "img_btn_enabled",
         src: imageUrls("close.png"),
         height: 15,
         width: 15,
-        title: "Hide filter panel"
+        title: tr("Hide filter panel")
       })
       .style("position", "absolute")
       .style("top", "0px")
@@ -1289,7 +1316,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     filter_div.append("text")
       .attr("class", "menu_label filter_label")
       .style("margin-right", "auto")
-      .text("Filter Options")
+      .text(tr("Filter Options"))
       .style("cursor", "move")
       .call(filterDrag);
 
@@ -1305,7 +1332,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       .attr("class", "filter_div_header")
       .append("text")
       .attr("class", "menu_label filter_label")
-      .text("Filter Mode:");
+      .text(tr("Filter Mode:"));
 
     var filter_type_rb = filter_type_picker.selectAll("g")
       .data(["Emphasize", "Hide"])
@@ -1344,7 +1371,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     filter_type_rb_label.append("span")
       .attr("class", "option_rb_label")
       .html(function (d) {
-        return d;
+        return tr(d);
       });
 
     selectAllWithParent("#filter_type_picker input[name=filter_type_rb]").on("change", function () {
@@ -1384,7 +1411,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
     category_filter_header.append("text")
       .attr("class", "menu_label filter_label")
-      .text("Category");
+      .text(tr("Category"));
 
     category_filter_header.append("label")
       .attr("for", "category_picker")
@@ -1393,11 +1420,11 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       .attr("id", "category_picker_label")
       .append("img")
       .attr({
-        name: "Filter by event category",
+        name: tr("Filter by event category"),
         class: "filter_header_icon",
         height: 30,
         width: 30,
-        title: "Filter by event category",
+        title: tr("Filter by event category"),
         src: imageUrls("categories.png")
       });
 
@@ -1417,7 +1444,8 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       .data(all_categories.concat(globals.categories.domain().sort()))
       .enter()
       .append("option")
-      .text(function (d) { return d; })
+      .attr("value", function (d) { return d; })
+      .text(function (d) { return d === "( All )" ? tr(d) : d; })
       .property("selected", function (d) {
         return d === "( All )";
       });
@@ -1456,7 +1484,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
     facet_filter_header.append("text")
       .attr("class", "menu_label filter_label")
-      .text("Facet");
+      .text(tr("Facet"));
 
     facet_filter_header.append("label")
       .attr("for", "facet_picker")
@@ -1465,11 +1493,11 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       .attr("id", "facet_picker_label")
       .append("img")
       .attr({
-        name: "Filter by event facet",
+        name: tr("Filter by event facet"),
         class: "filter_header_icon",
         height: 30,
         width: 30,
-        title: "Filter by event facet",
+        title: tr("Filter by event facet"),
         src: imageUrls("facets.png")
       });
 
@@ -1489,7 +1517,8 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       .data(all_facets.concat(globals.facets.domain().sort()))
       .enter()
       .append("option")
-      .text(function (d) { return d; })
+      .attr("value", function (d) { return d; })
+      .text(function (d) { return d === "( All )" ? tr(d) : d; })
       .property("selected", function (d) {
         return d === "( All )";
       });
@@ -1547,7 +1576,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
     segment_filter_header.append("text")
       .attr("class", "menu_label filter_label")
-      .text("Segment");
+      .text(tr("Segment"));
 
     segment_filter_header.append("label")
       .attr("for", "segment_picker")
@@ -1556,11 +1585,11 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       .attr("id", "segment_picker_label")
       .append("img")
       .attr({
-        name: "Filter by chronological segment",
+        name: tr("Filter by chronological segment"),
         class: "filter_header_icon",
         height: 30,
         width: 30,
-        title: "Filter by chronological segment",
+        title: tr("Filter by chronological segment"),
         src: imageUrls("segments.png")
       });
 
@@ -1580,7 +1609,8 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       .data(all_segments.concat(globals.present_segments.domain().sort()))
       .enter()
       .append("option")
-      .text(function (d) { return d; })
+      .attr("value", function (d) { return d; })
+      .text(function (d) { return d === "( All )" ? tr(d) : d; })
       .property("selected", function (d) {
         return d === "( All )";
       });
@@ -1600,13 +1630,13 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       .append("span")
       .attr("class", "metadata_title")
       .style("text-decoration", "underline")
-      .text("About this data:");
+      .text(tr("About this data:"));
 
     selectWithParent("#timeline_metadata_contents")
       .append("div")
       .attr("class", "timeline_metadata_contents_div")
-      .html("<p class='metadata_content'><img src='" + imageUrls("timeline.png") + "' width='36px' style='float: left; padding-right: 5px;'/><strong>Cardinality & extent</strong>: " +
-      globals.active_data.length + " unique events spanning " + globals.range_text + " <br><strong>Granularity</strong>: " + globals.segment_granularity + "</p>");
+      .html("<p class='metadata_content'><img src='" + imageUrls("timeline.png") + "' width='36px' style='float: left; padding-right: 5px;'/><strong>" + tr("Cardinality & extent") + "</strong>: " +
+      tr("{count} unique events spanning {range}", { count: globals.active_data.length, range: globals.range_text }) + " <br><strong>" + tr("Granularity") + "</strong>: " + tr(globals.segment_granularity) + "</p>");
 
     var category_metadata = selectWithParent("#timeline_metadata_contents")
       .append("div")
@@ -1616,7 +1646,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     var category_metadata_p = category_metadata
       .append("p")
       .attr("class", "metadata_content")
-      .html("<img src='" + imageUrls("categories.png") + "' width='36px' style='float: left; padding-right: 5px;'/><strong>Event categories</strong>: ( " + globals.num_categories + " ) <em><strong>Note</strong>: click on the swatches to assign custom colors to categories.</em><br>");
+      .html("<img src='" + imageUrls("categories.png") + "' width='36px' style='float: left; padding-right: 5px;'/><strong>" + tr("Event categories") + "</strong>: ( " + globals.num_categories + " ) <em><strong>" + tr("Note") + "</strong>: " + tr("click on the swatches to assign custom colors to categories.") + "</em><br>");
 
     var category_metadata_element = category_metadata_p.selectAll(".category_element")
       .data(globals.categories.domain().sort())
@@ -1660,8 +1690,8 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       .attr("class", "timeline_metadata_contents_div")
       .style("border-top", "1px dashed #999")
       .html(
-      "<p class='metadata_content'><img src='" + imageUrls("facets.png") + "' width='36px' style='float: left; padding-right: 5px;'/><strong>Timeline facets</strong>: " +
-      ((globals.facets.domain().length > 1) ? ("( " + globals.num_facets + " ) " + globals.facets.domain().slice(0, 30).join(" .. ")) : "(none)") + "</p>");
+      "<p class='metadata_content'><img src='" + imageUrls("facets.png") + "' width='36px' style='float: left; padding-right: 5px;'/><strong>" + tr("Timeline facets") + "</strong>: " +
+      ((globals.facets.domain().length > 1) ? ("( " + globals.num_facets + " ) " + globals.facets.domain().slice(0, 30).join(" .. ")) : tr("(none)")) + "</p>");
 
     if (shouldDrawTimeline) {
       drawTimeline(globals.active_data);
@@ -1794,12 +1824,12 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
     navigation_step_enter.append("title")
       .text(function (d) {
-        return "Scene " + (d.s_order + 1);
+        return tr("Scene {number}", { number: d.s_order + 1 });
       });
 
     navigation_step_update.select("title")
       .text(function (d) {
-        return "Scene " + (d.s_order + 1);
+        return tr("Scene {number}", { number: d.s_order + 1 });
       });
 
     function changeSceneClickHandler(d) {
@@ -1858,7 +1888,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     navigation_step_delete.append("svg:image")
       .attr("class", "annotation_control annotation_delete")
 
-      .attr("title", "Delete Scene")
+      .attr("title", tr("Delete Scene"))
       .attr("x", STEPPER_STEP_WIDTH - 17)
       .attr("y", 2)
       .attr("width", 15)
@@ -1866,7 +1896,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       .attr("xlink:href", imageUrls("delete.png", true));
 
     navigation_step_delete.append("rect")
-      .attr("title", "Delete Scene")
+      .attr("title", tr("Delete Scene"))
       .attr("x", STEPPER_STEP_WIDTH - 17)
       .attr("y", 2)
       .attr("width", 15)
@@ -1922,7 +1952,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
         }
       })
       .append("title")
-      .text("Delete Scene");
+      .text(tr("Delete Scene"));
 
     if (!isIE11) {
       navigation_step_svg.selectAll(".framePoint")
@@ -1985,12 +2015,12 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     const sceneIdx = instance._currentSceneIndex;
     selectWithParent("#prev_scene_btn")
       // Always show 1 if at the beginning
-      .attr("title", total > 1 ? `Scene ${ sceneIdx === 0 ? total : sceneIdx } of ${ total }` : "Previous Scene")
+      .attr("title", total > 1 ? tr("Scene {number} of {total}", { number: sceneIdx === 0 ? total : sceneIdx, total: total }) : "Previous Scene")
       .classed("img_btn_disabled", total < 2)
       .classed("img_btn_enabled", total > 1);
 
     selectWithParent("#next_scene_btn")
-      .attr("title", total > 1 ? `Scene ${ sceneIdx === total - 1 ? 1 : sceneIdx + 2 } of ${ total }` : "Next Scene")
+      .attr("title", total > 1 ? tr("Scene {number} of {total}", { number: sceneIdx === total - 1 ? 1 : sceneIdx + 2, total: total }) : "Next Scene")
       .classed("img_btn_disabled", total < 2)
       .classed("img_btn_enabled", total > 1);
   }
@@ -2212,10 +2242,10 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       var format = function (d) {
         return globals.formatAbbreviation(d);
       };
-      globals.range_text = format(data.max_end_date.valueOf() - data.min_start_date.valueOf()) + " years" +
+      globals.range_text = format(data.max_end_date.valueOf() - data.min_start_date.valueOf()) + tr(" years") +
         ": " + data.min_start_date.valueOf() + " - " + data.max_end_date.valueOf();
     } else {
-      globals.range_text = moment(data.min_start_date).from(moment(data.max_end_date), true) +
+      globals.range_text = describeDuration(data.min_start_date, data.max_end_date) +
         ": " + moment(data.min_start_date).format("YYYY-MM-DD") + " - " + moment(data.max_end_date).format("YYYY-MM-DD");
     }
 
@@ -2353,7 +2383,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
         .attr("height", globals.track_height * (globals.num_categories + 1))
         .attr("width", globals.max_legend_item_width + 5 + globals.unit_width + 10)
         .append("title")
-        .text("Click on a color swatch to select a custom color for that category.");
+        .text(tr("Click on a color swatch to select a custom color for that category."));
 
       globals.legend_panel.append("svg:image")
         .attr("id", "legend_expand_btn")
@@ -2372,7 +2402,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
           }
         })
         .append("title")
-        .text("Expand / collapse legend.");
+        .text(tr("Expand / collapse legend."));
 
       var legendElementContainer = globals.legend_panel.selectAll(".legend_element_g").data(globals.categories.domain().sort());
       globals.legend = legendElementContainer
@@ -2485,7 +2515,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
         });
 
       globals.legend_panel.append("text")
-        .text("LEGEND")
+        .text(tr("LEGEND"))
         .attr("class", "legend_title")
         .attr("dy", "1.4em")
         .attr("dx", "0em")
@@ -3667,7 +3697,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       globals.prev_active_event_list = globals.active_event_list;
     } else {
       instance._main_svg.style("opacity", 0);
-      instance._showError("No data available for the selected set of filters.");
+      instance._showError(tr("No data available for the selected set of filters."));
     }
   });
 
@@ -3683,7 +3713,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
   intro_div.append("div")
     .attr("class", "intro_btn")
-    .html("<a title='About & getting started' href='help.html' target='_blank'><img src='" + imageUrls("q.png") + "' width=30 height=30 class='img_btn_enabled'></img></a>");
+    .html("<a title='" + tr("About & getting started") + "' href='" + helpUrl + "' target='_blank'><img src='" + imageUrls("q.png") + "' width=30 height=30 class='img_btn_enabled'></img></a>");
 
   /**
    * Sets the color for the given category
@@ -3823,9 +3853,9 @@ TimelineStoryteller.DEFAULT_OPTIONS = Object.freeze({
 
   menu: {
     open: {
-      label: "Open",
+      label: tr("Open"),
       items: [{
-        name: "Load timeline data",
+        name: tr("Load timeline data"),
         image: imageUrls("open.png"),
         id: "import_visible_btn",
         click: function (instance) {
@@ -3845,9 +3875,9 @@ TimelineStoryteller.DEFAULT_OPTIONS = Object.freeze({
       }]
     },
     annotate: {
-      label: "Annotate",
+      label: tr("Annotate"),
       items: [{
-        name: "Add caption",
+        name: tr("Add caption"),
         image: imageUrls("caption.png"),
         click: function (instance) {
           logEvent("open caption dialog", "annotation");
@@ -3861,7 +3891,7 @@ TimelineStoryteller.DEFAULT_OPTIONS = Object.freeze({
           }
         }
       }, {
-        name: "Add image",
+        name: tr("Add image"),
         image: imageUrls("image.png"),
         click: function (instance) {
           logEvent("open image dialog", "annotation");
@@ -3875,7 +3905,7 @@ TimelineStoryteller.DEFAULT_OPTIONS = Object.freeze({
           }
         }
       }, {
-        name: "Clear annotations, captions, & images",
+        name: tr("Clear annotations, captions, & images"),
         image: imageUrls("clear.png"),
         click: function (instance) {
           instance.clearCanvas();
@@ -3883,9 +3913,9 @@ TimelineStoryteller.DEFAULT_OPTIONS = Object.freeze({
       }]
     },
     filter: {
-      label: "Filter",
+      label: tr("Filter"),
       items: [{
-        text: "Export",
+        text: tr("Export"),
         image: imageUrls("filter.png"),
         click: function (instance) {
           logEvent("open filter dialog", "filter");
@@ -3905,9 +3935,9 @@ TimelineStoryteller.DEFAULT_OPTIONS = Object.freeze({
       }]
     },
     export: {
-      label: "Export",
+      label: tr("Export"),
       items: [{
-        text: "Export",
+        text: tr("Export"),
         image: imageUrls("export.png"),
         click: function (instance) {
           selectWithParent("#filter_div").style("display", "none");
@@ -3940,7 +3970,7 @@ TimelineStoryteller.DEFAULT_OPTIONS = Object.freeze({
           visible: function (instance) {
             return instance._showDemoStory();
           },
-          text: "Load Demo Story",
+          text: tr("Load Demo Story"),
           image: imageUrls("demo_story.png"),
           click: function (instance) {
             logEvent("demo story source", "load");
@@ -3955,7 +3985,7 @@ TimelineStoryteller.DEFAULT_OPTIONS = Object.freeze({
           }
         },
         file: {
-          text: "Load Saved Story",
+          text: tr("Load Saved Story"),
           image: imageUrls("story.png"),
           width: 40,
           height: 40,
@@ -3987,7 +4017,7 @@ TimelineStoryteller.DEFAULT_OPTIONS = Object.freeze({
           visible: function (instance) {
             return instance._showDemoData();
           },
-          name: "Load Demo Data",
+          name: tr("Load Demo Data"),
           image: imageUrls("demo.png"),
           init: function (that, element) {
             var demoData = window.timeline_story_demo_data;
@@ -3999,7 +4029,7 @@ TimelineStoryteller.DEFAULT_OPTIONS = Object.freeze({
             });
             element.append("select")
               .attr("id", "demo_dataset_picker")
-              .attr("title", "Load demo dataset")
+              .attr("title", tr("Load demo dataset"))
               .attr("style", "top:0;left:0")
               .on("change", function () {
                 var source = d3.select(this).property("value");
@@ -4021,7 +4051,7 @@ TimelineStoryteller.DEFAULT_OPTIONS = Object.freeze({
           }
         },
         json: {
-          name: "Load from JSON",
+          name: tr("Load from JSON"),
           image: imageUrls("json.png"),
           init: (inst, element) => {
             element
@@ -4052,7 +4082,7 @@ TimelineStoryteller.DEFAULT_OPTIONS = Object.freeze({
           }
         },
         csv: {
-          name: "Load from CSV",
+          name: tr("Load from CSV"),
           image: imageUrls("csv.png"),
           init: (inst, element) => {
             element
@@ -4090,9 +4120,9 @@ TimelineStoryteller.DEFAULT_OPTIONS = Object.freeze({
  * @returns {void}
  * {
  *    export: {
- *      label: "Export",
+ *      label: tr("Export"),
  *      items: [{
- *         text: "Export",
+ *         text: tr("Export"),
  *         image: "http://image.com/img.jpg",
  *         height: 30,// optional,
  *         width: 30, // optional
@@ -4101,7 +4131,7 @@ TimelineStoryteller.DEFAULT_OPTIONS = Object.freeze({
  *      }]
  *    },
  *    annotate: {
- *      label: "Annotate"
+ *      label: tr("Annotate")
  *    }
  * }
  */
@@ -4142,10 +4172,10 @@ TimelineStoryteller.prototype._initializeMenu = function (menu) {
         that._control_panel.append("input")
           .attr({
             type: "image",
-            name: item.text,
+            name: item.text || item.name,
             class: "img_btn_disabled" + (" " + (item.class || "")),
             src: item.image,
-            title: item.text
+            title: item.text || item.name
           });
       itemEle.style({
         height: (item.height || 30) + "px",
@@ -4635,7 +4665,7 @@ TimelineStoryteller.prototype._initializeImportDataSection = function () {
 
       dataset_picker.append("text")
         .attr("class", "ui_label")
-        .text("Load timeline data");
+        .text(tr("Load timeline data"));
 
       importDataItems.forEach((key) => {
         var buttonEle = this._createImportPanelButton(importDataMenu[key]);
@@ -4664,7 +4694,7 @@ TimelineStoryteller.prototype._initializeImportStorySection = function () {
 
     story_picker.append("text")
       .attr("class", "ui_label")
-      .text("Load timeline story");
+      .text(tr("Load timeline story"));
 
     importItems.forEach((key) => {
       var buttonEle = this._createImportPanelButton(storyMenu[key]);

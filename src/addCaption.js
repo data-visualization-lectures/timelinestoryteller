@@ -7,6 +7,7 @@ addCaption: //on-demand captions for a timeline
 var imageUrls = require("./imageUrls");
 var d3 = require("d3");
 var globals = require("./globals");
+var tr = require("./i18n");
 
 var utils = require("./utils");
 var logEvent = utils.logEvent;
@@ -164,7 +165,7 @@ module.exports = function (caption, caption_width, x_rel_pos, y_rel_pos, caption
     .call(resize);
 
   caption_resizer.append("title")
-    .text("Resize caption");
+    .text(tr("Resize caption"));
 
   timeline_caption.append("svg:image")
     .attr("class", "annotation_control annotation_delete")
@@ -196,7 +197,7 @@ module.exports = function (caption, caption_width, x_rel_pos, y_rel_pos, caption
       d3.select(this.parentNode).remove();
     })
     .append("title")
-    .text("Remove caption");
+    .text(tr("Remove caption"));
 
   var caption_label = timeline_caption.append("text")
     .attr("class", "caption_label")

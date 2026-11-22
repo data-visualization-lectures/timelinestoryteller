@@ -7,6 +7,7 @@ addImage: //on-demand image for a timeline
 var imageUrls = require("./imageUrls");
 var d3 = require("d3");
 var globals = require("./globals");
+var tr = require("./i18n");
 var utils = require("./utils");
 var logEvent = utils.logEvent;
 var selectWithParent = utils.selectWithParent;
@@ -232,7 +233,7 @@ module.exports = function (timeline_vis, image_url, x_rel_pos, y_rel_pos, image_
     .call(resize);
 
   image_resizer.append("title")
-    .text("Resize image");
+    .text(tr("Resize image"));
 
   timeline_image.append("svg:image")
     .attr("class", "annotation_control annotation_delete")
@@ -264,7 +265,7 @@ module.exports = function (timeline_vis, image_url, x_rel_pos, y_rel_pos, image_
       d3.select(this.parentNode).remove();
     })
     .append("title")
-    .text("Remove image");
+    .text(tr("Remove image"));
 
   timeline_image.append("rect")
     .attr("class", "image_drag_area")

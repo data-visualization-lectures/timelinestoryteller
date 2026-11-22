@@ -13,6 +13,12 @@
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <link rel="icon" type="image/x-icon" href="img/favicon.ico">
 
+  <!-- dataviz.jp shared language resolver: ?lang=, /en path, locale cookie, html lang, browser language -->
+  <script src="https://id.data-viz-lectures.com/lib/dataviz-locale.v1.js"></script>
+  <script>
+    if (window.DatavizLocale) { document.documentElement.lang = window.DatavizLocale.resolve(); }
+  </script>
+
   <!-- dataviz.jp shared sign-in and header. The header is fixed at the top and 48px high. -->
   <script src="https://id.data-viz-lectures.com/lib/supabase.v1.js"></script>
   <script src="https://id.data-viz-lectures.com/lib/dataviz-auth-client.v1.js"></script>

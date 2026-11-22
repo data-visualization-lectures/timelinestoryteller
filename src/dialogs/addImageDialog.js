@@ -1,4 +1,5 @@
 const template = require("../templates/addImagePopup.html");
+const tr = require("../i18n");
 const d3 = require("d3");
 const imageUrls = require("../imageUrls");
 const utils = require("../utils");
@@ -69,7 +70,7 @@ AddImageDialog.prototype.reset = function (hide) {
   this._errorElement.style("display", "none");
   this._selectedFilesContainer
     .style("display", "none")
-    .html("No files selected");
+    .html(tr("No files selected"));
   if (hide !== false) {
     this.hide();
   }
@@ -114,14 +115,14 @@ AddImageDialog.prototype._addImageButtonClicked = function () {
         this._dispatcher.imageSelected(dataURL);
         this.reset();
       }, (e) => {
-        let error = "Could not save image. ";
+        let error = tr("Could not save image. ");
         let message = (e && e.message ? e.message : e) || "";
 
          // This occurs if the server does not have CORS set up properly, or does not allow canvas saving
         if (message.indexOf("tainted") >= 0) {
-          error += "<br/>The image server is not set up correctly.<br/>Try disabling \"Keep Offline\" and \"Resize To\" options.";
+          error += "<br/>" + tr("The image server is not set up correctly.") + "<br/>" + tr("Try disabling \"Keep Offline\" and \"Resize To\" options.");
         } else if (message.indexOf("CORS") >= 0 || message.indexOf("Cross")) {
-          error += "<br/>The image server does not allow for the saving of images.<br/>Try disabling \"Keep Offline\" and \"Resize To\" options.";
+          error += "<br/>" + tr("The image server does not allow for the saving of images.") + "<br/>" + tr("Try disabling \"Keep Offline\" and \"Resize To\" options.");
         } else {
           error += "<br/>" + message;
         }

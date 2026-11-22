@@ -17,6 +17,7 @@ var globals = require("./globals");
 var log = require("debug")("TimelineStoryteller:configurableTL");
 
 var utils = require("./utils");
+var tr = require("./i18n");
 var selectWithParent = utils.selectWithParent;
 var selectAllWithParent = utils.selectAllWithParent;
 var logEvent = utils.logEvent;
@@ -848,13 +849,13 @@ function configureTimelineScaleSegments(tl_layout, tl_representation, tl_scale, 
       case "days":
         log_bounds = -1 * time.hour.count(data.min_start_date, data.max_end_date) - 1;
         tick_format = function (d) {
-          return d + " hours";
+          return d + tr(" hours");
         };
         break;
       case "weeks":
         log_bounds = -1 * time.day.count(data.min_start_date, data.max_end_date) - 1;
         tick_format = function (d) {
-          return d + " days";
+          return d + tr(" days");
         };
         break;
       case "months":
@@ -866,7 +867,7 @@ function configureTimelineScaleSegments(tl_layout, tl_representation, tl_scale, 
       case "years":
         log_bounds = -1 * time.month.count(data.min_start_date, data.max_end_date) - 1;
         tick_format = function (d) {
-          return d + " months";
+          return d + tr(" months");
         };
         break;
       case "decades":
@@ -874,7 +875,7 @@ function configureTimelineScaleSegments(tl_layout, tl_representation, tl_scale, 
       case "millenia":
         log_bounds = -1 * Math.abs(data.max_end_date.getUTCFullYear() - data.min_start_date.getUTCFullYear()) - 1;
         tick_format = function (d) {
-          return d + " years";
+          return d + tr(" years");
         };
         break;
       default:
@@ -921,7 +922,7 @@ function configureTimelineScaleSegments(tl_layout, tl_representation, tl_scale, 
             } else if ((item.start_date.valueOf() - last_start_date.valueOf()) > 0) {
               item.time_elapsed = item.start_date.valueOf() - last_start_date.valueOf();
               if (globals.date_granularity === "epochs") {
-                item.time_elapsed_label = format(item.start_date.valueOf() - last_start_date.valueOf()) + " years";
+                item.time_elapsed_label = format(item.start_date.valueOf() - last_start_date.valueOf()) + tr(" years");
               } else {
                 item.time_elapsed_label = moment(item.start_date).from(moment(last_start_date), true);
               }
@@ -929,7 +930,7 @@ function configureTimelineScaleSegments(tl_layout, tl_representation, tl_scale, 
             } else {
               item.time_elapsed = 0;
               if (globals.date_granularity === "epochs") {
-                item.time_elapsed_label = format(item.start_date.valueOf() - last_start_date.valueOf()) + " years";
+                item.time_elapsed_label = format(item.start_date.valueOf() - last_start_date.valueOf()) + tr(" years");
               } else {
                 item.time_elapsed_label = moment(item.start_date).from(moment(last_start_date), true);
               }
@@ -993,13 +994,13 @@ function configureTimelineScaleSegments(tl_layout, tl_representation, tl_scale, 
           tick_format = function (d) {
             var converted_tick = d;
             if ((globals.max_end_age / 86400000) > 1000) {
-              converted_tick = Math.round(d / 31536000730) + " years";
+              converted_tick = Math.round(d / 31536000730) + tr(" years");
             } else if ((globals.max_end_age / 86400000) > 120) {
-              converted_tick = Math.round(d / 2628000000) + " months";
+              converted_tick = Math.round(d / 2628000000) + tr(" months");
             } else if ((globals.max_end_age / 86400000) > 2) {
-              converted_tick = Math.round(d / 86400000) + " days";
+              converted_tick = Math.round(d / 86400000) + tr(" days");
             } else {
-              converted_tick = Math.round(d / 3600000) + " hours";
+              converted_tick = Math.round(d / 3600000) + tr(" hours");
             }
             return converted_tick;
           };
@@ -1872,11 +1873,11 @@ function configureCollapsedAxis(tl_representation, prev_tl_scale, tl_scale, tl_l
       if (globals.date_granularity === "epochs") {
         return format(d.valueOf());
       } else if (time.year.count(data.min_start_date, data.max_end_date) > 5) {
-        converted_tick = Math.round(d / 31536000730) + " years";
+        converted_tick = Math.round(d / 31536000730) + tr(" years");
       } else if (time.day.count(data.min_start_date, data.max_end_date) > 31) {
-        converted_tick = Math.round(d / 2628000000) + " months";
+        converted_tick = Math.round(d / 2628000000) + tr(" months");
       } else {
-        converted_tick = Math.round(d / 86400000) + " days";
+        converted_tick = Math.round(d / 86400000) + tr(" days");
       }
       return converted_tick;
     });
@@ -1956,14 +1957,14 @@ function configureLinearAxis(timeline_scale, tl_layout, tl_representation, prev_
           converted_tick = moment().week(d + 1).format("MMM");
           break;
         case "decades":
-          converted_tick = (d / 12) + " years";
+          converted_tick = (d / 12) + tr(" years");
           break;
         case "centuries":
         case "millenia":
-          converted_tick = d + " years";
+          converted_tick = d + tr(" years");
           break;
         case "epochs":
-          converted_tick = globals.formatAbbreviation(d) + " years";
+          converted_tick = globals.formatAbbreviation(d) + tr(" years");
           break;
         default:
           break;
