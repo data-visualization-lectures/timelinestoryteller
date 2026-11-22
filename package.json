@@ -36,15 +36,12 @@
     "karma-webpack": "^2.0.3",
     "mocha": "^3.2.0",
     "phantomjs-prebuilt": "^2.1.14",
-    "socket.io": "^1.7.2",
     "webpack": "^2.3.1",
     "webpack-dev-middleware": "^1.10.1"
   },
   "optionalDependencies": {
     "d3": "^3.5.5",
-    "intro.js": "^2.3.0",
-    "moment": "^2.18.1",
-    "socket.io": "^1.7.2"
+    "moment": "^2.18.1"
   },
   "scripts": {
     "start": "node app.js",

@@ -8,9 +8,6 @@ require("../assets/css/style.css");
  */
 var d3 = require("d3");
 var moment = require("moment");
-var introJsLib = require("intro.js");
-// intro.js is optional: when it is not loaded, the tour button and hints are not shown
-var introJs = typeof introJsLib === "function" ? introJsLib : (introJsLib && introJsLib.introJs);
 
 var configurableTL = require("./configurableTL");
 var addCaption = require("./addCaption");
@@ -19,7 +16,6 @@ var annotateEvent = require("./annotateEvent");
 var colorSchemes = require("./colors");
 var time = require("./lib/time.min");
 var GIF = require("./lib/gif").GIF;
-var gsheets = require("./lib/gsheets.min");
 var svgImageUtils = require("./lib/saveSvgAsPng");
 var imageUrls = require("./imageUrls");
 var utils = require("./utils");
@@ -82,15 +78,6 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
   this.options = clone(TimelineStoryteller.DEFAULT_OPTIONS);
 
   globals.serverless = isServerless;
-  if (typeof isServerless === "undefined" || isServerless === false) {
-    globals.socket = require("socket.io")({ transports: ["websocket"] });
-  }
-
-  if (globals.socket) {
-    globals.socket.on("hello_from_server", function (data) {
-      log(data);
-    });
-  }
 
   /**
    * Creates the import panel
@@ -150,10 +137,6 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
   window.addEventListener("load", function () {
     logEvent("Initializing Timeline Storyteller");
-
-    if (globals.socket) {
-      globals.socket.emit("hello_from_client", { hello: "server" });
-    }
 
     instance._onResized(false);
   });
@@ -536,7 +519,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
   footer.append("div")
     .attr("id", "footer_left")
-    .html("<span class='footer_text_left'><a title='About & getting started' href='../../' target='_blank'>About & getting started</a></span>");
+    .html("<span class='footer_text_left'><a title='About & getting started' href='help.html' target='_blank'>About & getting started</a></span>");
 
   footer.append("div")
     .attr("id", "footer_right")
@@ -562,98 +545,9 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       logEvent("hiding import panel", "load");
 
       instance.importPanel.hide();
-
-      selectWithParent("#gdocs_info").style("height", 0 + "px");
-      selectAllWithParent(".gdocs_info_element").style("display", "none");
     });
 
   instance._initializeImportPanel();
-
-  var gdocs_info = instance.importPanel.element.append("div")
-    .attr("id", "gdocs_info");
-
-  gdocs_info.append("div")
-    .attr("id", "gdoc_spreadsheet_key_div")
-    .attr("class", "gdocs_info_element")
-    .append("input")
-    .attr({
-      type: "text",
-      placeholder: "Published spreadsheet URL",
-      class: "text_input",
-      id: "gdoc_spreadsheet_key_input"
-    });
-
-  gdocs_info.append("div")
-    .attr("id", "gdoc_spreadsheet_title_div")
-    .attr("class", "gdocs_info_element")
-    .append("input")
-    .attr({
-      type: "text",
-      placeholder: "OPTIONAL: Worksheet title (tab name)",
-      class: "text_input",
-      id: "gdoc_worksheet_title_input"
-    });
-
-  gdocs_info.append("div")
-    .attr("id", "gdoc_spreadsheet_confirm_div")
-    .attr("class", "gdocs_info_element")
-    .style("width", "20px")
-    .append("input")
-    .attr({
-      type: "image",
-      name: "Confirm Google Spreadsheet Data",
-      id: "confirm_gdocs_btn",
-      class: "img_btn_enabled",
-      src: imageUrls("check.png"),
-      height: 20,
-      width: 20,
-      title: "Confirm Google Spreadsheet Data"
-    })
-    .on("click", function () {
-      globals.gdoc_key = selectWithParent("#gdoc_spreadsheet_key_input").property("value");
-      globals.gdoc_key = globals.gdoc_key.replace(/.*\/d\//g, "");
-      globals.gdoc_key = globals.gdoc_key.replace(/\/.*$/g, "");
-      globals.gdoc_worksheet = selectWithParent("#gdoc_worksheet_title_input").property("value");
-      logEvent("gdoc spreadsheet " + globals.gdoc_worksheet + " added using key \"" + globals.gdoc_key + "\"", "load");
-
-      if (globals.gdoc_worksheet !== "") {
-        gsheets.getWorksheet(globals.gdoc_key, globals.gdoc_worksheet, function (err, sheet) {
-          if (err !== null) {
-            alert(err); // eslint-disable-line no-alert
-            return true;
-          }
-          setTimeout(function () {
-            instance.load({ timeline_json_data: sheet.data }, false);
-          }, 500);
-        });
-      } else {
-        var worksheet_id;
-
-        gsheets.getSpreadsheet(globals.gdoc_key, function (err, sheet) {
-          if (err !== null) {
-            alert(err); // eslint-disable-line no-alert
-            return true;
-          }
-
-          log("worksheet id: " + sheet.worksheets[0].id);
-
-          setTimeout(function () {
-            worksheet_id = sheet.worksheets[0].id;
-            gsheets.getWorksheetById(globals.gdoc_key, worksheet_id, function (err2, sheetWithData) {
-              if (err2 !== null) {
-                alert(err2); // eslint-disable-line no-alert
-                return true;
-              }
-
-              globals.timeline_json_data = sheetWithData.data;
-              setTimeout(function () {
-                instance.load({ timeline_json_data: sheetWithData.data }, false);
-              }, 500);
-            });
-          }, 500);
-        });
-      }
-    });
 
   instance.importPanel.element.append("div")
     .attr("class", "loading_data_indicator")
@@ -679,11 +573,6 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       title: "Draw Timeline"
     })
     .on("click", function () {
-      selectWithParent("#gdocs_info").style("height", 0 + "px");
-      selectWithParent("#gdoc_spreadsheet_key_input").property("value", "");
-      selectWithParent("#gdoc_worksheet_title_input").property("value", "");
-      selectAllWithParent(".gdocs_info_element").style("display", "none");
-
       drawTimeline(globals.active_data);
 
       instance.setPlaybackMode(false, false);
@@ -3782,198 +3671,19 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     }
   });
 
-  function importIntro() {
-    var import_intro = introJs();
-    var steps = [
-      {
-        intro: "This tour will describe the types of data that the tool can ingest."
-      }
-    ];
-
-    if (showDemoData()) {
-      steps.push({
-        element: ".timeline_storyteller #demo_dataset_picker_label",
-        intro: "Load one of several demonstration timeline datasets, featuring timelines that span astronomical epochs or just a single day.",
-        position: "right"
-      });
-    }
-
-    if (instance.options.showImportLoadDataOptions) {
-      steps = steps.concat([
-        {
-          element: ".timeline_storyteller #json_picker_label",
-          intro: "Load a timeline dataset in JSON format, where each event is specified by at least a start_date (in either YYYY, YYYY-MM, YYYY-MM-DD, or YYYY-MM-DD HH:MM format); optionally, events can also be specified by end_date, content_text (a text string that describes the event), category, and facet (a second categorical attribute used for distinguishing between multiple timelines).",
-          position: "right"
-        },
-        {
-          element: ".timeline_storyteller #csv_picker_label",
-          intro: "Load a timeline dataset in CSV format; ensure that the header row contains at least a start_date column; as with JSON datasets, end_date, content_text, category, and facet columns are optional.",
-          position: "right"
-        },
-        {
-          element: ".timeline_storyteller #gdocs_picker_label",
-          intro: "Load a timeline dataset from a published Google Spreadsheet; you will need to provide the spreadsheet key and worksheet title; the worksheet columns must be formatted as text.",
-          position: "right"
-        }
-      ]);
-    }
-
-    if (showDemoData()) {
-      steps.push({
-        element: ".timeline_storyteller #story_demo_label",
-        intro: "Load a demonstration timeline story.",
-        position: "right"
-      });
-    }
-    steps.push(
-      {
-        element: ".timeline_storyteller #story_picker_label",
-        intro: "Load a previously saved timeline story in .cdc format.",
-        position: "right"
-      }
-    );
-
-    import_intro.setOptions({
-      steps: steps
-    });
-    import_intro.start();
-  }
-
-  function mainIntro() {
-    var main_intro = introJs();
-    var steps = [
-      {
-        intro: "This tour will introduce the timeline story authoring features."
-      }
-    ];
-
-    if (instance.options.showViewOptions !== false) {
-      steps = steps.concat([
-        {
-          element: "#representation_picker",
-          intro: "Select the visual representation of the timeline or timelines here. Note that some representations are incompatible with some combinations of scales and layouts.",
-          position: "bottom"
-        },
-        {
-          element: "#scale_picker",
-          intro: "Select the scale of the timeline or timelines here. Note that some scales are incompatible with some combinations of representations and layouts.",
-          position: "bottom"
-        },
-        {
-          element: "#layout_picker",
-          intro: "Select the layout of the timeline or timelines here. Note that some layouts are incompatible with some combinations of representations and scales.",
-          position: "bottom"
-        }
-      ]);
-    }
-
-    if (instance.options.showImportOptions !== false) {
-      steps.push(
-        {
-          element: "#import_visible_btn",
-          intro: "This button toggles the import panel, allowing you to open a different timeline dataset or story.",
-          position: "right"
-        });
-    }
-
-    steps = steps.concat([
-      {
-        element: "#control_panel",
-        intro: "This panel contains controls for adding text or image annotations to a timeline, for highlighting and filtering events, and for exporting the timeline or timeline story.",
-        position: "right"
-      },
-      {
-        element: "#record_scene_btn",
-        intro: "This button records the current canvas of timeline or timelines, labels, and annotations as a scene in a story.",
-        position: "top"
-      }]);
-
-    main_intro.setOptions({
-      steps: steps
-    });
-
-    main_intro.start();
-  }
-
-  function playbackIntro() {
-    var playback_intro = introJs();
-    playback_intro.setOptions({
-      steps: [
-        {
-          intro: "This tour will introduce timeline story plaback features."
-        },
-        {
-          element: "#play_scene_btn",
-          intro: "You are now in story playback mode. Click this button to leave playback mode and restore the story editing tool panels.",
-          position: "top"
-        },
-        {
-          element: "#stepper_container",
-          intro: "Scenes in the story appear in this panel. Click on any scene thumbnail to jump to the corresponding scene.",
-          position: "top"
-        },
-        {
-          element: "#next_scene_btn",
-          intro: "Advance to the next scene by clicking this button.",
-          position: "top"
-        },
-        {
-          element: "#prev_scene_btn",
-          intro: "Return to the previous scene by clicking this button.",
-          position: "top"
-        }
-      ]
-    });
-    playback_intro.start();
-  }
-
 
   selectWithParent()
     .append("div")
     .attr("id", "hint_div")
-    .attr("data-hint", "Click on the [TOUR] button for a tour of the interface.")
-    .attr("data-hintPosition", "bottom-left")
-    .attr("data-position", "bottom-left-aligned")
     .attr("class", "control_div");
 
   var intro_div = selectWithParent("#hint_div")
     .append("div")
     .attr("id", "intro_div");
 
-  // Give it some time to load, then initialize the hints, otherwise the positioning is wierd
-  if (introJs) {
-    setTimeout(function () {
-      introJs().addHints();
-    }, 100);
-  } else {
-    selectWithParent("#hint_div").attr("data-hint", null);
-  }
-
-  intro_div.append("input")
-    .attr({
-      type: "image",
-      name: "Start tour",
-      id: "start_intro_btn",
-      class: "img_btn_enabled",
-      src: imageUrls("info.png"),
-      height: 30,
-      width: 30,
-      title: "Start tour"
-    })
-    .style("display", introJs ? null : "none")
-    .on("click", function () {
-      if (instance.importPanel.visible) {
-        importIntro();
-      } else if (!instance.playback_mode) {
-        mainIntro();
-      } else {
-        playbackIntro();
-      }
-    });
-
   intro_div.append("div")
     .attr("class", "intro_btn")
-    .html("<a title='About & getting started' href='../../' target='_blank'><img src='" + imageUrls("q.png") + "' width=30 height=30 class='img_btn_enabled'></img></a>");
+    .html("<a title='About & getting started' href='help.html' target='_blank'><img src='" + imageUrls("q.png") + "' width=30 height=30 class='img_btn_enabled'></img></a>");
 
   /**
    * Sets the color for the given category
@@ -4128,8 +3838,6 @@ TimelineStoryteller.DEFAULT_OPTIONS = Object.freeze({
 
           if (instance.importPanel.visible) {
             instance.importPanel.hide();
-            selectWithParent("#gdocs_info").style("height", 0 + "px");
-            selectAllWithParent(".gdocs_info_element").style("display", "none");
           } else {
             instance.importPanel.show();
           }
@@ -4238,12 +3946,8 @@ TimelineStoryteller.DEFAULT_OPTIONS = Object.freeze({
             logEvent("demo story source", "load");
 
             selectWithParent("#timeline_metadata").style("display", "none");
-            selectAllWithParent(".gdocs_info_element").style("display", "none");
             instance.importPanel.hide();
 
-            selectWithParent("#gdocs_info").style("height", 0 + "px");
-            selectWithParent("#gdoc_spreadsheet_key_input").property("value", "");
-            selectWithParent("#gdoc_worksheet_title_input").property("value", "");
 
             setTimeout(function () {
               instance.load(window.timeline_story_demo_story, true);
@@ -4373,21 +4077,6 @@ TimelineStoryteller.DEFAULT_OPTIONS = Object.freeze({
                   }, 500);
                 };
               });
-          }
-        },
-        gdocs: {
-          name: "Load from Google Spreadsheet",
-          image: imageUrls("gdocs.png"),
-          click: () => {
-            if (selectAllWithParent(".gdocs_info_element").style("display") !== "none") {
-              selectWithParent("#gdocs_info").style("height", 0 + "px");
-              selectAllWithParent(".gdocs_info_element").style("display", "none");
-            } else {
-              selectWithParent("#gdocs_info").style("height", 27 + "px");
-              setTimeout(function () {
-                selectAllWithParent(".gdocs_info_element").style("display", "inline");
-              }, 500);
-            }
           }
         }
       }
@@ -5370,12 +5059,7 @@ TimelineStoryteller.prototype.load = function (state, storyMode, skipIntro, dela
         logEvent("story load", "load");
 
         selectWithParent("#timeline_metadata").style("display", "none");
-        selectAllWithParent(".gdocs_info_element").style("display", "none");
         that.importPanel.hide();
-
-        selectWithParent("#gdocs_info").style("height", 0 + "px");
-        selectWithParent("#gdoc_spreadsheet_key_input").property("value", "");
-        selectWithParent("#gdoc_worksheet_title_input").property("value", "");
       }
 
       if (delay > 0 || hasScenes) {
@@ -5450,15 +5134,11 @@ TimelineStoryteller.prototype.setPlaybackMode = function (isPlayback, addLog) {
       .style("top", "-" + importDiv.node().clientHeight + "px")
       .attr("class", "control_div onhover");
     optionDiv.attr("class", "control_div onhover");
-
-    d3.select(".introjs-hints").style("opacity", 0);
   } else {
     selectWithParent("#record_scene_btn").attr("class", "img_btn_enabled");
     optionDiv.attr("class", "control_div");
     importDiv.attr("class", "control_div");
     menuDiv.attr("class", "control_div");
-
-    d3.select(".introjs-hints").style("opacity", 1);
   }
   // Set read-only mode for annotation elements in playback mode
   d3.selectAll(".annotation_control, .annotation_drag_area, .image_drag_area, .caption_drag_area")

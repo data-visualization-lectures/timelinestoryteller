@@ -105,8 +105,6 @@ function reset() {
     record_height: u,
     reader: new FileReader(),
     timeline_json_data: [],
-    gdoc_key: "1x8N7Z9RUrA9Jmc38Rvw1VkHslp8rgV2Ws3h_5iM-I8M",
-    gdoc_worksheet: "dailyroutines",
     timeline_story: {},
     formatNumber: d3.format(".0f"),
     range_text: "",
@@ -114,7 +112,6 @@ function reset() {
     color_swap_target: 0,
     use_custom_palette: false,
     serverless: false,
-    socket: u,
     playback_mode: u
   }); // Defined in main.js
 }

@@ -22,8 +22,6 @@ module.exports = {
     },
     externals: {
         d3: "d3",
-        moment: "moment",
-        "intro.js": "introJs",
-        "socket.io": "io"
+        moment: "moment"
     }
 };
