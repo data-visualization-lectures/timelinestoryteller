@@ -1,4 +1,4 @@
-OSS Dependencies, redistributed in deployment (public/js/vendor):
+OSS Dependencies, redistributed in deployment (docs/js/vendor):
 
 >> d3 v3.5.17 http://d3js.org/ BSD license
 

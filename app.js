@@ -15,11 +15,11 @@
     var config = require("./webpack.config");
     config.devtool = "eval";
     config.output.filename = "js/timelinestoryteller.js";
-    config.output.path = path.join(__dirname, 'public'),
+    config.output.path = path.join(__dirname, 'docs'),
     app.use(webpackMiddleware(webpack(config)));
   }
 
-  app.use(express.static(path.join(__dirname, 'public')));
+  app.use(express.static(path.join(__dirname, 'docs')));
 
   server.listen(serverPort, function() {
     console.log('Server started on port %s', serverPort);
