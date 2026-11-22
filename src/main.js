@@ -9,7 +9,8 @@ require("../assets/css/style.css");
 var d3 = require("d3");
 var moment = require("moment");
 var introJsLib = require("intro.js");
-var introJs = typeof introJsLib === "function" ? introJsLib : introJsLib.introJs;
+// intro.js is optional: when it is not loaded, the tour button and hints are not shown
+var introJs = typeof introJsLib === "function" ? introJsLib : (introJsLib && introJsLib.introJs);
 
 var configurableTL = require("./configurableTL");
 var addCaption = require("./addCaption");
@@ -322,38 +323,6 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       window.open(URL.createObjectURL(blob), "_temp", "menubar=no,toolbar=no,status=no");
     }
 
-    var reader = new window.FileReader(),
-      base64data = "";
-    reader.readAsDataURL(blob);
-    reader.onloadend = function () {
-      base64data = reader.result;
-      var research_copy = {};
-      if (!globals.opt_out) {
-        research_copy = {
-          "timeline_json_data": globals.timeline_json_data,
-          "name": "timeline_story.gif",
-          "usage_log": globals.usage_log,
-          "image": base64data,
-          "email_address": globals.email_address,
-          "timestamp": new Date().valueOf()
-        };
-      } else {
-        research_copy = {
-          "usage_log": globals.usage_log,
-          "email_address": globals.email_address,
-          "timestamp": new Date().valueOf()
-        };
-      }
-      var research_copy_json = JSON.stringify(research_copy);
-      // var research_blob = new Blob([research_copy_json], { type: "application/json" });
-
-      log(research_copy);
-
-      if (globals.socket) {
-        globals.socket.emit("export_event", research_copy_json); // raise an event on the server
-      }
-    };
-
     gif.running = false;
   });
 
@@ -403,205 +372,124 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
   export_div.append("div")
     .attr("id", "export_boilerplate")
-    .style("height", "120px")
-    .html("<span class='boilerplate_title'>Export options</span><hr>" +
-    "<span class='disclaimer_text'>By providing an email address you agree that <a title='Microsoft' href='http://microsoft.com'>Microsoft</a> may contact you to request feedback and for user research.<br>" +
-    "You may withdraw this consent at any time.</span><hr>");
+    .html("<span class='boilerplate_title'>Export options</span><hr>");
 
   var export_formats = export_div.append("div")
     .attr("id", "export_formats");
 
   export_formats.append("input")
     .attr({
-      type: "text",
-      placeholder: "email address",
-      class: "text_input",
-      id: "email_input"
-    })
-    .on("input", function () {
-      var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-      if (re.test(selectWithParent("#email_input").property("value"))) {
-        globals.email_address = selectWithParent("#email_input").property("value");
-        export_formats.selectAll(".img_btn_disabled")
-          .attr("class", "img_btn_enabled");
-
-        logEvent("valid email address: " + globals.email_address, "export");
-      } else {
-        export_formats.selectAll(".img_btn_enabled")
-          .attr("class", "img_btn_disabled");
-      }
-    });
-
-  export_formats.append("input")
-    .attr({
       type: "image",
       name: "Export PNG",
-      class: "img_btn_disabled export--image",
+      class: "img_btn_enabled export--image",
       src: imageUrls("png.png"),
       height: 30,
       width: 30,
       title: "Export PNG"
     })
     .on("click", function () {
-      if (globals.opt_out || globals.email_address !== "") {
-        selectAllWithParent("foreignObject").remove();
+      selectAllWithParent("foreignObject").remove();
 
-        logEvent("exporting main_svg as PNG", "export");
+      logEvent("exporting main_svg as PNG", "export");
 
-        svgImageUtils.saveSvgAsPng(document.querySelector(".timeline_storyteller #main_svg"), "timeline_image.png", { backgroundColor: "white" });
-      }
+      svgImageUtils.saveSvgAsPng(document.querySelector(".timeline_storyteller #main_svg"), "timeline_image.png", { backgroundColor: "white" });
     });
 
   export_formats.append("input")
     .attr({
       type: "image",
       name: "Export SVG",
-      class: "img_btn_disabled export--image",
+      class: "img_btn_enabled export--image",
       src: imageUrls("svg.png"),
       height: 30,
       width: 30,
       title: "Export SVG"
     })
     .on("click", function () {
-      if (globals.opt_out || globals.email_address !== "") {
-        selectAllWithParent("foreignObject").remove();
+      selectAllWithParent("foreignObject").remove();
 
-        logEvent("exporting main_svg as SVG", "export");
+      logEvent("exporting main_svg as SVG", "export");
 
-        svgImageUtils.saveSvg(document.querySelector(".timeline_storyteller #main_svg"), "timeline_image.svg", { backgroundColor: "white" });
-      }
+      svgImageUtils.saveSvg(document.querySelector(".timeline_storyteller #main_svg"), "timeline_image.svg", { backgroundColor: "white" });
     });
 
   export_formats.append("input")
     .attr({
       type: "image",
       name: "Export animated GIF",
-      class: "img_btn_disabled export--image",
+      class: "img_btn_enabled export--image",
       src: imageUrls("gif.png"),
       height: 30,
       width: 30,
       title: "Export animated GIF"
     })
     .on("click", function () {
-      if (globals.opt_out || globals.email_address !== "") {
-        selectAllWithParent("foreignObject").remove();
+      selectAllWithParent("foreignObject").remove();
 
-        gif.frames = [];
-        var gif_scenes = globals.scenes;
-        if (gif_scenes.length > 0) {
-          logEvent("exporting story as animated GIF", "export");
+      gif.frames = [];
+      var gif_scenes = globals.scenes;
+      if (gif_scenes.length > 0) {
+        logEvent("exporting story as animated GIF", "export");
 
-          gif_scenes.sort(function (a, b) {
-            return parseFloat(a.s_order) - parseFloat(b.s_order);
-          });
-          gif_scenes.forEach(function (d, i) {
-            var img = document.createElement("img");
-            img.style.display = "none";
-            img.id = "gif_frame" + i;
-            img.src = d.s_src;
-            document.querySelector(".timeline_storyteller").appendChild(img);
-            selectWithParent("#gif_frame" + i).attr("class", "gif_frame");
-            setTimeout(function () {
-              gif.addFrame(document.getElementById("gif_frame" + i), { delay: 1500 });
-            }, 150);
-          });
-        } else {
-          logEvent("exporting main_svg as GIF", "export");
-
-          svgImageUtils.svgAsPNG(document.querySelector(".timeline_storyteller #main_svg"), -1, { backgroundColor: "white" });
-
+        gif_scenes.sort(function (a, b) {
+          return parseFloat(a.s_order) - parseFloat(b.s_order);
+        });
+        gif_scenes.forEach(function (d, i) {
+          var img = document.createElement("img");
+          img.style.display = "none";
+          img.id = "gif_frame" + i;
+          img.src = d.s_src;
+          document.querySelector(".timeline_storyteller").appendChild(img);
+          selectWithParent("#gif_frame" + i).attr("class", "gif_frame");
           setTimeout(function () {
-            gif.addFrame(document.getElementById("gif_frame-1"));
+            gif.addFrame(document.getElementById("gif_frame" + i), { delay: 1500 });
           }, 150);
-        }
+        });
+      } else {
+        logEvent("exporting main_svg as GIF", "export");
+
+        svgImageUtils.svgAsPNG(document.querySelector(".timeline_storyteller #main_svg"), -1, { backgroundColor: "white" });
+
         setTimeout(function () {
-          gif.render();
-          selectAllWithParent(".gif_frame").remove();
-        }, 150 + 150 * gif.frames.length);
-        gif_scenes = [];
+          gif.addFrame(document.getElementById("gif_frame-1"));
+        }, 150);
       }
+      setTimeout(function () {
+        gif.render();
+        selectAllWithParent(".gif_frame").remove();
+      }, 150 + 150 * gif.frames.length);
+      gif_scenes = [];
     });
 
   export_formats.append("input")
     .attr({
       type: "image",
       name: "Export story",
-      class: "img_btn_disabled",
+      class: "img_btn_enabled",
       src: imageUrls("story.png"),
       height: 30,
       width: 30,
       title: "Export story"
     })
     .on("click", function () {
-      if (globals.opt_out || globals.email_address !== "") {
-        selectAllWithParent("foreignObject").remove();
+      selectAllWithParent("foreignObject").remove();
 
-        logEvent("exporting story as .cdc", "export");
+      logEvent("exporting story as .cdc", "export");
 
-        globals.timeline_story = instance.saveState();
+      globals.timeline_story = instance.saveState();
 
-        var story_json = JSON.stringify(globals.timeline_story);
-        var blob = new Blob([story_json], { type: "application/json" });
-        var url = URL.createObjectURL(blob);
+      var story_json = JSON.stringify(globals.timeline_story);
+      var blob = new Blob([story_json], { type: "application/json" });
+      var url = URL.createObjectURL(blob);
 
-        var a = document.createElement("a");
-        a.download = "timeline_story.cdc";
-        a.href = url;
-        a.textContent = "Download timeline_story.cdc";
-        document.querySelector(".timeline_storyteller").appendChild(a);
-        a.click();
-        document.querySelector(".timeline_storyteller").removeChild(a);
-
-        if (globals.opt_out) {
-          globals.timeline_story = {
-            "usage_log": globals.usage_log,
-            "author": globals.email_address,
-            "timestamp": new Date().valueOf()
-          };
-        }
-
-        story_json = JSON.stringify(globals.timeline_story);
-
-        log(story_json);
-
-        if (globals.socket) {
-          globals.socket.emit("export_event", story_json); // raise an event on the server
-        }
-      }
+      var a = document.createElement("a");
+      a.download = "timeline_story.cdc";
+      a.href = url;
+      a.textContent = "Download timeline_story.cdc";
+      document.querySelector(".timeline_storyteller").appendChild(a);
+      a.click();
+      document.querySelector(".timeline_storyteller").removeChild(a);
     });
-
-  var out_out_cb = export_formats.append("div")
-    .attr("id", "opt_out_div");
-
-  out_out_cb.append("input")
-    .attr({
-      type: "checkbox",
-      name: "opt_out_cb",
-      value: globals.opt_out
-    })
-    .property("checked", false)
-    .on("change", function () {
-      if (!globals.opt_out) {
-        logEvent("opting out of sharing content", "export");
-
-        globals.opt_out = true;
-        export_formats.selectAll(".img_btn_disabled")
-          .attr("class", "img_btn_enabled");
-      } else {
-        globals.opt_out = false;
-
-        logEvent("opting into sharing content", "export");
-
-        export_formats.selectAll(".img_btn_enabled")
-          .attr("class", "img_btn_disabled");
-      }
-    });
-
-  out_out_cb.append("label")
-    .attr("class", "menu_label")
-    .attr("for", "opt_out_cb")
-    .style("vertical-align", "text-top")
-    .text(" Don't share content with Microsoft");
 
 
   /**
@@ -643,20 +531,16 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
   --------------------------------------------------------------------------------------
   **/
 
-  selectWithParent().append("div")
-    .attr("id", "logo_div")
-    .html("<a href='https://microsoft.com'><img class='ms-logo' src='" + imageUrls("ms-logo.svg") + "'></a>");
-
   var footer = selectWithParent().append("div")
     .attr("id", "footer");
 
   footer.append("div")
     .attr("id", "footer_left")
-    .html("<span class='footer_text_left'><a title=About & getting started' href='../../' target='_blank'>About & getting started</a></span> <span class='footer_text_left'><a title='Contact the project team' href='mailto:timelinestoryteller@microsoft.com' target='_top'>Contact the project team</a>");
+    .html("<span class='footer_text_left'><a title='About & getting started' href='../../' target='_blank'>About & getting started</a></span>");
 
   footer.append("div")
     .attr("id", "footer_right")
-    .html("<span class='footer_text'><a title='Privacy & cookies' href='https://go.microsoft.com/fwlink/?LinkId=521839' target='_blank'>Privacy & cookies</a></span><span class='footer_text'><a title='Terms of use' href='https://go.microsoft.com/fwlink/?LinkID=760869' target='_blank'>Terms of use</a></span><span class='footer_text'><a title='Trademarks' href='http://go.microsoft.com/fwlink/?LinkId=506942' target='_blank'>Trademarks</a></span><span class='footer_text'><a title='About our ads' href='http://choice.microsoft.com/' target='_blank'>About our ads</a></span><span class='footer_text'>© 2017 Microsoft</span>");
+    .html("<span class='footer_text'>Based on <a title='Timeline Storyteller on GitHub' href='https://github.com/microsoft/timelinestoryteller' target='_blank'>Timeline Storyteller</a>, © Microsoft Corporation, MIT License</span>");
 
   var boilerplate = instance.importPanel.element.append("div")
     .attr("id", "boilerplate")
@@ -778,9 +662,8 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
   instance.importPanel.element.append("div")
     .attr("id", "disclaimer")
-    .html("<span class='disclaimer_title'style='clear:both'>An expressive visual storytelling environment for presenting timelines.</span><span class='disclaimer_text'><br><strong>A note about privacy</strong>: </span>" +
-    "<span class='disclaimer_text'>Your data remains on your machine and is not shared with <a title='Microsoft' href='http://microsoft.com'>Microsoft</a> unless you export the content you create and provide your email address. If you share your content with <a title='Microsoft' href='http://microsoft.com'>Microsoft</a>, we will use it for research and to improve our products and services. We may also include it in a future research publication. " +
-    "By using this service, you agree to <a title='Microsoft' href='http://microsoft.com'>Microsoft</a>'s <a title='Privacy' href='https://go.microsoft.com/fwlink/?LinkId=521839'>Privacy Statement</a> and <a title='Terms of Use' href='https://go.microsoft.com/fwlink/?LinkID=760869'>Terms of Use</a>.</span>");
+    .html("<span class='disclaimer_title' style='clear:both'>An expressive visual storytelling environment for presenting timelines.</span><span class='disclaimer_text'><br><strong>A note about privacy</strong>: </span>" +
+    "<span class='disclaimer_text'>Your data is processed in your browser and is not uploaded to a server.</span>");
 
   var timeline_metadata = instance.importPanel.element.append("div")
     .attr("id", "timeline_metadata")
@@ -4058,9 +3941,13 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     .attr("id", "intro_div");
 
   // Give it some time to load, then initialize the hints, otherwise the positioning is wierd
-  setTimeout(function () {
-    introJs().addHints();
-  }, 100);
+  if (introJs) {
+    setTimeout(function () {
+      introJs().addHints();
+    }, 100);
+  } else {
+    selectWithParent("#hint_div").attr("data-hint", null);
+  }
 
   intro_div.append("input")
     .attr({
@@ -4073,6 +3960,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       width: 30,
       title: "Start tour"
     })
+    .style("display", introJs ? null : "none")
     .on("click", function () {
       if (instance.importPanel.visible) {
         importIntro();
@@ -4086,10 +3974,6 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
   intro_div.append("div")
     .attr("class", "intro_btn")
     .html("<a title='About & getting started' href='../../' target='_blank'><img src='" + imageUrls("q.png") + "' width=30 height=30 class='img_btn_enabled'></img></a>");
-
-  intro_div.append("div")
-    .attr("class", "intro_btn")
-    .html("<a title='Contact the project team' href='mailto:timelinestoryteller@microsoft.com' target='_top'><img src='" + imageUrls("mail.png") + "' width=30 height=30 class='img_btn_enabled'></img></a>");
 
   /**
    * Sets the color for the given category
@@ -4191,11 +4075,6 @@ TimelineStoryteller.DEFAULT_OPTIONS = Object.freeze({
    * If true, the about bar is shown
    */
   showAbout: true,
-
-  /**
-   * If true, the Microsoft logo is shown
-   */
-  showLogo: true,
 
   /**
    * If true, the chart view options are shown
@@ -5326,7 +5205,6 @@ TimelineStoryteller.prototype.setUIScale = function (scale) {
   scale = typeof scale === "undefined" ? 1 : scale;
   this.scale = scale;
   selectWithParent("#footer").style("transform", "scale(" + scale + ")");
-  selectWithParent("#logo_div").style("transform", "scale(" + scale + ")");
   selectWithParent("#option_div").style("transform", "scale(" + scale + ")");
   this.importPanel.element.style("transform", "scale(" + scale + ")");
   selectWithParent("#navigation_div").style("transform", "scale(" + scale + ")");
@@ -5342,7 +5220,6 @@ TimelineStoryteller.prototype.setUIScale = function (scale) {
 TimelineStoryteller.prototype.applyOptions = function (updateMenu) {
   var options = this.options;
   selectWithParent("#footer").style("display", options.showAbout === false ? "none" : null);
-  selectWithParent("#logo_div").style("display", options.showLogo === false ? "none" : null);
   selectWithParent("#option_div").style("display", options.showViewOptions === false ? "none" : null);
   selectWithParent().classed("show-about-bar", options.showAbout);
   this.importPanel.element.style("display", this.onIntro && options.showIntro === false ? "none" : null);
@@ -5527,7 +5404,7 @@ TimelineStoryteller.prototype.saveState = function () {
     "caption_list": globals.caption_list,
     "annotation_list": globals.annotation_list,
     "image_list": globals.image_list,
-    "author": globals.email_address,
+    "author": "",
     "timestamp": new Date().valueOf()
   };
 };
@@ -5592,7 +5469,6 @@ TimelineStoryteller.prototype.setPlaybackMode = function (isPlayback, addLog) {
   toggleElement(selectWithParent("#hint_div"), "top", 20);
   toggleElement(selectWithParent("#intro_div"), "top", 10);
   toggleElement(selectWithParent("#footer"), "bottom", 0);
-  toggleElement(selectWithParent("#logo_div"), "top", 10);
 
   // Toggle a playback-mode class
   selectWithParent().classed("playback_mode", isPlayback);

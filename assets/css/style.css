@@ -503,10 +503,6 @@ select > option:hover {
   display: inline-flex;
 }
 
-#opt_out_div {
-  margin-top: 10px;
-}
-
 #import_div {
   text-align: center;
   position: absolute;
@@ -646,25 +642,6 @@ input[type="color"]::-moz-color-swatch {
   color: #626262;
   bottom: 0px;
   text-decoration: none;
-}
-
-#logo_div {
-  left: 10px;
-  top: 10px;
-  position: absolute;
-  width: 34px;
-  height: 34px;
-  padding: 5px;
-  transition: all 0.5s ease;
-  -webkit-transition: all 0.5s ease;
-  user-select: none;
-}
-
-.ms-logo {
-  height: 23px;
-  max-height: 23px;
-  display: block;
-  vertical-align: baseline;
 }
 
 #data_picker {

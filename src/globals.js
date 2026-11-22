@@ -108,8 +108,6 @@ function reset() {
     gdoc_key: "1x8N7Z9RUrA9Jmc38Rvw1VkHslp8rgV2Ws3h_5iM-I8M",
     gdoc_worksheet: "dailyroutines",
     timeline_story: {},
-    opt_out: false,
-    email_address: "",
     formatNumber: d3.format(".0f"),
     range_text: "",
     color_palette: [],

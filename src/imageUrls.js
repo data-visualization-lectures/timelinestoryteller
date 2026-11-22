@@ -57,7 +57,6 @@ var imageUrlMapping = {
   "l-uni.png": formUrl("l-uni.png"),
   "mail.png": formUrl("mail.png"),
   "min.png": formUrl("min.png"),
-  "ms-logo.svg": formUrl("ms-logo.svg"),
   "next.png": formUrl("next.png"),
   "open.png": formUrl("open.png"),
   "pin.png": formUrl("pin.png"),
