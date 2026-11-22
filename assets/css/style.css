@@ -336,8 +336,10 @@ select > option:hover {
 #option_div {
   top: 10px;
   left: 50%;
-  width:712px;
-  margin-left: -356px;
+  width: 740px;
+  margin-left: -370px;
+  display: flex;
+  flex-wrap: nowrap;
   position: absolute;
   padding-bottom: 5px;
   padding-left: 0px;

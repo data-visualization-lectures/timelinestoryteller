@@ -1456,7 +1456,7 @@ function eventMouseOverListener(d, tl_representation, unit_width, configurableTL
     }
 
     const annoText = d.content_text || d.facet || d.category || d.start_date || d.end_date || "";
-    const { element } = annotateEvent(configurableTL, annoText, item_x_pos, item_y_pos, (x_pos - item_x_pos), (y_pos - item_y_pos), 50, 50, d3.min([annoText.length * 10, 100]), d.event_id, { id: -1 });
+    const { element } = annotateEvent(configurableTL, annoText, item_x_pos, item_y_pos, (x_pos - item_x_pos), (y_pos - item_y_pos), 50, 50, utils.labelWidth(annoText), d.event_id, { id: -1 });
     element.classed("temporary_annotation", true);
 
     element.select("rect.annotation_frame").style("stroke", "#f00");
@@ -1517,7 +1517,7 @@ function eventClickListener(tl_representation, unit_width, configurableTL, d) {
         y_offset: (y_pos - item_y_pos),
         x_anno_offset: 50,
         y_anno_offset: 50,
-        label_width: d3.min([annoText.length * 10, 100]),
+        label_width: utils.labelWidth(annoText),
         z_index: getNextZIndex()
       };
 
@@ -1527,7 +1527,7 @@ function eventClickListener(tl_representation, unit_width, configurableTL, d) {
 
       selectAllWithParent(".temporary_annotation").remove();
 
-      const { element } = annotateEvent(configurableTL, annoText, item_x_pos, item_y_pos, (x_pos - item_x_pos), (y_pos - item_y_pos), 50, 50, d3.min([annoText.length * 10, 100]), d.event_id, annotation);
+      const { element } = annotateEvent(configurableTL, annoText, item_x_pos, item_y_pos, (x_pos - item_x_pos), (y_pos - item_y_pos), 50, 50, utils.labelWidth(annoText), d.event_id, annotation);
 
       element.transition("event_annotation_show").duration(50).style("opacity", 1);
 
@@ -2106,7 +2106,7 @@ function getFacetTitleText(tl_layout, tl_representation, height, d) {
   }
 
   if (tl_representation === "Linear") {
-    return d.substring(0, Math.floor(height / globals.num_facets / 10));
+    return utils.fitText(d, height / globals.num_facets, 10, 14);
   }
 
   return d;

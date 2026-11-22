@@ -853,13 +853,13 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
         caption_text: caption,
         x_rel_pos: 0.5,
         y_rel_pos: 0.25,
-        caption_width: d3.min([caption.length * 10, 200]),
+        caption_width: utils.captionWidth(caption),
         z_index: getNextZIndex()
       };
 
       globals.caption_list.push(caption_list_item);
 
-      addCaption(caption, d3.min([caption.length * 10, 200]), 0.5, 0.25, caption_list_item);
+      addCaption(caption, utils.captionWidth(caption), 0.5, 0.25, caption_list_item);
       selectWithParent("#add_caption_text_input").property("value", "");
     });
 
@@ -4439,7 +4439,7 @@ TimelineStoryteller.prototype._recordScene = function () {
     scene_images.push(scene_image);
   });
 
-  this._main_svg.selectAll(".event_annotation").each(function () {
+  this._main_svg.selectAll(".event_annotation:not(.temporary_annotation)").each(function () {
     var scene_annotation = {
       annotation_id: Math.abs(parseInt(this.getAttribute("data-id"), 10))
     };

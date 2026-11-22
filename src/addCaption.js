@@ -19,7 +19,7 @@ module.exports = function (caption, caption_width, x_rel_pos, y_rel_pos, caption
   var x_pos = x_rel_pos * globals.width,
     y_pos = y_rel_pos * globals.height;
 
-  var min_caption_width = d3.min([caption.length * 10, 200]);
+  var min_caption_width = utils.captionWidth(caption);
 
   var timeline_caption = selectWithParent("#main_svg").append("g")
     .attr("id", "caption" + captionObj.id)
@@ -218,31 +218,31 @@ module.exports = function (caption, caption_width, x_rel_pos, y_rel_pos, caption
     .call(wrap, caption_width - 7.5);
 
   function wrap(text, width) {
-    var words = text.text().split(/\s+/).reverse(),
-      word,
-      line = [],
+    var pieces = utils.splitForWrapping(text.text()),
+      line = "",
       line_number = 0,
       letter_width = 8,
-      max_letters = Math.floor(width / letter_width) - 2,
+      max_letters = Math.max(3, Math.floor(width / letter_width) - 2),
       dy = parseFloat(text.attr("dy")),
       tspan = text.text(null).append("tspan")
         .attr("dy", dy + "em")
         .attr("x", x_pos + 7.5)
         .attr("y", y_pos + globals.unit_width);
-    while (word = words.pop()) { // eslint-disable-line no-cond-assign
-      word = ellipsize(word, max_letters);
-      line.push(word);
-      tspan.text(line.join(" "));
-      if (tspan.node().getComputedTextLength() > width) {
-        line.pop();
-        tspan.text(line.join(" "));
-        line = [word];
+    pieces.forEach(function (piece) {
+      var word = utils.isWideChar(piece.text.charAt(0)) ? piece.text : ellipsize(piece.text, max_letters);
+      var candidate = line === "" ? word : line + (piece.space ? " " : "") + word;
+      tspan.text(candidate);
+      if (line !== "" && tspan.node().getComputedTextLength() > width) {
+        tspan.text(line);
+        line = word;
         tspan = text.append("tspan")
           .attr("x", x_pos + 7.5)
           .attr("y", y_pos + globals.unit_width)
           .attr("dy", ++line_number + dy + "em").text(word);
+      } else {
+        line = candidate;
       }
-    }
+    });
     caption_frame.attr("height", ((line_number + 2.5) * 18) + "px");
     if (caption_drag_area !== undefined) {
       caption_drag_area.attr("height", ((line_number + 2.5) * 18) + "px");
