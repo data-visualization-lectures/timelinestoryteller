@@ -527,7 +527,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
   var boilerplate = instance.importPanel.element.append("div")
     .attr("id", "boilerplate")
-    .html("<span class='boilerplate_title'>Timeline Storyteller (Alpha)</span>");
+    .html("<span class='boilerplate_title'>Timeline Storyteller</span>");
 
   boilerplate.append("input")
     .attr({

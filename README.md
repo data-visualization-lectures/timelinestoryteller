@@ -4,7 +4,7 @@ Timeline Storyteller is an expressive visual storytelling environment for presen
 
 Use it to present different aspects of timeline data using a palette of timeline representations, scales, and layouts, as well as controls for filtering, highlighting, and annotation.
 
-![Timeline Design dimensions](public/app/img/dims.png "Timeline Design dimensions")
+![Timeline Design dimensions](public/img/dims.png "Timeline Design dimensions")
 
 ## About this fork
 
@@ -14,10 +14,22 @@ Changes from the original:
 
 - The app runs as static files and does not send data to a server. The research logging over socket.io was removed.
 - The email / consent step before exporting was removed.
-- Microsoft branding, policy links, and contact links were removed from the app. The original landing page was replaced by a usage guide in Japanese (`public/app/help.html`).
-- d3 and moment are served from `public/app/js/vendor` instead of a CDN.
+- Microsoft branding, policy links, and contact links were removed from the app. The original landing page was replaced by a usage guide in Japanese (`public/help.html`).
+- d3 and moment are served from `public/js/vendor` instead of a CDN.
 - The guided tour (intro.js, AGPL-3.0 / commercial licence) was removed. Its explanations were moved into the usage guide.
 - Loading from Google Spreadsheets was removed, because the Google API it relied on no longer exists.
+
+## dataviz.jp integration
+
+| Item | Value |
+|---|---|
+| `appName` | `timeline-storyteller` |
+| Public host | `https://timeline-storyteller.dataviz.jp/` (the app is served from the root of the host) |
+| Shared sign-in | `supabase.v1.js` and `dataviz-auth-client.v1.js` from `id.data-viz-lectures.com`, loaded in `public/index.html` |
+| Saved projects | Not supported yet |
+| Share pages | Not supported |
+
+Visitors who are not signed in are redirected to the sign-in page after a few seconds. Add `?auth_debug` to the URL to stay on the page, both locally and on a preview host.
 
 To learn more about the research that informed the original project, see [timelinesrevisited.github.io](https://timelinesrevisited.github.io/).
 
@@ -27,11 +39,11 @@ To learn more about the research that informed the original project, see [timeli
 
 2. Install node modules: `npm ci`
 
-3. Start the development server: `npm start`, then open [localhost:8000/app/](http://localhost:8000/app/). In development the server builds the app from `src/` on the fly.
+3. Start the development server: `npm start`, then open [localhost:8000/?auth_debug](http://localhost:8000/?auth_debug). In development the server builds the app from `src/` on the fly.
 
-4. Build the files that are served in production: `npm run package`. This writes `public/app/js/timelinestoryteller.js` and copies d3 and moment into `public/app/js/vendor`. Commit the result.
+4. Build the files that are served in production: `npm run package`. This writes `public/js/timelinestoryteller.js` and copies d3 and moment into `public/js/vendor`. Commit the result.
 
-5. To deploy, serve the `public/` directory as static files. The app is `public/app/index.html` and the usage guide is `public/app/help.html`.
+5. To deploy, serve the `public/` directory as static files. The app is `public/index.html` and the usage guide is `public/help.html`. The usage guide does not load the shared sign-in.
 
 `npm test` runs lint, the unit tests, and the build. The unit tests are configured for PhantomJS, which no longer runs on current systems, so that step needs a different karma browser.
 
@@ -71,7 +83,7 @@ example event row:
 
 ## Usage
 
-A usage guide in Japanese is included at `public/app/help.html`.
+A usage guide in Japanese is included at `public/help.html`.
 
 1. Load timeline data (demo dataset, JSON, CSV) or saved timeline story (a JSON Blob with extension .cdc; see step 6)
 

@@ -14,7 +14,7 @@
     var webpackMiddleware = require("webpack-dev-middleware");
     var config = require("./webpack.config");
     config.devtool = "eval";
-    config.output.filename = "app/js/timelinestoryteller.js";
+    config.output.filename = "js/timelinestoryteller.js";
     config.output.path = path.join(__dirname, 'public'),
     app.use(webpackMiddleware(webpack(config)));
   }

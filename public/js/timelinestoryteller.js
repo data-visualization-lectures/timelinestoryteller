@@ -2177,7 +2177,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
   footer.append("div").attr("id", "footer_right").html("<span class='footer_text'>Based on <a title='Timeline Storyteller on GitHub' href='https://github.com/microsoft/timelinestoryteller' target='_blank'>Timeline Storyteller</a>, © Microsoft Corporation, MIT License</span>");
 
-  var boilerplate = instance.importPanel.element.append("div").attr("id", "boilerplate").html("<span class='boilerplate_title'>Timeline Storyteller (Alpha)</span>");
+  var boilerplate = instance.importPanel.element.append("div").attr("id", "boilerplate").html("<span class='boilerplate_title'>Timeline Storyteller</span>");
 
   boilerplate.append("input").attr({
     type: "image",
