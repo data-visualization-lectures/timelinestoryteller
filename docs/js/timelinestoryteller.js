@@ -89,7 +89,7 @@ module.exports = __WEBPACK_EXTERNAL_MODULE_0__;
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var d3 = __webpack_require__(0);
-var globals = __webpack_require__(2);
+var globals = __webpack_require__(3);
 var log = __webpack_require__(5)("TimelineStoryteller:utils");
 var _nextId = 0;
 
@@ -640,11 +640,222 @@ module.exports = utils;
 /* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
+/**
+ * UI text in the viewer's language.
+ *
+ * The language follows the dataviz.jp shared resolver (window.DatavizLocale) when it is loaded:
+ * ?lang=, an /en path, the "locale" cookie, the html lang attribute, then the browser language.
+ * English is the source language; other languages are looked up by the English text.
+ */
+var d3 = __webpack_require__(0);
+
+var dictionaries = {
+  ja: __webpack_require__(27)
+};
+
+var currentLocale;
+
+function normalize(value) {
+  var lang = String(value || "").trim().toLowerCase();
+  if (lang === "ja" || lang.indexOf("ja-") === 0) {
+    return "ja";
+  }
+  if (lang === "en" || lang.indexOf("en-") === 0) {
+    return "en";
+  }
+  return null;
+}
+
+/**
+ * Resolves the language in the same order as the shared resolver, for pages that do not load it
+ * @returns {string} "ja" or "en"
+ */
+function fallbackResolve() {
+  var found = null;
+  try {
+    var query = window.location.search.match(/[?&]lang=([^&#]*)/);
+    found = normalize(query && decodeURIComponent(query[1]));
+    if (!found && /^\/en(\/|$)/.test(window.location.pathname)) {
+      found = "en";
+    }
+    if (!found) {
+      var cookie = document.cookie.match(/(?:^|;\s*)locale=([^;]*)/);
+      found = normalize(cookie && decodeURIComponent(cookie[1]));
+    }
+    if (!found) {
+      found = normalize(document.documentElement.lang);
+    }
+    if (!found) {
+      found = normalize(window.navigator.language || window.navigator.userLanguage);
+    }
+  } catch (e) {
+    found = null;
+  }
+  return found || "ja";
+}
+
+/**
+ * The language of the UI
+ * @returns {string} "ja" or "en"
+ */
+function locale() {
+  if (!currentLocale) {
+    var resolved = null;
+    if (typeof window !== "undefined") {
+      if (window.DatavizLocale && typeof window.DatavizLocale.resolve === "function") {
+        resolved = window.DatavizLocale.resolve();
+      } else if (typeof window.dvzResolveLocale === "function") {
+        resolved = window.dvzResolveLocale();
+      } else {
+        resolved = fallbackResolve();
+      }
+    }
+    currentLocale = resolved === "en" ? "en" : "ja";
+  }
+  return currentLocale;
+}
+
+/**
+ * Translates UI text
+ * @param {string} text The English text
+ * @param {Object} [values] Values for {placeholders} in the text
+ * @returns {string} The text in the UI language
+ */
+function t(text, values) {
+  var dictionary = dictionaries[locale()];
+  var result = dictionary && Object.prototype.hasOwnProperty.call(dictionary, text) ? dictionary[text] : text;
+  if (values) {
+    Object.keys(values).forEach(function (key) {
+      result = result.split("{" + key + "}").join(values[key]);
+    });
+  }
+  return result;
+}
+
+t.locale = locale;
+
+// moment format strings used for axis labels, and their Japanese counterparts
+var JA_DATE_FORMATS = {
+  "hA": "H時",
+  "MMM D hA": "M月D日 H時",
+  "MMM D": "M月D日",
+  "MMM Do": "M月D日",
+  "MMM 'YY": "YYYY年M月",
+  "MMM": "M月",
+  "Do": "D日"
+};
+var JA_DAYS = ["日", "月", "火", "水", "木", "金", "土"];
+var EN_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/**
+ * Formats a date for a label
+ * @param {object} m A moment
+ * @param {string} format The moment format string for English
+ * @returns {string} The formatted date in the UI language
+ */
+t.date = function (m, format) {
+  if (locale() !== "ja") {
+    return m.format(format);
+  }
+  if (format === "ddd") {
+    return JA_DAYS[m.day()];
+  }
+  if (format === "dddd, MMMM Do, YYYY") {
+    return m.format("YYYY年M月D日") + "(" + JA_DAYS[m.day()] + ")";
+  }
+  return m.format(JA_DATE_FORMATS[format] || format);
+};
+
+/**
+ * Labels a year before the common era
+ * @param {number} year The number of years BC, as a positive number
+ * @returns {string} The label
+ */
+t.bc = function (year) {
+  return locale() === "ja" ? "紀元前" + year + "年" : year + " BC";
+};
+
+/**
+ * Labels a year of the common era on an axis that also shows years BC
+ * @param {number} year The year
+ * @returns {string} The label
+ */
+t.ad = function (year) {
+  return locale() === "ja" ? "西暦" + year + "年" : year + " AD";
+};
+
+/**
+ * The name of a segment for display. Segments are keyed by their English names, which saved stories store.
+ * @param {string} key The segment key, e.g. "1900s", "41 / 26", "10-26 (Oct)" or "Oct 5th"
+ * @returns {string} The name in the UI language
+ */
+t.segment = function (key) {
+  if (locale() !== "ja" || typeof key !== "string") {
+    return key;
+  }
+  var match;
+  if (match = key.match(/^(-?\d+)s$/)) {
+    // eslint-disable-line no-cond-assign
+    return match[1] + "年代";
+  }
+  if (match = key.match(/^(\d{2}) \/ (\d{2})$/)) {
+    // eslint-disable-line no-cond-assign
+    return +match[1] + "週/" + match[2];
+  }
+  if (match = key.match(/^(\d{2})-(\d{2}) \(\w+\)$/)) {
+    // eslint-disable-line no-cond-assign
+    return match[2] + "年" + +match[1] + "月";
+  }
+  if ((match = key.match(/^(\w{3}) (\d+)(st|nd|rd|th)$/)) && EN_MONTHS.indexOf(match[1]) !== -1) {
+    // eslint-disable-line no-cond-assign
+    return EN_MONTHS.indexOf(match[1]) + 1 + "月" + match[2] + "日";
+  }
+  return key;
+};
+
+var timeFormats = {};
+
+/**
+ * A tick format for time axes in the UI language, or undefined to keep d3's default (English)
+ * @returns {function} A function that formats a date according to the interval it falls on
+ */
+t.timeTickFormat = function () {
+  if (locale() !== "ja") {
+    return undefined;
+  }
+  function format(specifier, date) {
+    timeFormats[specifier] = timeFormats[specifier] || d3.timeFormat(specifier);
+    return timeFormats[specifier](date);
+  }
+  return function (date) {
+    if (d3.timeSecond(date) < date) {
+      return format(".%L", date);
+    } else if (d3.timeMinute(date) < date) {
+      return format(":%S", date);
+    } else if (d3.timeHour(date) < date) {
+      return format("%H:%M", date);
+    } else if (d3.timeDay(date) < date) {
+      return format("%-H時", date);
+    } else if (d3.timeMonth(date) < date) {
+      return d3.timeWeek(date) < date ? format("%-d日", date) : format("%-m月%-d日", date);
+    } else if (d3.timeYear(date) < date) {
+      return format("%-m月", date);
+    }
+    return format("%Y", date);
+  };
+};
+
+module.exports = t;
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-var imageUrls = __webpack_require__(3);
+var imageUrls = __webpack_require__(4);
 var d3 = __webpack_require__(0);
-var tr = __webpack_require__(4);
+var tr = __webpack_require__(2);
 var u;
 var globals = {};
 
@@ -776,7 +987,7 @@ globals.isNumber = function (n) {
 module.exports = globals;
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -865,104 +1076,6 @@ var imageUrlMapping = {
 module.exports = function (imageName) {
   return imageUrlMapping[imageName];
 };
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-/**
- * UI text in the viewer's language.
- *
- * The language follows the dataviz.jp shared resolver (window.DatavizLocale) when it is loaded:
- * ?lang=, an /en path, the "locale" cookie, the html lang attribute, then the browser language.
- * English is the source language; other languages are looked up by the English text.
- */
-var dictionaries = {
-  ja: __webpack_require__(27)
-};
-
-var currentLocale;
-
-function normalize(value) {
-  var lang = String(value || "").trim().toLowerCase();
-  if (lang === "ja" || lang.indexOf("ja-") === 0) {
-    return "ja";
-  }
-  if (lang === "en" || lang.indexOf("en-") === 0) {
-    return "en";
-  }
-  return null;
-}
-
-/**
- * Resolves the language in the same order as the shared resolver, for pages that do not load it
- * @returns {string} "ja" or "en"
- */
-function fallbackResolve() {
-  var found = null;
-  try {
-    var query = window.location.search.match(/[?&]lang=([^&#]*)/);
-    found = normalize(query && decodeURIComponent(query[1]));
-    if (!found && /^\/en(\/|$)/.test(window.location.pathname)) {
-      found = "en";
-    }
-    if (!found) {
-      var cookie = document.cookie.match(/(?:^|;\s*)locale=([^;]*)/);
-      found = normalize(cookie && decodeURIComponent(cookie[1]));
-    }
-    if (!found) {
-      found = normalize(document.documentElement.lang);
-    }
-    if (!found) {
-      found = normalize(window.navigator.language || window.navigator.userLanguage);
-    }
-  } catch (e) {
-    found = null;
-  }
-  return found || "ja";
-}
-
-/**
- * The language of the UI
- * @returns {string} "ja" or "en"
- */
-function locale() {
-  if (!currentLocale) {
-    var resolved = null;
-    if (typeof window !== "undefined") {
-      if (window.DatavizLocale && typeof window.DatavizLocale.resolve === "function") {
-        resolved = window.DatavizLocale.resolve();
-      } else if (typeof window.dvzResolveLocale === "function") {
-        resolved = window.dvzResolveLocale();
-      } else {
-        resolved = fallbackResolve();
-      }
-    }
-    currentLocale = resolved === "en" ? "en" : "ja";
-  }
-  return currentLocale;
-}
-
-/**
- * Translates UI text
- * @param {string} text The English text
- * @param {Object} [values] Values for {placeholders} in the text
- * @returns {string} The text in the UI language
- */
-function t(text, values) {
-  var dictionary = dictionaries[locale()];
-  var result = dictionary && Object.prototype.hasOwnProperty.call(dictionary, text) ? dictionary[text] : text;
-  if (values) {
-    Object.keys(values).forEach(function (key) {
-      result = result.split("{" + key + "}").join(values[key]);
-    });
-  }
-  return result;
-}
-
-t.locale = locale;
-
-module.exports = t;
 
 /***/ }),
 /* 5 */
@@ -1306,10 +1419,10 @@ anotateEvent: //on-demand persistent annotationText label for an event
 
 **/
 
-var imageUrls = __webpack_require__(3);
+var imageUrls = __webpack_require__(4);
 var d3 = __webpack_require__(0);
-var globals = __webpack_require__(2);
-var tr = __webpack_require__(4);
+var globals = __webpack_require__(3);
+var tr = __webpack_require__(2);
 
 var utils = __webpack_require__(1);
 var selectWithParent = utils.selectWithParent;
@@ -1581,7 +1694,7 @@ module.exports = function (timeline_vis, annotationText, x_pos, y_pos, x_offset,
 /* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var globals = __webpack_require__(2);
+var globals = __webpack_require__(3);
 
 module.exports = {
 
@@ -2059,7 +2172,7 @@ var colorSchemes = __webpack_require__(19);
 var time = __webpack_require__(7);
 var GIF = __webpack_require__(25).GIF;
 var svgImageUtils = __webpack_require__(26);
-var imageUrls = __webpack_require__(3);
+var imageUrls = __webpack_require__(4);
 var utils = __webpack_require__(1);
 var removeOnEnd = utils.removeOnEnd;
 var selectWithParent = utils.selectWithParent;
@@ -2069,8 +2182,8 @@ var getHighestId = utils.getHighestId;
 var clone = utils.clone;
 var debounce = utils.debounce;
 var logEvent = utils.logEvent;
-var globals = __webpack_require__(2);
-var tr = __webpack_require__(4);
+var globals = __webpack_require__(3);
+var tr = __webpack_require__(2);
 var addImagePopup = __webpack_require__(21);
 var gif = new GIF({
   workers: 2,
@@ -3343,7 +3456,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     }).selectAll("option").data(all_segments.concat(globals.present_segments.domain().sort())).enter().append("option").attr("value", function (d) {
       return d;
     }).text(function (d) {
-      return d === "( All )" ? tr(d) : d;
+      return d === "( All )" ? tr(d) : tr.segment(d);
     }).property("selected", function (d) {
       return d === "( All )";
     });
@@ -6733,10 +6846,10 @@ addCaption: //on-demand captions for a timeline
 
 **/
 
-var imageUrls = __webpack_require__(3);
+var imageUrls = __webpack_require__(4);
 var d3 = __webpack_require__(0);
-var globals = __webpack_require__(2);
-var tr = __webpack_require__(4);
+var globals = __webpack_require__(3);
+var tr = __webpack_require__(2);
 
 var utils = __webpack_require__(1);
 var logEvent = utils.logEvent;
@@ -6885,10 +6998,10 @@ addImage: //on-demand image for a timeline
 
 **/
 
-var imageUrls = __webpack_require__(3);
+var imageUrls = __webpack_require__(4);
 var d3 = __webpack_require__(0);
-var globals = __webpack_require__(2);
-var tr = __webpack_require__(4);
+var globals = __webpack_require__(3);
+var tr = __webpack_require__(2);
 var utils = __webpack_require__(1);
 var logEvent = utils.logEvent;
 var selectWithParent = utils.selectWithParent;
@@ -7058,6 +7171,7 @@ var d3 = __webpack_require__(0);
 var utils = __webpack_require__(1);
 var removeOnEnd = utils.removeOnEnd;
 var moment = __webpack_require__(6);
+var tr = __webpack_require__(2);
 
 /**
 
@@ -7109,7 +7223,7 @@ d3.calendarAxis = function () {
         var year_offset = d.getUTCFullYear() - min_year;
         return d.getDay() * cell_size + year_offset * year_height;
       }).append("title").text(function (d) {
-        return moment(d).format("dddd, MMMM Do, YYYY");
+        return tr.date(moment(d), "dddd, MMMM Do, YYYY");
       });
 
       var day_cell_label = year_grid.selectAll(".day_cell_label").data(function (d) {
@@ -7142,7 +7256,7 @@ d3.calendarAxis = function () {
         var year_offset = d3.select(this.parentNode).datum() - min_year;
         return (d + 1) * cell_size + year_offset * year_height;
       }).text(function (d) {
-        return moment().day(d).format("ddd");
+        return tr.date(moment().day(d), "ddd");
       });
 
       year_grid_update.select(".segment_title").text(function (d) {
@@ -7185,7 +7299,7 @@ d3.calendarAxis = function () {
         var year_offset = d3.select(this.parentNode).datum() - min_year;
         return (d + 1) * cell_size + year_offset * year_height;
       }).attr("dy", "-0.5em").attr("dx", "-1.3em").text(function (d) {
-        return moment().day(d).format("ddd");
+        return tr.date(moment().day(d), "ddd");
       });
 
       year_grid_exit.selectAll(".weekday_label").attr("x", 0).attr("y", 0).text("");
@@ -7337,16 +7451,16 @@ configurableTL: //a configurable timeline
 var gridAxis = __webpack_require__(22);
 var calendarAxis = __webpack_require__(17);
 var radialAxis = __webpack_require__(28);
-var imageUrls = __webpack_require__(3);
+var imageUrls = __webpack_require__(4);
 var annotateEvent = __webpack_require__(8);
 var time = __webpack_require__(7);
 var d3 = __webpack_require__(0);
 var moment = __webpack_require__(6);
-var globals = __webpack_require__(2);
+var globals = __webpack_require__(3);
 var log = __webpack_require__(5)("TimelineStoryteller:configurableTL");
 
 var utils = __webpack_require__(1);
-var tr = __webpack_require__(4);
+var tr = __webpack_require__(2);
 var selectWithParent = utils.selectWithParent;
 var selectAllWithParent = utils.selectAllWithParent;
 var logEvent = utils.logEvent;
@@ -8037,9 +8151,9 @@ function configureTimelineScaleSegments(tl_layout, tl_representation, tl_scale, 
           if (globals.date_granularity === "years" && data.min_start_date.getUTCFullYear() <= 100) {
             tick_format = function tick_format(d) {
               if (d.getUTCFullYear() > 0) {
-                return +d.getUTCFullYear() + " AD";
+                return tr.ad(+d.getUTCFullYear());
               } else if (d.getUTCFullYear() < 0) {
-                return -1 * d.getUTCFullYear() + " BC";
+                return tr.bc(-1 * d.getUTCFullYear());
               } else if (d.getUTCFullYear() === 0) {
                 return 0;
               }
@@ -8382,7 +8496,7 @@ function configureSegments(timeline_container, duration, width, height, tl_layou
     if (tl_layout !== "Segmented" || tl_representation === "Calendar" || tl_representation === "Grid" || globals.segment_granularity === "epochs") {
       return "";
     }
-    return d;
+    return tr.segment(d);
   }).attr("transform", function () {
     var offset_x = 0,
         offset_y = 0,
@@ -8975,7 +9089,7 @@ function configureLinearAxis(timeline_scale, tl_layout, tl_representation, prev_
     timeline_axis.scale(timeline_scale);
     timeline_axis.ticks(10);
     timeline_axis.tickSizeInner(6).tickSizeOuter(0);
-    timeline_axis.tickFormat(undefined);
+    timeline_axis.tickFormat(timeline_scale.domain()[0] instanceof Date ? tr.timeTickFormat() : undefined);
     timeline_axis.tickValues(undefined);
 
     if (tl_layout !== "Segmented" && tl_scale === "Chronological" && globals.date_granularity === "years" && data.min_start_date.getUTCFullYear() < 0) {
@@ -9005,16 +9119,16 @@ function configureLinearAxis(timeline_scale, tl_layout, tl_representation, prev_
         var converted_tick = d;
         switch (globals.segment_granularity) {
           case "days":
-            converted_tick = moment().hour(d).format("hA");
+            converted_tick = tr.date(moment().hour(d), "hA");
             break;
           case "weeks":
-            converted_tick = moment().weekday(d).format("ddd");
+            converted_tick = tr.date(moment().weekday(d), "ddd");
             break;
           case "months":
-            converted_tick = moment().date(d).format("Do");
+            converted_tick = tr.date(moment().date(d), "Do");
             break;
           case "years":
-            converted_tick = moment().week(d + 1).format("MMM");
+            converted_tick = tr.date(moment().week(d + 1), "MMM");
             break;
           case "decades":
             converted_tick = d / 12 + tr(" years");
@@ -9037,13 +9151,13 @@ function configureLinearAxis(timeline_scale, tl_layout, tl_representation, prev_
         var converted_tick = d;
         switch (globals.segment_granularity) {
           case "days":
-            converted_tick = moment(d).format("MMM D hA");
+            converted_tick = tr.date(moment(d), "MMM D hA");
             break;
           case "weeks":
-            converted_tick = moment(d).format("MMM D");
+            converted_tick = tr.date(moment(d), "MMM D");
             break;
           case "months":
-            converted_tick = moment(d).format("MMM D");
+            converted_tick = tr.date(moment(d), "MMM D");
             break;
           case "years":
           case "decades":
@@ -10561,9 +10675,9 @@ function getNumberOfSegmentsForGranularity(granularity) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var template = __webpack_require__(29);
-var tr = __webpack_require__(4);
+var tr = __webpack_require__(2);
 var d3 = __webpack_require__(0);
-var imageUrls = __webpack_require__(3);
+var imageUrls = __webpack_require__(4);
 var utils = __webpack_require__(1);
 
 /**
@@ -10897,7 +11011,7 @@ module.exports = d3.gridAxis;
 
 var TimelineStoryteller = __webpack_require__(13);
 var utils = __webpack_require__(1);
-var imageUrls = __webpack_require__(3);
+var imageUrls = __webpack_require__(4);
 
 // Expose the utils as well
 TimelineStoryteller.utils = utils;
@@ -11189,7 +11303,7 @@ BEGIN Timeline Storyteller Modification - March 2017
 
 */
 var d3 = __webpack_require__(0);
-var globals = __webpack_require__(2);
+var globals = __webpack_require__(3);
 var log = __webpack_require__(5)("TimelineStoryteller:saveSvgAsPng");
 /*
 
@@ -11750,7 +11864,8 @@ module.exports = {
 var time = __webpack_require__(7);
 var d3 = __webpack_require__(0);
 var moment = __webpack_require__(6);
-var globals = __webpack_require__(2);
+var globals = __webpack_require__(3);
+var tr = __webpack_require__(2);
 var arcTween = __webpack_require__(1).arcTween;
 var removeOnEnd = __webpack_require__(1).removeOnEnd;
 
@@ -11915,54 +12030,54 @@ d3.radialAxis = function (unit_width) {
           if (i === num_ticks - 1) {
             radial_axis_tick_label = "";
           } else if (longer_than_a_day) {
-            radial_axis_tick_label = moment(d).format("MMM D hA");
+            radial_axis_tick_label = tr.date(moment(d), "MMM D hA");
           } else {
-            radial_axis_tick_label = moment(d).format("hA");
+            radial_axis_tick_label = tr.date(moment(d), "hA");
           }
           break;
         case "weeks":
-          radial_axis_tick_label = moment(d).format("MMM D");
+          radial_axis_tick_label = tr.date(moment(d), "MMM D");
           break;
         case "months":
-          radial_axis_tick_label = moment(d).format("MMM 'YY");
+          radial_axis_tick_label = tr.date(moment(d), "MMM 'YY");
           break;
         case "years":
           if (moment(d).year() < 0) {
-            radial_axis_tick_label = -1 * moment(d).year() + " BC";
+            radial_axis_tick_label = tr.bc(-1 * moment(d).year());
           } else {
             radial_axis_tick_label = +moment(d).year();
             if (bc_origin) {
-              radial_axis_tick_label += " AD";
+              radial_axis_tick_label = tr.ad(radial_axis_tick_label);
             }
           }
           break;
         case "decades":
           if (moment(d).year() < 0) {
-            radial_axis_tick_label = -1 * moment(d).year() + " BC";
+            radial_axis_tick_label = tr.bc(-1 * moment(d).year());
           } else {
             radial_axis_tick_label = +moment(d).year();
             if (bc_origin) {
-              radial_axis_tick_label += " AD";
+              radial_axis_tick_label = tr.ad(radial_axis_tick_label);
             }
           }
           break;
         case "centuries":
           if (moment(d).year() < 0) {
-            radial_axis_tick_label = -1 * moment(d).year() + " BC";
+            radial_axis_tick_label = tr.bc(-1 * moment(d).year());
           } else {
             radial_axis_tick_label = +moment(d).year();
             if (bc_origin) {
-              radial_axis_tick_label += " AD";
+              radial_axis_tick_label = tr.ad(radial_axis_tick_label);
             }
           }
           break;
         case "millenia":
           if (moment(d).year() < 0) {
-            radial_axis_tick_label = -1 * moment(d).year() + " BC";
+            radial_axis_tick_label = tr.bc(-1 * moment(d).year());
           } else {
             radial_axis_tick_label = +moment(d).year();
             if (bc_origin) {
-              radial_axis_tick_label += " AD";
+              radial_axis_tick_label = tr.ad(radial_axis_tick_label);
             }
           }
           break;
@@ -11975,33 +12090,33 @@ d3.radialAxis = function (unit_width) {
     } else if (radial_axis_units === "Segments") {
       switch (globals.segment_granularity) {
         case "days":
-          radial_axis_tick_label = moment().hour(d).format("hA");
+          radial_axis_tick_label = tr.date(moment().hour(d), "hA");
           break;
         case "weeks":
-          radial_axis_tick_label = moment().weekday(d).format("ddd");
+          radial_axis_tick_label = tr.date(moment().weekday(d), "ddd");
           break;
         case "months":
           if ((d - 1) % 7 !== 0) {
             radial_axis_tick_label = "";
           } else {
-            radial_axis_tick_label = moment().date(d).format("Do");
+            radial_axis_tick_label = tr.date(moment().date(d), "Do");
           }
           break;
         case "years":
           if ((d - 1) % 4 === 0) {
             radial_axis_tick_label = "";
           } else {
-            radial_axis_tick_label = moment().week(d + 1).format("MMM");
+            radial_axis_tick_label = tr.date(moment().week(d + 1), "MMM");
           }
           break;
         case "decades":
-          radial_axis_tick_label = d / 12 + " years";
+          radial_axis_tick_label = d / 12 + tr(" years");
           break;
         case "centuries":
-          radial_axis_tick_label = d + " years";
+          radial_axis_tick_label = d + tr(" years");
           break;
         case "millenia":
-          radial_axis_tick_label = d + " years";
+          radial_axis_tick_label = d + tr(" years");
           break;
         case "epochs":
           radial_axis_tick_label = "";
@@ -12016,13 +12131,13 @@ d3.radialAxis = function (unit_width) {
       if (globals.date_granularity === "epochs") {
         radial_axis_tick_label = globals.formatAbbreviation(d);
       } else if (globals.max_end_age / 86400000 > 1000) {
-        radial_axis_tick_label = Math.round(d / 31536000730) + " years";
+        radial_axis_tick_label = Math.round(d / 31536000730) + tr(" years");
       } else if (globals.max_end_age / 86400000 > 120) {
-        radial_axis_tick_label = Math.round(d / 2628000000) + " months";
+        radial_axis_tick_label = Math.round(d / 2628000000) + tr(" months");
       } else if (globals.max_end_age / 86400000 > 2) {
-        radial_axis_tick_label = Math.round(d / 86400000) + " days";
+        radial_axis_tick_label = Math.round(d / 86400000) + tr(" days");
       } else {
-        radial_axis_tick_label = Math.round(d / 3600000) + " hours";
+        radial_axis_tick_label = Math.round(d / 3600000) + tr(" hours");
       }
     }
     return radial_axis_tick_label;
@@ -12102,7 +12217,7 @@ module.exports = d3.radialAxis;
 /***/ (function(module, exports, __webpack_require__) {
 
 var toElement = __webpack_require__(30);
-var tr = __webpack_require__(4);
+var tr = __webpack_require__(2);
 
 /**
  * Template for the add image popup

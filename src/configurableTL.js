@@ -832,9 +832,9 @@ function configureTimelineScaleSegments(tl_layout, tl_representation, tl_scale, 
           if (globals.date_granularity === "years" && data.min_start_date.getUTCFullYear() <= 100) {
             tick_format = function (d) {
               if (d.getUTCFullYear() > 0) {
-                return +d.getUTCFullYear() + " AD";
+                return tr.ad(+d.getUTCFullYear());
               } else if (d.getUTCFullYear() < 0) {
-                return (-1 * d.getUTCFullYear()) + " BC";
+                return tr.bc(-1 * d.getUTCFullYear());
               } else if (d.getUTCFullYear() === 0) {
                 return 0;
               }
@@ -1210,7 +1210,7 @@ function configureSegments(timeline_container, duration, width, height, tl_layou
       if (tl_layout !== "Segmented" || tl_representation === "Calendar" || tl_representation === "Grid" || globals.segment_granularity === "epochs") {
         return "";
       }
-      return d;
+      return tr.segment(d);
     })
     .attr("transform", function () {
       var offset_x = 0,
@@ -1925,7 +1925,7 @@ function configureLinearAxis(timeline_scale, tl_layout, tl_representation, prev_
     timeline_axis.scale(timeline_scale);
     timeline_axis.ticks(10);
     timeline_axis.tickSizeInner(6).tickSizeOuter(0);
-    timeline_axis.tickFormat(undefined);
+    timeline_axis.tickFormat(timeline_scale.domain()[0] instanceof Date ? tr.timeTickFormat() : undefined);
     timeline_axis.tickValues(undefined);
 
     if (tl_layout !== "Segmented" && tl_scale === "Chronological" && globals.date_granularity === "years" && data.min_start_date.getUTCFullYear() < 0) {
@@ -1955,16 +1955,16 @@ function configureLinearAxis(timeline_scale, tl_layout, tl_representation, prev_
         var converted_tick = d;
         switch (globals.segment_granularity) {
         case "days":
-          converted_tick = moment().hour(d).format("hA");
+          converted_tick = tr.date(moment().hour(d), "hA");
           break;
         case "weeks":
-          converted_tick = moment().weekday(d).format("ddd");
+          converted_tick = tr.date(moment().weekday(d), "ddd");
           break;
         case "months":
-          converted_tick = moment().date(d).format("Do");
+          converted_tick = tr.date(moment().date(d), "Do");
           break;
         case "years":
-          converted_tick = moment().week(d + 1).format("MMM");
+          converted_tick = tr.date(moment().week(d + 1), "MMM");
           break;
         case "decades":
           converted_tick = (d / 12) + tr(" years");
@@ -1987,13 +1987,13 @@ function configureLinearAxis(timeline_scale, tl_layout, tl_representation, prev_
         var converted_tick = d;
         switch (globals.segment_granularity) {
         case "days":
-          converted_tick = moment(d).format("MMM D hA");
+          converted_tick = tr.date(moment(d), "MMM D hA");
           break;
         case "weeks":
-          converted_tick = moment(d).format("MMM D");
+          converted_tick = tr.date(moment(d), "MMM D");
           break;
         case "months":
-          converted_tick = moment(d).format("MMM D");
+          converted_tick = tr.date(moment(d), "MMM D");
           break;
         case "years":
         case "decades":

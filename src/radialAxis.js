@@ -4,6 +4,7 @@ var time = require("./lib/time.min.js");
 var d3 = require("d3");
 var moment = require("moment");
 var globals = require("./globals");
+var tr = require("./i18n");
 var arcTween = require("./utils").arcTween;
 var removeOnEnd = require("./utils").removeOnEnd;
 
@@ -237,54 +238,54 @@ d3.radialAxis = function (unit_width) {
         if (i === num_ticks - 1) {
           radial_axis_tick_label = "";
         } else if (longer_than_a_day) {
-          radial_axis_tick_label = moment(d).format("MMM D hA");
+          radial_axis_tick_label = tr.date(moment(d), "MMM D hA");
         } else {
-          radial_axis_tick_label = moment(d).format("hA");
+          radial_axis_tick_label = tr.date(moment(d), "hA");
         }
         break;
       case "weeks":
-        radial_axis_tick_label = moment(d).format("MMM D");
+        radial_axis_tick_label = tr.date(moment(d), "MMM D");
         break;
       case "months":
-        radial_axis_tick_label = moment(d).format("MMM 'YY");
+        radial_axis_tick_label = tr.date(moment(d), "MMM 'YY");
         break;
       case "years":
         if (moment(d).year() < 0) {
-          radial_axis_tick_label = (-1 * moment(d).year()) + " BC";
+          radial_axis_tick_label = tr.bc(-1 * moment(d).year());
         } else {
           radial_axis_tick_label = +moment(d).year();
           if (bc_origin) {
-            radial_axis_tick_label += " AD";
+            radial_axis_tick_label = tr.ad(radial_axis_tick_label);
           }
         }
         break;
       case "decades":
         if (moment(d).year() < 0) {
-          radial_axis_tick_label = (-1 * moment(d).year()) + " BC";
+          radial_axis_tick_label = tr.bc(-1 * moment(d).year());
         } else {
           radial_axis_tick_label = +moment(d).year();
           if (bc_origin) {
-            radial_axis_tick_label += " AD";
+            radial_axis_tick_label = tr.ad(radial_axis_tick_label);
           }
         }
         break;
       case "centuries":
         if (moment(d).year() < 0) {
-          radial_axis_tick_label = (-1 * moment(d).year()) + " BC";
+          radial_axis_tick_label = tr.bc(-1 * moment(d).year());
         } else {
           radial_axis_tick_label = +moment(d).year();
           if (bc_origin) {
-            radial_axis_tick_label += " AD";
+            radial_axis_tick_label = tr.ad(radial_axis_tick_label);
           }
         }
         break;
       case "millenia":
         if (moment(d).year() < 0) {
-          radial_axis_tick_label = (-1 * moment(d).year()) + " BC";
+          radial_axis_tick_label = tr.bc(-1 * moment(d).year());
         } else {
           radial_axis_tick_label = +moment(d).year();
           if (bc_origin) {
-            radial_axis_tick_label += " AD";
+            radial_axis_tick_label = tr.ad(radial_axis_tick_label);
           }
         }
         break;
@@ -297,33 +298,33 @@ d3.radialAxis = function (unit_width) {
     } else if (radial_axis_units === "Segments") {
       switch (globals.segment_granularity) {
       case "days":
-        radial_axis_tick_label = moment().hour(d).format("hA");
+        radial_axis_tick_label = tr.date(moment().hour(d), "hA");
         break;
       case "weeks":
-        radial_axis_tick_label = moment().weekday(d).format("ddd");
+        radial_axis_tick_label = tr.date(moment().weekday(d), "ddd");
         break;
       case "months":
         if ((d - 1) % 7 !== 0) {
           radial_axis_tick_label = "";
         } else {
-          radial_axis_tick_label = moment().date(d).format("Do");
+          radial_axis_tick_label = tr.date(moment().date(d), "Do");
         }
         break;
       case "years":
         if ((d - 1) % 4 === 0) {
           radial_axis_tick_label = "";
         } else {
-          radial_axis_tick_label = moment().week(d + 1).format("MMM");
+          radial_axis_tick_label = tr.date(moment().week(d + 1), "MMM");
         }
         break;
       case "decades":
-        radial_axis_tick_label = (d / 12) + " years";
+        radial_axis_tick_label = (d / 12) + tr(" years");
         break;
       case "centuries":
-        radial_axis_tick_label = d + " years";
+        radial_axis_tick_label = d + tr(" years");
         break;
       case "millenia":
-        radial_axis_tick_label = d + " years";
+        radial_axis_tick_label = d + tr(" years");
         break;
       case "epochs":
         radial_axis_tick_label = "";
@@ -338,13 +339,13 @@ d3.radialAxis = function (unit_width) {
       if (globals.date_granularity === "epochs") {
         radial_axis_tick_label = globals.formatAbbreviation(d);
       } else if ((globals.max_end_age / 86400000) > 1000) {
-        radial_axis_tick_label = Math.round(d / 31536000730) + " years";
+        radial_axis_tick_label = Math.round(d / 31536000730) + tr(" years");
       } else if ((globals.max_end_age / 86400000) > 120) {
-        radial_axis_tick_label = Math.round(d / 2628000000) + " months";
+        radial_axis_tick_label = Math.round(d / 2628000000) + tr(" months");
       } else if ((globals.max_end_age / 86400000) > 2) {
-        radial_axis_tick_label = Math.round(d / 86400000) + " days";
+        radial_axis_tick_label = Math.round(d / 86400000) + tr(" days");
       } else {
-        radial_axis_tick_label = Math.round(d / 3600000) + " hours";
+        radial_axis_tick_label = Math.round(d / 3600000) + tr(" hours");
       }
     }
     return radial_axis_tick_label;

@@ -1618,7 +1618,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       .enter()
       .append("option")
       .attr("value", function (d) { return d; })
-      .text(function (d) { return d === "( All )" ? tr(d) : d; })
+      .text(function (d) { return d === "( All )" ? tr(d) : tr.segment(d); })
       .property("selected", function (d) {
         return d === "( All )";
       });

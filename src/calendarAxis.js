@@ -4,6 +4,7 @@ var d3 = require("d3");
 var utils = require("./utils");
 var removeOnEnd = utils.removeOnEnd;
 var moment = require("moment");
+var tr = require("./i18n");
 
 /**
 
@@ -71,7 +72,7 @@ d3.calendarAxis = function () {
         })
         .append("title")
         .text(function (d) {
-          return moment(d).format("dddd, MMMM Do, YYYY");
+          return tr.date(moment(d), "dddd, MMMM Do, YYYY");
         });
 
       var day_cell_label = year_grid.selectAll(".day_cell_label")
@@ -124,7 +125,7 @@ d3.calendarAxis = function () {
           return (d + 1) * cell_size + year_offset * year_height;
         })
         .text(function (d) {
-          return moment().day(d).format("ddd");
+          return tr.date(moment().day(d), "ddd");
         });
 
       year_grid_update.select(".segment_title")
@@ -192,7 +193,7 @@ d3.calendarAxis = function () {
         .attr("dy", "-0.5em")
         .attr("dx", "-1.3em")
         .text(function (d) {
-          return moment().day(d).format("ddd");
+          return tr.date(moment().day(d), "ddd");
         });
 
       year_grid_exit.selectAll(".weekday_label")
