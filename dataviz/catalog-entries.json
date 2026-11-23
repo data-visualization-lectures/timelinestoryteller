@@ -1,0 +1,892 @@
+{
+  "_comment": "Entries for dataviz-app/public/catalog.json, and the tool-capabilities.json line that the sample picker needs for tabular entries.",
+  "catalogEntries": [
+    {
+      "id": "ts-dailyroutines",
+      "name": "著名なクリエイターの日課",
+      "nameEn": "Daily Routines of Famous Creative People",
+      "description": "作家や作曲家など著名人の1日の過ごし方。人物ごとに並べて比べられる。",
+      "descriptionEn": "How famous creative people spent their day, faceted by person.",
+      "format": "json",
+      "tableShape": "long",
+      "tags": [
+        "生活",
+        "人物",
+        "1日"
+      ],
+      "tagsEn": [
+        "Life",
+        "People",
+        "Day"
+      ],
+      "columns": [
+        "facet",
+        "category",
+        "start_date",
+        "end_date",
+        "content_text"
+      ],
+      "columnsEn": [
+        "facet",
+        "category",
+        "start_date",
+        "end_date",
+        "content_text"
+      ],
+      "rowCount": 229,
+      "fileUrl": "https://timeline-storyteller.dataviz.jp/data/dailyroutines.json",
+      "thumbnailUrl": null,
+      "compatibleTools": [
+        "timeline-storyteller"
+      ],
+      "category": "tabular",
+      "source": "Podio",
+      "sourceEn": "Podio",
+      "sourceUrl": "https://podio.com/site/creative-routines"
+    },
+    {
+      "id": "ts-japan-prime-ministers",
+      "name": "日本の歴代内閣総理大臣",
+      "nameEn": "Prime Ministers of Japan",
+      "description": "日本の歴代首相の在任期間。",
+      "descriptionEn": "Terms of office of the prime ministers of Japan.",
+      "format": "json",
+      "tableShape": "long",
+      "tags": [
+        "政治",
+        "日本",
+        "歴代"
+      ],
+      "tagsEn": [
+        "Politics",
+        "Japan",
+        "History"
+      ],
+      "columns": [
+        "content_text",
+        "facet",
+        "category",
+        "start_date",
+        "end_date"
+      ],
+      "columnsEn": [
+        "content_text",
+        "facet",
+        "category",
+        "start_date",
+        "end_date"
+      ],
+      "rowCount": 85,
+      "fileUrl": "https://timeline-storyteller.dataviz.jp/data/japan-prime-ministers.json",
+      "thumbnailUrl": null,
+      "compatibleTools": [
+        "timeline-storyteller"
+      ],
+      "category": "tabular",
+      "source": "downloadexcelfiles.com",
+      "sourceEn": "downloadexcelfiles.com",
+      "sourceUrl": "http://www.downloadexcelfiles.com/jp_en/download-excel-file-list-prime-ministers-japan"
+    },
+    {
+      "id": "ts-ch-jp-ko",
+      "name": "東アジアの王朝",
+      "nameEn": "East Asian Dynasties",
+      "description": "中国・日本・朝鮮の王朝や時代の移り変わり。地域ごとに並べて比べられる。",
+      "descriptionEn": "Dynasties and periods of China, Japan and Korea, faceted by region.",
+      "format": "json",
+      "tableShape": "long",
+      "tags": [
+        "歴史",
+        "東アジア",
+        "王朝"
+      ],
+      "tagsEn": [
+        "History",
+        "East Asia",
+        "Dynasties"
+      ],
+      "columns": [
+        "facet",
+        "category",
+        "content_text",
+        "start_date",
+        "end_date"
+      ],
+      "columnsEn": [
+        "facet",
+        "category",
+        "content_text",
+        "start_date",
+        "end_date"
+      ],
+      "rowCount": 24,
+      "fileUrl": "https://timeline-storyteller.dataviz.jp/data/ch-jp-ko.json",
+      "thumbnailUrl": null,
+      "compatibleTools": [
+        "timeline-storyteller"
+      ],
+      "category": "tabular",
+      "source": "bl.ocks.org / bunkat",
+      "sourceEn": "bl.ocks.org / bunkat",
+      "sourceUrl": "http://bl.ocks.org/bunkat/2338034"
+    },
+    {
+      "id": "ts-empires",
+      "name": "歴史上の大帝国",
+      "nameEn": "History's Largest Empires",
+      "description": "歴史上の大きな帝国の存続期間。",
+      "descriptionEn": "The lifespans of the largest empires in history.",
+      "format": "json",
+      "tableShape": "long",
+      "tags": [
+        "歴史",
+        "帝国",
+        "世界"
+      ],
+      "tagsEn": [
+        "History",
+        "Empires",
+        "World"
+      ],
+      "columns": [
+        "content_text",
+        "category",
+        "start_date",
+        "end_date"
+      ],
+      "columnsEn": [
+        "content_text",
+        "category",
+        "start_date",
+        "end_date"
+      ],
+      "rowCount": 34,
+      "fileUrl": "https://timeline-storyteller.dataviz.jp/data/empires.json",
+      "thumbnailUrl": null,
+      "compatibleTools": [
+        "timeline-storyteller"
+      ],
+      "category": "tabular",
+      "source": "nowherenearithaca",
+      "sourceEn": "nowherenearithaca",
+      "sourceUrl": "http://nowherenearithaca.github.io/empires/index.html"
+    },
+    {
+      "id": "ts-philosophers",
+      "name": "紀元前8世紀以降の哲学者",
+      "nameEn": "Great Philosophers since the 8th Century BC",
+      "description": "古代から現代までの哲学者の生没年。地域ごとに並べて比べられる。紀元前の日付を含む。",
+      "descriptionEn": "Lifespans of philosophers from antiquity to the present, faceted by region. Includes BC dates.",
+      "format": "json",
+      "tableShape": "long",
+      "tags": [
+        "歴史",
+        "哲学",
+        "人物",
+        "紀元前"
+      ],
+      "tagsEn": [
+        "History",
+        "Philosophy",
+        "People",
+        "BC"
+      ],
+      "columns": [
+        "start_date",
+        "end_date",
+        "category",
+        "facet",
+        "content_text"
+      ],
+      "columnsEn": [
+        "start_date",
+        "end_date",
+        "category",
+        "facet",
+        "content_text"
+      ],
+      "rowCount": 125,
+      "fileUrl": "https://timeline-storyteller.dataviz.jp/data/philosophers.json",
+      "thumbnailUrl": null,
+      "compatibleTools": [
+        "timeline-storyteller"
+      ],
+      "category": "tabular",
+      "source": "bl.ocks.org / rengel-de",
+      "sourceEn": "bl.ocks.org / rengel-de",
+      "sourceUrl": "http://bl.ocks.org/rengel-de/5603464"
+    },
+    {
+      "id": "ts-epidemics",
+      "name": "14世紀以降の疫病",
+      "nameEn": "Epidemics since the 14th Century",
+      "description": "14世紀以降の主な疫病の流行期間。地域ごとに並べて比べられる。",
+      "descriptionEn": "Major epidemics since the 14th century, faceted by region.",
+      "format": "json",
+      "tableShape": "long",
+      "tags": [
+        "歴史",
+        "医療",
+        "疫病"
+      ],
+      "tagsEn": [
+        "History",
+        "Health",
+        "Epidemics"
+      ],
+      "columns": [
+        "start_date",
+        "end_date",
+        "category",
+        "facet",
+        "content_text"
+      ],
+      "columnsEn": [
+        "start_date",
+        "end_date",
+        "category",
+        "facet",
+        "content_text"
+      ],
+      "rowCount": 190,
+      "fileUrl": "https://timeline-storyteller.dataviz.jp/data/epidemics.json",
+      "thumbnailUrl": null,
+      "compatibleTools": [
+        "timeline-storyteller"
+      ],
+      "category": "tabular",
+      "source": "Wikipedia",
+      "sourceEn": "Wikipedia",
+      "sourceUrl": "https://en.wikipedia.org/wiki/List_of_epidemics"
+    },
+    {
+      "id": "ts-priestley",
+      "name": "プリーストリーの伝記年表",
+      "nameEn": "Priestley's Chart of Biography",
+      "description": "ジョゼフ・プリーストリーの「伝記年表」にもとづく人物の生没年。職業ごとに並べて比べられる。",
+      "descriptionEn": "Lifespans from Joseph Priestley's Chart of Biography, faceted by occupation.",
+      "format": "json",
+      "tableShape": "long",
+      "tags": [
+        "歴史",
+        "人物",
+        "古典"
+      ],
+      "tagsEn": [
+        "History",
+        "People",
+        "Classic"
+      ],
+      "columns": [
+        "start_date",
+        "end_date",
+        "facet",
+        "content_text"
+      ],
+      "columnsEn": [
+        "start_date",
+        "end_date",
+        "facet",
+        "content_text"
+      ],
+      "rowCount": 57,
+      "fileUrl": "https://timeline-storyteller.dataviz.jp/data/priestley.json",
+      "thumbnailUrl": null,
+      "compatibleTools": [
+        "timeline-storyteller"
+      ],
+      "category": "tabular",
+      "source": "Wikimedia Commons",
+      "sourceEn": "Wikimedia Commons",
+      "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/9/98/PriestleyChart.gif"
+    },
+    {
+      "id": "ts-painters",
+      "name": "画家の生涯",
+      "nameEn": "Visualizing Painters' Lives",
+      "description": "画家の生涯の出来事。画家ごとに並べて比べられる。",
+      "descriptionEn": "Events in the lives of painters, faceted by painter.",
+      "format": "json",
+      "tableShape": "long",
+      "tags": [
+        "美術",
+        "人物",
+        "生涯"
+      ],
+      "tagsEn": [
+        "Art",
+        "People",
+        "Lives"
+      ],
+      "columns": [
+        "start_date",
+        "end_date",
+        "content_text",
+        "facet",
+        "category"
+      ],
+      "columnsEn": [
+        "start_date",
+        "end_date",
+        "content_text",
+        "facet",
+        "category"
+      ],
+      "rowCount": 190,
+      "fileUrl": "https://timeline-storyteller.dataviz.jp/data/painters.json",
+      "thumbnailUrl": null,
+      "compatibleTools": [
+        "timeline-storyteller"
+      ],
+      "category": "tabular",
+      "source": "Accurat",
+      "sourceEn": "Accurat",
+      "sourceUrl": "http://www.brainpickings.org/2013/06/07/painters-lives-accurat-giorgia-lupi/"
+    },
+    {
+      "id": "ts-authors",
+      "name": "作家のデビュー作から代表作まで",
+      "nameEn": "From First Published to Masterpieces",
+      "description": "作家が最初の作品を出してから代表作を出すまで。作家ごとに並べて比べられる。",
+      "descriptionEn": "From each author's first publication to their masterpiece, faceted by author.",
+      "format": "json",
+      "tableShape": "long",
+      "tags": [
+        "文学",
+        "人物",
+        "作品"
+      ],
+      "tagsEn": [
+        "Literature",
+        "People",
+        "Works"
+      ],
+      "columns": [
+        "facet",
+        "content_text",
+        "start_date",
+        "end_date",
+        "category"
+      ],
+      "columnsEn": [
+        "facet",
+        "content_text",
+        "start_date",
+        "end_date",
+        "category"
+      ],
+      "rowCount": 227,
+      "fileUrl": "https://timeline-storyteller.dataviz.jp/data/authors.json",
+      "thumbnailUrl": null,
+      "compatibleTools": [
+        "timeline-storyteller"
+      ],
+      "category": "tabular",
+      "source": "Accurat",
+      "sourceEn": "Accurat",
+      "sourceUrl": "http://www.brainpickings.org/2013/11/29/accurat-modern-library/"
+    },
+    {
+      "id": "ts-heads-of-state-since-1940",
+      "name": "1940年以降のG7首脳",
+      "nameEn": "G7 Heads of State since 1940",
+      "description": "G7各国の首脳の在任期間。国ごとに並べて比べられる。",
+      "descriptionEn": "Terms of office of the G7 heads of state since 1940, faceted by country.",
+      "format": "json",
+      "tableShape": "long",
+      "tags": [
+        "政治",
+        "G7",
+        "歴代"
+      ],
+      "tagsEn": [
+        "Politics",
+        "G7",
+        "History"
+      ],
+      "columns": [
+        "content_text",
+        "start_date",
+        "end_date",
+        "facet",
+        "category"
+      ],
+      "columnsEn": [
+        "content_text",
+        "start_date",
+        "end_date",
+        "facet",
+        "category"
+      ],
+      "rowCount": 120,
+      "fileUrl": "https://timeline-storyteller.dataviz.jp/data/heads-of-state-since-1940.json",
+      "thumbnailUrl": null,
+      "compatibleTools": [
+        "timeline-storyteller"
+      ],
+      "category": "tabular"
+    },
+    {
+      "id": "ts-presidents",
+      "name": "アメリカの歴代大統領",
+      "nameEn": "Presidents of the USA",
+      "description": "アメリカ合衆国の歴代大統領の在任期間。",
+      "descriptionEn": "Terms of office of the presidents of the United States.",
+      "format": "json",
+      "tableShape": "long",
+      "tags": [
+        "政治",
+        "アメリカ",
+        "歴代"
+      ],
+      "tagsEn": [
+        "Politics",
+        "USA",
+        "History"
+      ],
+      "columns": [
+        "content_text",
+        "start_date",
+        "end_date",
+        "category"
+      ],
+      "columnsEn": [
+        "content_text",
+        "start_date",
+        "end_date",
+        "category"
+      ],
+      "rowCount": 45,
+      "fileUrl": "https://timeline-storyteller.dataviz.jp/data/presidents.json",
+      "thumbnailUrl": null,
+      "compatibleTools": [
+        "timeline-storyteller"
+      ],
+      "category": "tabular",
+      "source": "hitch17/sample-data",
+      "sourceEn": "hitch17/sample-data",
+      "sourceUrl": "https://raw.githubusercontent.com/hitch17/sample-data/master/presidents.json"
+    },
+    {
+      "id": "ts-uk-prime-ministers",
+      "name": "イギリスの歴代首相",
+      "nameEn": "Prime Ministers of the UK",
+      "description": "イギリスの歴代首相の在任期間。",
+      "descriptionEn": "Terms of office of the prime ministers of the United Kingdom.",
+      "format": "json",
+      "tableShape": "long",
+      "tags": [
+        "政治",
+        "イギリス",
+        "歴代"
+      ],
+      "tagsEn": [
+        "Politics",
+        "UK",
+        "History"
+      ],
+      "columns": [
+        "content_text",
+        "facet",
+        "category",
+        "start_date",
+        "end_date"
+      ],
+      "columnsEn": [
+        "content_text",
+        "facet",
+        "category",
+        "start_date",
+        "end_date"
+      ],
+      "rowCount": 76,
+      "fileUrl": "https://timeline-storyteller.dataviz.jp/data/uk-prime-ministers.json",
+      "thumbnailUrl": null,
+      "compatibleTools": [
+        "timeline-storyteller"
+      ],
+      "category": "tabular",
+      "source": "downloadexcelfiles.com",
+      "sourceEn": "downloadexcelfiles.com",
+      "sourceUrl": "http://www.downloadexcelfiles.com/gb_en/download-excel-file-list-prime-ministers-uk"
+    },
+    {
+      "id": "ts-prime-ministers",
+      "name": "カナダの歴代首相",
+      "nameEn": "Prime Ministers of Canada",
+      "description": "カナダの歴代首相の在任期間。",
+      "descriptionEn": "Terms of office of the prime ministers of Canada.",
+      "format": "json",
+      "tableShape": "long",
+      "tags": [
+        "政治",
+        "カナダ",
+        "歴代"
+      ],
+      "tagsEn": [
+        "Politics",
+        "Canada",
+        "History"
+      ],
+      "columns": [
+        "content_text",
+        "category",
+        "start_date",
+        "end_date"
+      ],
+      "columnsEn": [
+        "content_text",
+        "category",
+        "start_date",
+        "end_date"
+      ],
+      "rowCount": 28,
+      "fileUrl": "https://timeline-storyteller.dataviz.jp/data/prime-ministers.json",
+      "thumbnailUrl": null,
+      "compatibleTools": [
+        "timeline-storyteller"
+      ],
+      "category": "tabular",
+      "source": "downloadexcelfiles.com",
+      "sourceEn": "downloadexcelfiles.com",
+      "sourceUrl": "http://www.downloadexcelfiles.com/ca_en/download-excel-file-list-prime-ministers-canada"
+    },
+    {
+      "id": "ts-france-presidents",
+      "name": "フランスの歴代大統領",
+      "nameEn": "Presidents of France",
+      "description": "フランスの歴代大統領の在任期間。",
+      "descriptionEn": "Terms of office of the presidents of France.",
+      "format": "json",
+      "tableShape": "long",
+      "tags": [
+        "政治",
+        "フランス",
+        "歴代"
+      ],
+      "tagsEn": [
+        "Politics",
+        "France",
+        "History"
+      ],
+      "columns": [
+        "content_text",
+        "facet",
+        "category",
+        "start_date",
+        "end_date"
+      ],
+      "columnsEn": [
+        "content_text",
+        "facet",
+        "category",
+        "start_date",
+        "end_date"
+      ],
+      "rowCount": 26,
+      "fileUrl": "https://timeline-storyteller.dataviz.jp/data/france-presidents.json",
+      "thumbnailUrl": null,
+      "compatibleTools": [
+        "timeline-storyteller"
+      ],
+      "category": "tabular",
+      "source": "downloadexcelfiles.com",
+      "sourceEn": "downloadexcelfiles.com",
+      "sourceUrl": "http://www.downloadexcelfiles.com/fr_en/download-excel-file-list-presidents-france"
+    },
+    {
+      "id": "ts-germany-chancellors",
+      "name": "ドイツの歴代首相",
+      "nameEn": "Chancellors of Germany",
+      "description": "ドイツの歴代首相の在任期間。",
+      "descriptionEn": "Terms of office of the chancellors of Germany.",
+      "format": "json",
+      "tableShape": "long",
+      "tags": [
+        "政治",
+        "ドイツ",
+        "歴代"
+      ],
+      "tagsEn": [
+        "Politics",
+        "Germany",
+        "History"
+      ],
+      "columns": [
+        "content_text",
+        "facet",
+        "category",
+        "start_date",
+        "end_date"
+      ],
+      "columnsEn": [
+        "content_text",
+        "facet",
+        "category",
+        "start_date",
+        "end_date"
+      ],
+      "rowCount": 27,
+      "fileUrl": "https://timeline-storyteller.dataviz.jp/data/germany-chancellors.json",
+      "thumbnailUrl": null,
+      "compatibleTools": [
+        "timeline-storyteller"
+      ],
+      "category": "tabular",
+      "source": "Wikipedia",
+      "sourceEn": "Wikipedia",
+      "sourceUrl": "https://en.wikipedia.org/wiki/List_of_Chancellors_of_Germany"
+    },
+    {
+      "id": "ts-italy-presidents",
+      "name": "イタリアの歴代大統領",
+      "nameEn": "Presidents of Italy",
+      "description": "イタリアの歴代大統領の在任期間。",
+      "descriptionEn": "Terms of office of the presidents of Italy.",
+      "format": "json",
+      "tableShape": "long",
+      "tags": [
+        "政治",
+        "イタリア",
+        "歴代"
+      ],
+      "tagsEn": [
+        "Politics",
+        "Italy",
+        "History"
+      ],
+      "columns": [
+        "content_text",
+        "facet",
+        "category",
+        "start_date",
+        "end_date"
+      ],
+      "columnsEn": [
+        "content_text",
+        "facet",
+        "category",
+        "start_date",
+        "end_date"
+      ],
+      "rowCount": 13,
+      "fileUrl": "https://timeline-storyteller.dataviz.jp/data/italy-presidents.json",
+      "thumbnailUrl": null,
+      "compatibleTools": [
+        "timeline-storyteller"
+      ],
+      "category": "tabular",
+      "source": "downloadexcelfiles.com",
+      "sourceEn": "downloadexcelfiles.com",
+      "sourceUrl": "http://www.downloadexcelfiles.com/it_en/download-excel-file-list-presidents-italy"
+    },
+    {
+      "id": "ts-hurricanes50y",
+      "name": "カテゴリー4〜5のハリケーン 1960〜2010年",
+      "nameEn": "Category 4-5 Hurricanes: 1960-2010",
+      "description": "1960年から2010年に発生した強いハリケーン。日単位のデータ。",
+      "descriptionEn": "Strong hurricanes from 1960 to 2010. Daily data.",
+      "format": "json",
+      "tableShape": "long",
+      "tags": [
+        "気象",
+        "災害",
+        "ハリケーン"
+      ],
+      "tagsEn": [
+        "Weather",
+        "Disasters",
+        "Hurricanes"
+      ],
+      "columns": [
+        "content_text",
+        "start_date",
+        "category",
+        "end_date"
+      ],
+      "columnsEn": [
+        "content_text",
+        "start_date",
+        "category",
+        "end_date"
+      ],
+      "rowCount": 74,
+      "fileUrl": "https://timeline-storyteller.dataviz.jp/data/hurricanes50y.json",
+      "thumbnailUrl": null,
+      "compatibleTools": [
+        "timeline-storyteller"
+      ],
+      "category": "tabular",
+      "source": "NOAA AOML",
+      "sourceEn": "NOAA AOML",
+      "sourceUrl": "http://www.aoml.noaa.gov/hrd/hurdat/easyread-2011.html"
+    },
+    {
+      "id": "ts-typical-american",
+      "name": "典型的なアメリカ人の一生",
+      "nameEn": "Life of a Typical American",
+      "description": "典型的なアメリカ人の一生の区切り。",
+      "descriptionEn": "The stages in the life of a typical American.",
+      "format": "json",
+      "tableShape": "long",
+      "tags": [
+        "生活",
+        "一生"
+      ],
+      "tagsEn": [
+        "Life",
+        "Lifetime"
+      ],
+      "columns": [
+        "content_text",
+        "category",
+        "start_date",
+        "end_date"
+      ],
+      "columnsEn": [
+        "content_text",
+        "category",
+        "start_date",
+        "end_date"
+      ],
+      "rowCount": 19,
+      "fileUrl": "https://timeline-storyteller.dataviz.jp/data/typical-american.json",
+      "thumbnailUrl": null,
+      "compatibleTools": [
+        "timeline-storyteller"
+      ],
+      "category": "tabular",
+      "source": "Wait But Why",
+      "sourceEn": "Wait But Why",
+      "sourceUrl": "http://waitbutwhy.com/2014/05/life-weeks.html"
+    },
+    {
+      "id": "ts-perspective-on-time",
+      "name": "時間の見取り図 138億年",
+      "nameEn": "A Perspective on Time (14 billion years)",
+      "description": "宇宙の始まりから現在までの出来事。天文学的な長さの年表。",
+      "descriptionEn": "Events from the beginning of the universe to today: a timeline of astronomical length.",
+      "format": "json",
+      "tableShape": "long",
+      "tags": [
+        "宇宙",
+        "歴史",
+        "超長期"
+      ],
+      "tagsEn": [
+        "Universe",
+        "History",
+        "Deep time"
+      ],
+      "columns": [
+        "content_text",
+        "start_date",
+        "end_date"
+      ],
+      "columnsEn": [
+        "content_text",
+        "start_date",
+        "end_date"
+      ],
+      "rowCount": 60,
+      "fileUrl": "https://timeline-storyteller.dataviz.jp/data/perspective-on-time.json",
+      "thumbnailUrl": null,
+      "compatibleTools": [
+        "timeline-storyteller"
+      ],
+      "category": "tabular",
+      "source": "Wait But Why",
+      "sourceEn": "Wait But Why",
+      "sourceUrl": "http://visual.ly/perspective-time"
+    },
+    {
+      "id": "ts-singularity",
+      "name": "シンギュラリティへのカウントダウン 40億年",
+      "nameEn": "Countdown to Singularity (4 billion years)",
+      "description": "生命の誕生から現在までの転換点。対数スケール向きの年表。",
+      "descriptionEn": "Turning points from the origin of life to today: a timeline suited to a log scale.",
+      "format": "json",
+      "tableShape": "long",
+      "tags": [
+        "技術",
+        "歴史",
+        "超長期"
+      ],
+      "tagsEn": [
+        "Technology",
+        "History",
+        "Deep time"
+      ],
+      "columns": [
+        "content_text",
+        "start_date",
+        "end_date"
+      ],
+      "columnsEn": [
+        "content_text",
+        "start_date",
+        "end_date"
+      ],
+      "rowCount": 22,
+      "fileUrl": "https://timeline-storyteller.dataviz.jp/data/singularity.json",
+      "thumbnailUrl": null,
+      "compatibleTools": [
+        "timeline-storyteller"
+      ],
+      "category": "tabular",
+      "source": "Ray Kurzweil",
+      "sourceEn": "Ray Kurzweil",
+      "sourceUrl": "http://www.singularity.com/images/charts/CountdownToSingularityLog.jpg"
+    },
+    {
+      "id": "ts-story-daily-routines",
+      "name": "デモストーリー: 著名なクリエイターの日課",
+      "nameEn": "Demo story: Daily Routines of Famous Creative People",
+      "description": "15シーンからなる記録済みのストーリー。再生モードで開く。ファイルは約10MB。",
+      "descriptionEn": "A recorded story of 15 scenes. Opens in playback mode. The file is about 10 MB.",
+      "format": "json",
+      "tableShape": "long",
+      "tags": [
+        "ストーリー",
+        "生活",
+        "人物"
+      ],
+      "tagsEn": [
+        "Story",
+        "Life",
+        "People"
+      ],
+      "columns": [
+        "facet",
+        "category",
+        "start_date",
+        "end_date",
+        "content_text"
+      ],
+      "columnsEn": [
+        "facet",
+        "category",
+        "start_date",
+        "end_date",
+        "content_text"
+      ],
+      "rowCount": 229,
+      "fileUrl": "https://timeline-storyteller.dataviz.jp/data/story-daily-routines.json",
+      "thumbnailUrl": null,
+      "compatibleTools": [
+        "timeline-storyteller"
+      ],
+      "category": "tabular",
+      "source": "Podio",
+      "sourceEn": "Podio",
+      "sourceUrl": "https://podio.com/site/creative-routines"
+    }
+  ],
+  "toolCapabilities": {
+    "timeline-storyteller": {
+      "acceptedTableShapes": [
+        "long"
+      ]
+    }
+  }
+}

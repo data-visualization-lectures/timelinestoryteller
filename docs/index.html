@@ -19,27 +19,25 @@
     if (window.DatavizLocale) { document.documentElement.lang = window.DatavizLocale.resolve(); }
   </script>
 
-  <!-- dataviz.jp shared sign-in and header. The header is fixed at the top and 48px high. -->
+  <!-- dataviz.jp shared sign-in, header (48px) and tool header (about 56px below it). Order matters. -->
   <script src="https://id.data-viz-lectures.com/lib/supabase.v1.js"></script>
   <script src="https://id.data-viz-lectures.com/lib/dataviz-auth-client.v1.js"></script>
+  <script src="https://id.data-viz-lectures.com/lib/dataviz-tool-header.v1.js" defer></script>
   <style>
     html, body { height: 100%; margin: 0; }
-    #app { position: absolute; top: 48px; right: 0; bottom: 0; left: 0; background-color: white; }
+    #app { position: absolute; top: 104px; right: 0; bottom: 0; left: 0; background-color: white; }
   </style>
 
 </head>
 
 <body>
+  <dataviz-tool-header></dataviz-tool-header>
   <div id="app"></div>
 </body>
 
 <!-- Dependencies, served from this site (copied from node_modules by "npm run package") -->
 <script src="js/vendor/d3.min.js" charset="utf-8"></script>
 <script src="js/vendor/moment.min.js" charset="UTF-8"></script>
-
-<!-- Demo Data -->
-<script type="text/javascript" src="js/demoStory.js" charset="UTF-8"></script>
-<script type="text/javascript" src="js/demoData.js" charset="UTF-8"></script>
 
 <script type="text/javascript" src="js/timelinestoryteller.js" charset="UTF-8"></script>
 
@@ -53,8 +51,10 @@
   //   animations: false,
   //   animationStepDuration: 500,
   });
-  // teller.load(timeline_story_demo_data.authors);
 </script>
+
+<!-- dataviz.jp integration: sample data, project save / load, ?projectId= and ?data_url= -->
+<script type="text/javascript" src="js/dataviz-integration.js" charset="UTF-8"></script>
 
 
 </html>

@@ -59,22 +59,25 @@
   <p class="lead">年表のデータを読み込み、見せ方を選び、注釈を付けて、場面ごとに語るストーリーに仕立てるツールです。</p>
 
   <h2>1. データを読み込む</h2>
-  <p>最初に開く読み込みパネルから、年表のデータか、保存済みのストーリーを読み込みます。あとから別のデータを開くときは、左のパネルの「開く」ボタンで読み込みパネルを出します。</p>
+  <p>データの入れ方は3つあります。</p>
+  <ul>
+    <li><strong>サンプルデータ</strong>:画面上部の「サンプルデータ」を押すと、用意された年表の一覧が出ます。選ぶとすぐに描かれます。</li>
+    <li><strong>保存したプロジェクト</strong>:画面上部右の「プロジェクトの読込」から、以前保存したプロジェクトを開けます。</li>
+    <li><strong>手元のファイル</strong>:左のパネルの「開く」ボタンで読み込みパネルを出し、下の表のファイルを選びます。</li>
+  </ul>
   <div class="scroll">
     <table>
       <thead>
         <tr><th>ボタン</th><th>読み込めるもの</th></tr>
       </thead>
       <tbody>
-        <tr><th>DEMO(年表データ)</th><td>用意されたデモ用の年表データです。天文学的な時間にわたるものから、1日だけのものまであります。</td></tr>
         <tr><th>JSON</th><td>JSON 形式の年表データです。各イベントには少なくとも <code>start_date</code> が必要です。</td></tr>
         <tr><th>CSV</th><td>CSV 形式の年表データです。見出し行に少なくとも <code>start_date</code> の列が必要です。</td></tr>
-        <tr><th>DEMO(ストーリー)</th><td>デモ用のストーリーです。</td></tr>
         <tr><th>ストーリーのファイル</th><td>以前に保存したストーリー(<code>.cdc</code> 形式)です。</td></tr>
       </tbody>
     </table>
   </div>
-  <p>データを選ぶと、イベントの件数、期間、カテゴリの一覧が表示されます。カテゴリの色見本をクリックすると色を変えられます。「この年表を描く」を押すと年表が描かれます。</p>
+  <p>読み込みパネルでファイルを選ぶと、イベントの件数、期間、カテゴリの一覧が表示されます。カテゴリの色見本をクリックすると色を変えられます。「この年表を描く」を押すと年表が描かれます。</p>
 
   <h3>データの項目</h3>
   <p>1行(1件)が1つのイベントです。JSON でも CSV でも項目は同じです。</p>
@@ -172,6 +175,9 @@
     <li>右向きの矢印で次のシーンへ、左向きの矢印で前のシーンへ移ります。</li>
   </ul>
 
+  <h3>プロジェクトとして保存する</h3>
+  <p>画面上部右の「プロジェクトの保存」を押すと、データと記録したシーンがアカウントに保存されます。「プロジェクトの読込」から開くと、続きを編集できます。ラベルやキャプションは、シーンとして記録したものが保存されます。シーンを記録していない場合は、データと、表現・スケール・レイアウトの選択が保存されます。</p>
+
   <h2>5. 書き出す</h2>
   <p>左のパネルの「書き出し」を押すと、書き出しの選択肢が出ます。</p>
   <div class="scroll">
@@ -197,22 +203,25 @@
   <p class="lead">Load timeline data, choose how to present it, annotate it, and record scenes to tell a story.</p>
 
   <h2>1. Load data</h2>
-  <p>The import panel opens first. Load a timeline dataset or a saved timeline story. To open a different dataset or story later, use the Open button in the panel on the left.</p>
+  <p>There are three ways to bring data in.</p>
+  <ul>
+    <li><strong>Sample data</strong>: Press "Sample Data" at the top to see the prepared timelines. Choosing one draws it right away.</li>
+    <li><strong>A saved project</strong>: Press "Load Project" at the top right to open a project you saved before.</li>
+    <li><strong>Your own file</strong>: Press the Open button in the panel on the left to show the import panel, and choose one of the files in the table below.</li>
+  </ul>
   <div class="scroll">
     <table>
       <thead>
         <tr><th>Button</th><th>What it loads</th></tr>
       </thead>
       <tbody>
-        <tr><th>DEMO (timeline data)</th><td>One of several demonstration timeline datasets, featuring timelines that span astronomical epochs or just a single day.</td></tr>
         <tr><th>JSON</th><td>A timeline dataset in JSON format, where each event is specified by at least a <code>start_date</code>.</td></tr>
         <tr><th>CSV</th><td>A timeline dataset in CSV format. The header row must contain at least a <code>start_date</code> column.</td></tr>
-        <tr><th>DEMO (timeline story)</th><td>A demonstration timeline story.</td></tr>
         <tr><th>Story file</th><td>A previously saved timeline story in <code>.cdc</code> format.</td></tr>
       </tbody>
     </table>
   </div>
-  <p>After you choose data, the panel shows the number of events, their extent, and the categories. Click a colour swatch to assign a custom colour to a category. Press "Draw this timeline" to draw it.</p>
+  <p>After you choose a file in the import panel, it shows the number of events, their extent, and the categories. Click a colour swatch to assign a custom colour to a category. Press "Draw this timeline" to draw it.</p>
 
   <h3>Data fields</h3>
   <p>Each row or record is one event. JSON and CSV use the same fields.</p>
@@ -309,6 +318,9 @@
     <li>Click any scene thumbnail to jump to the corresponding scene.</li>
     <li>The right arrow advances to the next scene, and the left arrow returns to the previous scene.</li>
   </ul>
+
+  <h3>Save as a project</h3>
+  <p>Press "Save Project" at the top right to save the data and the recorded scenes to your account. Open it from "Load Project" to continue editing. Labels and captions are saved as part of recorded scenes. Without recorded scenes, the data and the chosen representation, scale, and layout are saved.</p>
 
   <h2>5. Export</h2>
   <p>Press Export in the panel on the left to show the export options.</p>

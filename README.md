@@ -19,17 +19,25 @@ Changes from the original:
 - d3 was upgraded from v3 to v7. Tick spacing on linear axes, the order of new elements, and the hyphen for negative numbers were kept as they were in v3 (see `utils.ticks`, `utils.removeOnEnd`, and `globals.formatNumber`).
 - The guided tour (intro.js, AGPL-3.0 / commercial licence) was removed. Its explanations were moved into the usage guide.
 - Loading from Google Spreadsheets was removed, because the Google API it relied on no longer exists.
+- The bundled demo datasets and demo story became sample files in `docs/data/`, chosen from the shared tool header instead of the import panel.
 
 ## dataviz.jp integration
 
 | Item | Value |
 |---|---|
-| `appName` | `timeline-storyteller` |
+| `appName` / `chartType` | `timeline-storyteller` |
 | Public host | `https://timeline-storyteller.dataviz.jp/` (the app is served from the root of the host) |
-| Shared sign-in | `supabase.v1.js` and `dataviz-auth-client.v1.js` from `id.data-viz-lectures.com`, loaded in `docs/index.html` |
-| Languages | Japanese and English. The language follows the shared resolver `dataviz-locale.v1.js` (`?lang=ja` / `?lang=en`, an `/en` path, the `locale` cookie, then the browser language). UI text lives in `src/i18n.js` and `src/locales/ja.js`; English is the source language. |
-| Saved projects | Not supported yet |
-| Share pages | Not supported |
+| Scope | `viz` |
+| Shared scripts | `dataviz-locale.v1.js`, `supabase.v1.js`, `dataviz-auth-client.v1.js`, `dataviz-tool-header.v1.js` from `id.data-viz-lectures.com`, loaded in `docs/index.html` |
+| Integration code | `docs/js/dataviz-integration.js` (plain script, not part of the webpack bundle) |
+| Languages | Japanese and English. The language follows the shared resolver (`?lang=ja` / `?lang=en`, an `/en` path, the `locale` cookie, then the browser language). UI text lives in `src/i18n.js` and `src/locales/ja.js`; English is the source language. |
+| Sample data | Chosen from the tool header ("Sample Data"), which lists the entries of `https://app.dataviz.jp/catalog.json` whose `compatibleTools` include `timeline-storyteller`. The files are in `docs/data/`. The entries to register are in `dataviz/catalog-entries.json`. |
+| Saved projects | Supported through the tool header ("Load Project" / "Save Project"), project backend `projects` |
+| Share pages | Not supported: no share table and no publish function |
+
+Start-up order: `?projectId=` restores a saved project and nothing else runs; otherwise `?data_url=` loads a file from this site or a dataviz.jp host; otherwise the first catalog sample for this tool is loaded; without any, the app's own import panel stays open.
+
+A saved project has the shape `{ version: 1, chartType: "timeline-storyteller", data, settings }`. `data` is the list of events. `settings.story` is the app's story state (scenes, annotations, captions, images, colours) without the events and the usage log. `settings.view` is the representation, scale and layout, used when no scene was recorded.
 
 Visitors who are not signed in are redirected to the sign-in page after a few seconds. Add `?auth_debug` to the URL to stay on the page, both locally and on a preview host.
 

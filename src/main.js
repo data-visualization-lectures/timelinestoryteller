@@ -40,6 +40,17 @@ var getNextZIndex = require("./annotations").getNextZIndex;
 var helpUrl = "help.html?lang=" + tr.locale();
 
 /**
+ * Escapes text from the data for use in an HTML string
+ * @param {string} value The text
+ * @returns {string} The text with HTML special characters escaped
+ */
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, function (ch) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[ch];
+  });
+}
+
+/**
  * The selected filter options as [[option, ...]]: the shape the filter events read and that saved stories store
  * @param {d3.Selection} selection A selection of option elements
  * @returns {Array} The option elements in one group
@@ -1266,7 +1277,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       legend_dummy.style.fontSize = "12px";
       legend_dummy.style.fill = "#fff";
       legend_dummy.style.fontFamily = "Century Gothic";
-      legend_dummy.innerHTML = item;
+      legend_dummy.textContent = item;
       document.querySelector(".timeline_storyteller").appendChild(legend_dummy);
       var legend_dummy_width = legend_dummy.offsetWidth;
       document.querySelector(".timeline_storyteller").removeChild(legend_dummy);
@@ -1700,7 +1711,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       .style("border-top", "1px dashed #999")
       .html(
       "<p class='metadata_content'><img src='" + imageUrls("facets.png") + "' width='36px' style='float: left; padding-right: 5px;'/><strong>" + tr("Timeline facets") + "</strong>: " +
-      ((globals.facets.domain().length > 1) ? ("( " + globals.num_facets + " ) " + globals.facets.domain().slice(0, 30).join(" .. ")) : tr("(none)")) + "</p>");
+      ((globals.facets.domain().length > 1) ? ("( " + globals.num_facets + " ) " + globals.facets.domain().slice(0, 30).map(escapeHtml).join(" .. ")) : tr("(none)")) + "</p>");
 
     if (shouldDrawTimeline) {
       drawTimeline(globals.active_data);
@@ -5111,6 +5122,33 @@ TimelineStoryteller.prototype.load = function (state, storyMode, skipIntro, dela
         delayLoad(resolve);
       }
     }, delay ? 100 : 0);
+  });
+};
+
+/**
+ * The current representation, scale and layout of the timeline
+ * @returns {object} The view as { representation, scale, layout }
+ */
+TimelineStoryteller.prototype.getView = function () {
+  return {
+    representation: this._timeline_vis.tl_representation(),
+    scale: this._timeline_vis.tl_scale(),
+    layout: this._timeline_vis.tl_layout()
+  };
+};
+
+/**
+ * Renders the current canvas as a PNG image, e.g. for a thumbnail
+ * @returns {Promise<string>} A promise for the PNG as a data URI
+ */
+TimelineStoryteller.prototype.getImageDataUri = function () {
+  var svg = this._main_svg && this._main_svg.node();
+  return new Promise(function (resolve) {
+    if (!svg) {
+      resolve(null);
+      return;
+    }
+    svgImageUtils.svgAsPngUri(svg, { backgroundColor: "white" }, resolve);
   });
 };
 
