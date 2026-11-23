@@ -950,7 +950,6 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
           selectWithParent("#playback_bar").selectAll("img").attr("class", "img_btn_disabled");
           selectAllWithParent(".option_rb").select("input").property("disabled", "true");
           selectAllWithParent(".option_rb").select("img").attr("class", "img_btn_disabled");
-          selectAllWithParent(".option_rb img").style("border", "2px solid transparent");
           selectWithParent("#menu_div").style("left", -50 + "px");
           selectWithParent("#navigation_div").style("bottom", -100 + "px");
           globals.use_custom_palette = false;
@@ -1862,14 +1861,14 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       .attr("width", STEPPER_STEP_WIDTH)
       .attr("height", STEPPER_STEP_WIDTH)
       .style("stroke", function (d) {
-        return d.s_order === instance._currentSceneIndex ? "#f00" : "#ccc";
+        return d.s_order === instance._currentSceneIndex ? "#1f2937" : "#d1d5db";
       })
       .style("stroke-width", "3px")
       .on("click", changeSceneClickHandler);
 
     navigation_step_update.select("rect")
       .style("stroke", function (d) {
-        return d.s_order === instance._currentSceneIndex ? "#f00" : "#ccc";
+        return d.s_order === instance._currentSceneIndex ? "#1f2937" : "#d1d5db";
       });
 
     if (isIE11) {
@@ -3425,25 +3424,16 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     });
 
     selectAllWithParent("#scale_picker img")
-      .style("border-bottom", function (d) {
-        if (d.name === scale) { return "2px solid #f00"; }
-      })
-      .style("border-right", function (d) {
-        if (d.name === scale) { return "2px solid #f00"; }
+      .attr("data-selected", function (d) {
+        return d.name === scale ? "true" : null;
       });
     selectAllWithParent("#layout_picker img")
-      .style("border-bottom", function (d) {
-        if (d.name === layout) { return "2px solid #f00"; }
-      })
-      .style("border-right", function (d) {
-        if (d.name === layout) { return "2px solid #f00"; }
+      .attr("data-selected", function (d) {
+        return d.name === layout ? "true" : null;
       });
     selectAllWithParent("#representation_picker img")
-      .style("border-bottom", function (d) {
-        if (d.name === representation) { return "2px solid #f00"; }
-      })
-      .style("border-right", function (d) {
-        if (d.name === representation) { return "2px solid #f00"; }
+      .attr("data-selected", function (d) {
+        return d.name === representation ? "true" : null;
       });
 
     selectAllWithParent(".option_rb").select("input").property("disabled", function (d) {

@@ -1506,3 +1506,271 @@ html, body {
 .filter_div_header {
   white-space: nowrap;
 }
+
+/* ---------------------------------------------------------------------------
+   Visual refresh: flat panels, one neutral accent, softer borders and shadows.
+   These rules only restyle colour, border, radius, shadow and type; the sizes
+   and positions defined above stay as they are.
+   --------------------------------------------------------------------------- */
+
+:root {
+  --ts-accent: #1f2937;
+  --ts-accent-soft: #eef0f3;
+  --ts-surface: #ffffff;
+  --ts-surface-muted: #f6f7f9;
+  --ts-border: #e2e5ea;
+  --ts-border-strong: #c7ccd4;
+  --ts-text: #1f2937;
+  --ts-text-muted: #6b7280;
+  --ts-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 6px 16px rgba(16, 24, 40, 0.08);
+  --ts-radius: 10px;
+  --ts-radius-small: 6px;
+}
+
+.timeline_storyteller {
+  color: var(--ts-text);
+}
+
+body, input, textarea, select, text {
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic UI", Meiryo, sans-serif;
+}
+
+/* Panels */
+.control_div,
+.frame_hover {
+  background: var(--ts-surface);
+  border: 1px solid var(--ts-border);
+  border-radius: var(--ts-radius);
+  box-shadow: var(--ts-shadow);
+  -webkit-box-shadow: var(--ts-shadow);
+}
+
+.ui_label {
+  color: var(--ts-text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.menu_label {
+  color: var(--ts-text-muted);
+}
+
+.menu_hr {
+  border-style: solid;
+  border-color: var(--ts-border) transparent transparent;
+}
+
+.option_picker {
+  border-right-color: var(--ts-border);
+}
+
+.option_rb_label {
+  color: var(--ts-text-muted);
+}
+
+/* Icon buttons */
+.img_btn_enabled,
+.demo_dataset_label {
+  background: var(--ts-surface);
+  border-color: var(--ts-border);
+  border-radius: var(--ts-radius-small);
+  box-shadow: none;
+  -webkit-box-shadow: none;
+  filter: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.img_btn_enabled:hover,
+.demo_dataset_label:hover,
+.import-button:hover img {
+  background: var(--ts-accent-soft);
+  border-color: var(--ts-border-strong);
+  filter: none;
+}
+
+.img_btn_disabled {
+  border-color: var(--ts-border);
+  border-radius: var(--ts-radius-small);
+  box-shadow: none;
+  -webkit-box-shadow: none;
+}
+
+/* View options: the selected one gets a full accent outline on a soft tint */
+.option_rb > input:enabled + img {
+  border: 2px solid transparent;
+  border-radius: var(--ts-radius-small);
+  background: var(--ts-surface);
+}
+
+.option_rb > .img_btn_enabled,
+.option_rb > .img_btn_enabled:hover {
+  background-image: none;
+}
+
+.option_rb > input:enabled:hover + img {
+  border: 2px solid var(--ts-border-strong);
+  background: var(--ts-surface-muted);
+}
+
+.option_rb > input:enabled:checked + img,
+.option_rb > input:enabled:checked:hover + img,
+.option_rb > input + img[data-selected],
+.option_rb > input:enabled:hover + img[data-selected] {
+  border: 2px solid var(--ts-accent);
+  background: var(--ts-accent-soft);
+}
+
+.playback_mode .option_rb > input + img[data-selected],
+.option_rb > input + img.img_btn_disabled[data-selected] {
+  border-color: transparent;
+  background: transparent;
+}
+
+/* Side menu and filter toggles */
+.menu_rb > input:enabled + img {
+  border: 2px solid transparent;
+  border-radius: var(--ts-radius-small);
+}
+
+.menu_rb > input:enabled:hover + img {
+  border: 2px solid var(--ts-border-strong);
+}
+
+.menu_rb > input:enabled:checked + img,
+.menu_rb > input:enabled:checked:hover + img {
+  border: 2px solid var(--ts-accent);
+  background: var(--ts-accent-soft);
+}
+
+.nav_cb > input:enabled:checked + img {
+  border: 1px solid var(--ts-accent);
+  background: var(--ts-accent-soft);
+}
+
+.import_label > select:hover + img:hover {
+  border-bottom-color: var(--ts-border-strong);
+}
+
+/* Hint bubble */
+#rb_hint {
+  background-color: var(--ts-accent);
+  border-color: var(--ts-accent);
+  border-radius: var(--ts-radius-small);
+  box-shadow: var(--ts-shadow);
+  -webkit-box-shadow: var(--ts-shadow);
+  font-style: normal;
+  line-height: 1.5;
+  padding: 6px 8px;
+}
+
+.rb_hint_left:before,
+.rb_hint_right:before {
+  border-color: transparent var(--ts-accent);
+}
+
+/* Form controls */
+.filter_select,
+#stepper_container,
+#add_caption_text_input,
+.text_input {
+  border: 1px solid var(--ts-border);
+  border-radius: var(--ts-radius-small);
+  background: var(--ts-surface);
+  color: var(--ts-text);
+}
+
+.filter_select {
+  font-size: 11px;
+  padding: 2px;
+}
+
+.filter_select:focus,
+#add_caption_text_input:focus,
+.text_input:focus {
+  outline: 2px solid var(--ts-accent-soft);
+  border-color: var(--ts-border-strong);
+}
+
+select > option:hover {
+  background-color: var(--ts-accent-soft);
+  color: var(--ts-text);
+}
+
+#stepper_svg_placeholder {
+  fill: #9ca3af;
+}
+
+.scene_delete rect {
+  stroke: #c7ccd4;
+}
+
+.colorpicker_wrapper {
+  border-color: var(--ts-border-strong);
+  border-radius: 3px;
+  box-shadow: none;
+  -webkit-box-shadow: none;
+  overflow: hidden;
+}
+
+.colorpicker:hover,
+.colorpicker_wrapper:hover {
+  border: 1px solid var(--ts-accent);
+}
+
+/* Primary action */
+.draw_timeline,
+.draw_timeline:hover {
+  background: var(--ts-accent);
+  background-image: none;
+  border: 1px solid var(--ts-accent);
+  border-radius: var(--ts-radius-small);
+  transition: opacity 0.15s ease;
+}
+
+.draw_timeline:hover {
+  opacity: 0.88;
+}
+
+/* Import panel dividers */
+#data_picker,
+#timeline_metadata {
+  border-top-color: var(--ts-border);
+}
+
+.data_story_picker {
+  border-right-color: var(--ts-border);
+}
+
+/* Footer */
+#footer {
+  background: var(--ts-surface);
+  border: 0;
+  border-top: 1px solid var(--ts-border);
+  box-sizing: border-box;
+}
+
+.footer_text,
+.footer_text_left,
+a {
+  color: var(--ts-text-muted);
+}
+
+/* Chart chrome: literal colours, because exported SVG and PNG files carry these rules without the variables */
+.legend_rect {
+  stroke: #c7ccd4;
+  rx: 6px;
+}
+
+.legend:hover > .legend_rect {
+  stroke: #1f2937;
+}
+
+.legend_title {
+  fill: #1f2937;
+  font-stretch: normal;
+}
+
+.legend_element_g text {
+  fill: #4b5563;
+}
