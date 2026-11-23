@@ -112,7 +112,7 @@ AddImageDialog.prototype._addImageButtonClicked = function () {
   const finalizeImage = (url) => {
     const waitForImagePromise = (p) => {
       p.then((dataURL) => {
-        this._dispatcher.imageSelected(dataURL);
+        this._dispatcher.call("imageSelected", this, dataURL);
         this.reset();
       }, (e) => {
         let error = tr("Could not save image. ");
@@ -139,7 +139,7 @@ AddImageDialog.prototype._addImageButtonClicked = function () {
     } else if (this._offlineEnabled.property("checked")) {
       waitForImagePromise(utils.imageUrlToDataURL(url));
     } else {
-      this._dispatcher.imageSelected(url);
+      this._dispatcher.call("imageSelected", this, url);
       this.reset();
     }
   };
@@ -157,34 +157,35 @@ AddImageDialog.prototype._addImageButtonClicked = function () {
 
 /**
  * Drag over listener for the drag/drop zone for files
+ * @param {Event} e The drag event
  * @returns {void}
  */
-AddImageDialog.prototype._addImageDropZoneDragOver = function () {
-  stopEvent();
+AddImageDialog.prototype._addImageDropZoneDragOver = function (e) {
+  stopEvent(e);
 
-  const e = d3.event;
   e.dataTransfer.dropEffect = "copy";
   this._addImageDropZone.classed("dragging", true);
 };
 
 /**
  * Drag over listener for the drag/drop zone for files
+ * @param {Event} e The drag event
  * @returns {void}
  */
-AddImageDialog.prototype._addImageDropZoneDragLeave = function () {
-  stopEvent();
+AddImageDialog.prototype._addImageDropZoneDragLeave = function (e) {
+  stopEvent(e);
 
   this._addImageDropZone.classed("dragging", false);
 };
 
 /**
  * Drop listener for the drag/drop zone for files
+ * @param {Event} e The drag event
  * @returns {void}
  */
-AddImageDialog.prototype._addImageDropZoneDrop = function () {
-  stopEvent();
+AddImageDialog.prototype._addImageDropZoneDrop = function (e) {
+  stopEvent(e);
 
-  const e = d3.event;
   const files = e.dataTransfer.files;
   this._addSelectedFile(files[0]);
 };
@@ -202,11 +203,11 @@ module.exports = function () {
 };
 
 /**
- * Quick helper to completely stop an d3 event
+ * Quick helper to completely stop an event
+ * @param {Event} e The event to stop
  * @returns {void}
  */
-function stopEvent() {
-  const e = d3.event;
+function stopEvent(e) {
   e.stopPropagation();
   e.preventDefault();
 }

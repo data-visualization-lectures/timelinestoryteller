@@ -1,6 +1,8 @@
 "use strict";
 
 var d3 = require("d3");
+var utils = require("./utils");
+var removeOnEnd = utils.removeOnEnd;
 var moment = require("moment");
 
 /**
@@ -20,21 +22,23 @@ d3.calendarAxis = function () {
       var g = d3.select(this);
 
       // grid container items for each year
-      var year_grid = g.selectAll(".year_grid")
+      var year_grid_join = g.selectAll(".year_grid")
         .data(data);
 
       var min_year = data[0];
 
       // var year_number = -1;
 
-      var year_grid_enter = year_grid.enter()
+      var year_grid_enter = year_grid_join.enter()
         .append("g")
         .attr("class", "year_grid");
 
-      var year_grid_exit = year_grid.exit()
+      var year_grid_exit = year_grid_join.exit()
         .transition()
         .duration(duration)
-        .remove();
+        .call(removeOnEnd);
+
+      var year_grid = year_grid_enter.merge(year_grid_join);
 
       var year_grid_update = year_grid.transition()
         .duration(duration);
@@ -50,7 +54,7 @@ d3.calendarAxis = function () {
 
       var day_cell = year_grid.selectAll(".day_cell")
         .data(function (d) {
-          return d3.time.days(new Date(d, 0, 1), new Date(d + 1, 0, 1));
+          return d3.timeDays(new Date(d, 0, 1), new Date(d + 1, 0, 1));
         });
 
       day_cell.enter()
@@ -59,7 +63,7 @@ d3.calendarAxis = function () {
         .attr("width", cell_size)
         .attr("height", cell_size)
         .attr("x", function (d) {
-          return d3.time.weekOfYear(d) * cell_size;
+          return utils.weekOfYear(d) * cell_size;
         })
         .attr("y", function (d) {
           var year_offset = d.getUTCFullYear() - min_year;
@@ -72,14 +76,14 @@ d3.calendarAxis = function () {
 
       var day_cell_label = year_grid.selectAll(".day_cell_label")
         .data(function (d) {
-          return d3.time.days(new Date(d, 0, 1), new Date(d + 1, 0, 1));
+          return d3.timeDays(new Date(d, 0, 1), new Date(d + 1, 0, 1));
         });
 
       day_cell_label.enter()
         .append("text")
         .attr("class", "day_cell_label")
         .attr("x", function (d) {
-          return d3.time.weekOfYear(d) * cell_size + 0.5 * cell_size;
+          return utils.weekOfYear(d) * cell_size + 0.5 * cell_size;
         })
         .attr("y", function (d) {
           var year_offset = d.getUTCFullYear() - min_year;
@@ -93,7 +97,7 @@ d3.calendarAxis = function () {
       // draw the month paths
       var month_path = year_grid.selectAll(".month")
         .data(function (d) {
-          return d3.time.months(new Date(d, 0, 1), new Date(d + 1, 0, 1));
+          return d3.timeMonths(new Date(d, 0, 1), new Date(d + 1, 0, 1));
         });
 
       month_path.enter()
@@ -116,7 +120,7 @@ d3.calendarAxis = function () {
         .attr("dy", "-0.5em")
         .attr("dx", "-1.3em")
         .attr("y", function (d) {
-          var year_offset = d3.select(this.parentNode)[0][0].__data__ - min_year;
+          var year_offset = d3.select(this.parentNode).datum() - min_year;
           return (d + 1) * cell_size + year_offset * year_height;
         })
         .text(function (d) {
@@ -137,7 +141,7 @@ d3.calendarAxis = function () {
         .attr("width", cell_size)
         .attr("height", cell_size)
         .attr("x", function (d) {
-          return d3.time.weekOfYear(d) * cell_size;
+          return utils.weekOfYear(d) * cell_size;
         })
         .attr("y", function (d) {
           var year_offset = d.getUTCFullYear() - min_year;
@@ -152,7 +156,7 @@ d3.calendarAxis = function () {
 
       year_grid_update.selectAll(".day_cell_label")
         .attr("x", function (d) {
-          return d3.time.weekOfYear(d) * cell_size + 0.5 * cell_size;
+          return utils.weekOfYear(d) * cell_size + 0.5 * cell_size;
         })
         .attr("y", function (d) {
           var year_offset = d.getUTCFullYear() - min_year;
@@ -182,7 +186,7 @@ d3.calendarAxis = function () {
       year_grid_update.selectAll(".weekday_label")
         .attr("x", year_width)
         .attr("y", function (d) {
-          var year_offset = d3.select(this.parentNode)[0][0].__data__ - min_year;
+          var year_offset = d3.select(this.parentNode).datum() - min_year;
           return (d + 1) * cell_size + year_offset * year_height;
         })
         .attr("dy", "-0.5em")
@@ -196,13 +200,13 @@ d3.calendarAxis = function () {
         .attr("y", 0)
         .text("");
     });
-    d3.timer.flush();
+    d3.timerFlush();
   }
 
   function monthPath(t0) {
     var t1 = new Date(t0.getFullYear(), t0.getMonth() + 1, 0),
-      d0 = t0.getDay(), w0 = d3.time.weekOfYear(t0),
-      d1 = t1.getDay(), w1 = d3.time.weekOfYear(t1);
+      d0 = t0.getDay(), w0 = utils.weekOfYear(t0),
+      d1 = t1.getDay(), w1 = utils.weekOfYear(t1);
     return "M" + (w0 + 1) * cell_size + "," + d0 * cell_size
       + "H" + w0 * cell_size + "V" + 7 * cell_size
       + "H" + w1 * cell_size + "V" + (d1 + 1) * cell_size

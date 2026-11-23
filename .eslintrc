@@ -20,6 +20,7 @@
     "globals": {
         "ArrayBuffer": true,
         "Uint8Array": true,
-        "Promise": true
+        "Promise": true,
+        "Map": true
     }
 }

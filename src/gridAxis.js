@@ -1,6 +1,7 @@
 "use strict";
 
 var d3 = require("d3");
+var removeOnEnd = require("./utils").removeOnEnd;
 
 /**
 
@@ -20,10 +21,10 @@ d3.gridAxis = function (unit_width) {
       var g = d3.select(this);
 
       // grid container items for each year
-      var grid = g.selectAll(".grid")
+      var grid_join = g.selectAll(".grid")
         .data(data);
 
-      var grid_enter = grid.enter()
+      var grid_enter = grid_join.enter()
         .append("g")
         .attr("class", "grid");
 
@@ -46,10 +47,12 @@ d3.gridAxis = function (unit_width) {
         .attr("dx", "0.3em")
         .text("");
 
-      var grid_exit = grid.exit()
+      var grid_exit = grid_join.exit()
         .transition()
         .duration(duration)
-        .remove();
+        .call(removeOnEnd);
+
+      var grid = grid_enter.merge(grid_join);
 
       grid_exit.select(".year_cell")
         .attr("height", 0)
@@ -81,7 +84,7 @@ d3.gridAxis = function (unit_width) {
           return d;
         });
     });
-    d3.timer.flush();
+    d3.timerFlush();
   }
 
   // place an element in correct x position on grid axis

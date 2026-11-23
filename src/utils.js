@@ -195,7 +195,7 @@ var utils = {
       var n = 0;
       transition
           .each(() => ++n)
-          .each("end", () => {
+          .on("end.onTransitionComplete", () => {
             if (!--n) {
               resolve();
             }
@@ -316,6 +316,116 @@ var utils = {
       };
       img.src = url;
     });
+  },
+
+  /**
+   * Removes the elements of a transition when it ends; use as transition.call(utils.removeOnEnd).
+   * transition.remove() now keeps an element while a transition of any other name is running on it;
+   * this removes it when this transition ends, as d3 v3 did.
+   * @param {d3.Transition} transition The transition whose elements to remove
+   * @returns {void}
+   */
+  removeOnEnd: function (transition) {
+    transition.on("end.removeOnEnd", function () {
+      if (this.parentNode) {
+        this.parentNode.removeChild(this);
+      }
+    });
+  },
+
+  /**
+   * Sets several attributes at once; use as selection.call(utils.attrs({ name: value }))
+   * @param {Object} map Attribute values (or functions) by attribute name
+   * @returns {function} A function that applies the attributes to a selection or transition
+   */
+  attrs: function (map) {
+    return function (selection) {
+      Object.keys(map).forEach(function (name) {
+        selection.attr(name, map[name]);
+      });
+    };
+  },
+
+  /**
+   * Sets several styles at once; use as selection.call(utils.styles({ name: value }))
+   * @param {Object} map Style values (or functions) by style name
+   * @returns {function} A function that applies the styles to a selection or transition
+   */
+  styles: function (map) {
+    return function (selection) {
+      Object.keys(map).forEach(function (name) {
+        selection.style(name, map[name]);
+      });
+    };
+  },
+
+  /**
+   * The Sunday-based week of the year (0-53) of a date, as d3 v3's d3.time.weekOfYear
+   * @param {Date} date The date
+   * @returns {number} The week number
+   */
+  weekOfYear: function (date) {
+    var year = d3.timeYear(date);
+    var dayOfYear = Math.floor((date - year - (date.getTimezoneOffset() - year.getTimezoneOffset()) * 6e4) / 864e5);
+    return Math.floor((dayOfYear + year.getDay()) / 7);
+  },
+
+  /**
+   * Tick values for a linear or time scale, spaced as d3 v3 spaced them.
+   * Later versions of d3 round the tick step slightly differently, which changes which labels appear.
+   * @param {d3.Scale} scale A linear or time scale
+   * @param {number} count The approximate number of ticks
+   * @returns {Array} The tick values, or null to leave the choice to the scale (log scales)
+   */
+  ticks: function (scale, count) {
+    if (typeof scale.base === "function") {
+      return null;
+    }
+    var domain = scale.domain();
+    var isTime = domain[0] instanceof Date;
+    var start = Math.min(+domain[0], +domain[domain.length - 1]);
+    var stop = Math.max(+domain[0], +domain[domain.length - 1]);
+    var year = 31536e6;
+
+    // the tick step d3 v3 chose for a linear extent
+    function linearStep(span) {
+      var step = Math.pow(10, Math.floor(Math.log(span / count) / Math.LN10));
+      var err = count / span * step;
+      if (err <= 0.15) {
+        step *= 10;
+      } else if (err <= 0.35) {
+        step *= 5;
+      } else if (err <= 0.75) {
+        step *= 2;
+      }
+      return step;
+    }
+
+    if (!(stop > start)) {
+      return scale.ticks(count);
+    }
+
+    if (isTime) {
+      // spans shorter than about ten years use calendar intervals, which did not change
+      if ((stop - start) / count <= year) {
+        return scale.ticks(count);
+      }
+      return scale.ticks(d3.timeYear.every(Math.max(1, Math.round(linearStep((stop - start) / year)))));
+    }
+
+    var step = linearStep(stop - start);
+    var first = Math.ceil(start / step) * step;
+    var last = Math.floor(stop / step) * step + step * 0.5;
+    // scale to integers while stepping, as d3 v3 did, to avoid accumulating rounding error
+    var k = 1;
+    while (step * k % 1) {
+      k *= 10;
+    }
+    var values = [];
+    for (var i = 0; first * k + step * k * i < last * k; i++) {
+      values.push((first * k + step * k * i) / k);
+    }
+    return values;
   },
 
   /**

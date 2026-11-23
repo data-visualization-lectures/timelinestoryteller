@@ -16,6 +16,7 @@ Changes from the original:
 - The email / consent step before exporting was removed.
 - Microsoft branding, policy links, and contact links were removed from the app. The original landing page was replaced by a usage guide in Japanese and English (`docs/help.html`).
 - d3 and moment are served from `docs/js/vendor` instead of a CDN.
+- d3 was upgraded from v3 to v7. Tick spacing on linear axes, the order of new elements, and the hyphen for negative numbers were kept as they were in v3 (see `utils.ticks`, `utils.removeOnEnd`, and `globals.formatNumber`).
 - The guided tour (intro.js, AGPL-3.0 / commercial licence) was removed. Its explanations were moved into the usage guide.
 - Loading from Google Spreadsheets was removed, because the Google API it relied on no longer exists.
 

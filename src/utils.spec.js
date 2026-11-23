@@ -5,7 +5,7 @@ var expect = require("chai").expect;
 describe("utils", function () {
   describe("setScaleValue", function () {
     it("should replace a scale value correctly", function () {
-      var scale = d3.scale.ordinal();
+      var scale = d3.scaleOrdinal();
       scale.range([1, 2, 3]);
       scale.domain(["B", "A", "C"]);
 

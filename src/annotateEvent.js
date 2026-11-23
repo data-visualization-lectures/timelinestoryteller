@@ -31,7 +31,7 @@ module.exports = function (timeline_vis, annotationText, x_pos, y_pos, x_offset,
   if (!isIE && !isEdge) {
     if (timeline_vis.tl_layout() === "Segmented") {
       if (timeline_vis.tl_representation() !== "Radial") {
-        target = selectWithParent("#event_g" + item_index + " rect.event_span_component")[0][0];
+        target = selectWithParent("#event_g" + item_index + " rect.event_span_component").node();
 
         // TODO consolidate the duplicate code (7 lines x 4 places below)
         if (target.transform.baseVal.length > 0) {
@@ -59,7 +59,7 @@ module.exports = function (timeline_vis, annotationText, x_pos, y_pos, x_offset,
         y_pos = Math.round(target.getPointAtLength(-globals.unit_width).y + y_offset + globals.padding.top);
       }
     }    else if (timeline_vis.tl_representation() !== "Radial") {
-      target = selectWithParent("#event_g" + item_index + " rect.event_span")[0][0];
+      target = selectWithParent("#event_g" + item_index + " rect.event_span").node();
 
 
       if (target.transform.baseVal.length > 0) {
@@ -92,14 +92,14 @@ module.exports = function (timeline_vis, annotationText, x_pos, y_pos, x_offset,
   var min_label_width = utils.labelWidth(annotationText);
 
   var leader_line_path = [];
-  var drawLeaderLine = d3.svg.line()
+  var drawLeaderLine = d3.line()
     .x(function (d) { return d.x; })
     .y(function (d) { return d.y; });
 
   if (globals.leader_line_style === LINE_CURVE) {
-    drawLeaderLine.interpolate("basis");
+    drawLeaderLine.curve(d3.curveBasis);
   }  else {
-    drawLeaderLine.interpolate("linear");
+    drawLeaderLine.curve(d3.curveLinear);
   }
 
   // TODO: ID HERE
@@ -132,8 +132,8 @@ module.exports = function (timeline_vis, annotationText, x_pos, y_pos, x_offset,
         .attr("filter", "none");
     });
 
-  var drag = d3.behavior.drag()
-    .origin(function () {
+  var drag = d3.drag()
+    .subject(function () {
       var t = d3.select(this);
 
       return {
@@ -141,9 +141,9 @@ module.exports = function (timeline_vis, annotationText, x_pos, y_pos, x_offset,
         y: t.attr("y")
       };
     })
-    .on("drag", function () {
-      x_anno_offset = d3.event.x - x_pos;
-      y_anno_offset = d3.event.y - y_pos;
+    .on("drag", function (event) {
+      x_anno_offset = event.x - x_pos;
+      y_anno_offset = event.y - y_pos;
 
       d3.select(this)
         .attr("x", x_pos + x_anno_offset)
@@ -187,12 +187,12 @@ module.exports = function (timeline_vis, annotationText, x_pos, y_pos, x_offset,
       annotationObj.x_anno_offset = x_anno_offset;
       annotationObj.y_anno_offset = y_anno_offset;
     })
-    .on("dragend", function () {
+    .on("end", function () {
       logEvent("event " + item_index + " annotation moved to [" + (x_pos + x_anno_offset) + "," + (y_pos + y_anno_offset) + "]");
     });
 
-  var resize = d3.behavior.drag()
-    .origin(function () {
+  var resize = d3.drag()
+    .subject(function () {
       var t = d3.select(this);
 
       return {
@@ -200,10 +200,10 @@ module.exports = function (timeline_vis, annotationText, x_pos, y_pos, x_offset,
         y: t.attr("y")
       };
     })
-    .on("drag", function () {
-      d3.select(this).attr("x", d3.max([x_pos + x_anno_offset + label_width + 7.5, x_pos + x_anno_offset + 7.5 + (d3.event.x - (x_pos + x_anno_offset))]));
+    .on("drag", function (event) {
+      d3.select(this).attr("x", d3.max([x_pos + x_anno_offset + label_width + 7.5, x_pos + x_anno_offset + 7.5 + (event.x - (x_pos + x_anno_offset))]));
 
-      label_width = d3.max([min_label_width, d3.event.x - (x_pos + x_anno_offset)]);
+      label_width = d3.max([min_label_width, event.x - (x_pos + x_anno_offset)]);
 
       annotationObj.label_width = label_width;
 
@@ -246,7 +246,7 @@ module.exports = function (timeline_vis, annotationText, x_pos, y_pos, x_offset,
           return drawLeaderLine(d);
         });
     })
-    .on("dragend", function () {
+    .on("end", function () {
       logEvent("event " + item_index + " annotation resized to " + label_width + "px");
     });
 
@@ -325,7 +325,7 @@ module.exports = function (timeline_vis, annotationText, x_pos, y_pos, x_offset,
 
       logEvent("event " + item_index + " annotation removed");
 
-      corresponding_event[0][0].__data__.selected = false;
+      corresponding_event.datum().selected = false;
 
       corresponding_event.selectAll(".event_span")
         .attr("filter", "none")

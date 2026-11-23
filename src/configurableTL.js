@@ -23,6 +23,7 @@ var selectAllWithParent = utils.selectAllWithParent;
 var logEvent = utils.logEvent;
 var arcTween = utils.arcTween;
 var onTransitionComplete = utils.onTransitionComplete;
+var removeOnEnd = utils.removeOnEnd;
 
 var getNextZIndex = require("./annotations").getNextZIndex;
 
@@ -36,10 +37,10 @@ d3.configurableTL = function (unit_width) {
     duration = 0,
     height = 760,
     width = 120,
-    timeline_scale = d3.scale.linear(),
+    timeline_scale = d3.scaleLinear(),
     timeline_scale_segments = [],
-    interim_duration_scale = d3.scale.linear().nice().range([0.25 * unit_width, 4 * unit_width]),
-    interim_duration_axis = d3.svg.axis().orient("right").outerTickSize(0),
+    interim_duration_scale = d3.scaleLinear().nice().range([0.25 * unit_width, 4 * unit_width]),
+    interim_duration_axis = d3.axisRight().offset(0).tickSizeOuter(0),
     tick_format,
     radial_axis = radialAxis(unit_width),
     radial_axis_quantiles = [],
@@ -64,7 +65,7 @@ d3.configurableTL = function (unit_width) {
         log_bounds = -1,
         curve_margin = 20;
 
-      render_path = d3.svg.line()
+      render_path = d3.line()
         .x(function (d) {
           if (d[0] < curve_margin) {
             return curve_margin;
@@ -83,7 +84,7 @@ d3.configurableTL = function (unit_width) {
           }
           return d[1];
         })
-        .interpolate("basis");
+        .curve(d3.curveBasis);
 
       // remove event annotations during a transition
       selectAllWithParent(".event_annotation").remove();
@@ -97,11 +98,11 @@ d3.configurableTL = function (unit_width) {
       **/
 
       // add parent container for entire timeline
-      var timeline_container = g.selectAll(".timeline")
+      var timeline_container_join = g.selectAll(".timeline")
         .data([null]);
 
       // define the parent container
-      var timeline_container_enter = timeline_container.enter()
+      var timeline_container_enter = timeline_container_join.enter()
         .append("g")
         .attr("class", "timeline")
         .attr("transform", function () {
@@ -128,10 +129,12 @@ d3.configurableTL = function (unit_width) {
 
           configurableTL.resetCurve();
         })
-        .call(d3.behavior.drag()
-          .on("dragstart", dragStarted)
+        .call(d3.drag()
+          .on("start", dragStarted)
           .on("drag", dragged)
-          .on("dragend", dragEnd));
+          .on("end", dragEnd));
+
+      var timeline_container = timeline_container_enter.merge(timeline_container_join);
 
       /**
       CURVE-specific timeline
@@ -250,7 +253,7 @@ d3.configurableTL = function (unit_width) {
       const renderComplete = updateElements(interim_duration_scale, timeline_event_g, duration, configurableTL, tl_layout, tl_scale, tl_representation, width, height, data, unit_width, old_layout, old_rep, old_scale, timeline_scale);
       promises.push(renderComplete);
     });
-    d3.timer.flush();
+    d3.timerFlush();
 
     promises.push(new Promise(resolve => {
       // HACK: A way to ensure that we always at least delay the full animation length
@@ -272,10 +275,10 @@ d3.configurableTL = function (unit_width) {
     }
   }
 
-  function dragged() {
+  function dragged(event) {
     if (tl_representation === "Curve" && active_line !== undefined && !globals.dirty_curve) {
       active_line.datum()
-        .push(d3.mouse(this));
+        .push(d3.pointer(event, this));
 
       active_line.attr("d", render_path);
     }
@@ -289,7 +292,7 @@ d3.configurableTL = function (unit_width) {
       selectWithParent("#active_line")
         .transition("active_line_remove")
         .duration(duration)
-        .remove();
+        .call(removeOnEnd);
 
       selectAllWithParent("rect.event_span")
         .transition("event_span_update")
@@ -302,7 +305,7 @@ d3.configurableTL = function (unit_width) {
       // create actual visible time curve:
       selectWithParent("#timecurve")
         .attr("d", createTimeCurveFunction(unit_width)(
-          selectAllWithParent(".event_span")[0].filter((d, i) => i % 2 === 1))
+          selectAllWithParent(".event_span").nodes().filter((d, i) => i % 2 === 1))
         )
         .style("visibility", "visible");
     }
@@ -334,7 +337,7 @@ d3.configurableTL = function (unit_width) {
     selectWithParent("#active_line")
       .transition("active_line_reproduce")
       .duration(duration)
-      .remove();
+      .call(removeOnEnd);
 
     selectAllWithParent("rect.event_span")
       .transition("event_span_reproduce")
@@ -346,7 +349,7 @@ d3.configurableTL = function (unit_width) {
     // create actual visible time curve:
     selectWithParent("#timecurve")
       .attr("d", createTimeCurveFunction(unit_width)(
-        selectAllWithParent(".event_span")[0].filter(function (d, i) {
+        selectAllWithParent(".event_span").nodes().filter(function (d, i) {
           return i % 2 === 1;
         }))
       )
@@ -517,7 +520,7 @@ d3.configurableTL = function (unit_width) {
 };
 
 function createTimeCurveFunction(unit_width) {
-  return d3.svg.line()
+  return d3.line()
     .x(function (d) {
       return d.__data__.translated_x
         + unit_width / 2;
@@ -526,7 +529,7 @@ function createTimeCurveFunction(unit_width) {
       return d.__data__.translated_y
         + unit_width / 2;
     })
-    .interpolate("cardinal");
+    .curve(d3.curveCardinal.tension(0.7));
 }
 
 /**
@@ -541,7 +544,7 @@ function unNaN(num) {
 module.exports = d3.configurableTL;
 
 function initializeElements(timeline_container, data, duration, width, height, unit_width, tl_representation, configurableTL) {
-  const timeline_event_g = timeline_container.selectAll(".timeline_event_g")
+  const timeline_event_g_join = timeline_container.selectAll(".timeline_event_g")
     .data(data, function (d, idx) {
       return d && d.hasOwnProperty("id") ? d.id : idx;
     });
@@ -553,10 +556,10 @@ function initializeElements(timeline_container, data, duration, width, height, u
   **/
 
   // add event containers
-  timeline_event_g.exit().transition("timeline_event_remove")
+  timeline_event_g_join.exit().transition("timeline_event_remove")
     .style("opacity", 0)
     .duration(duration)
-    .remove();
+    .call(removeOnEnd);
 
   /**
   ---------------------------------------------------------------------------------------
@@ -565,20 +568,22 @@ function initializeElements(timeline_container, data, duration, width, height, u
   **/
 
   // define each event and its behaviour
-  var timeline_event_g_enter = timeline_event_g.enter()
+  // new events go after the existing ones, as they always have (and so are drawn on top)
+  var timeline_event_g_enter = timeline_event_g_join.enter()
     .append("g")
     .attr("class", "timeline_event_g")
-    .attr("id", d => `event_g${d.event_id}`);
+    .attr("id", d => `event_g${d.event_id}`)
+    .raise();
 
   // define event behaviour
   timeline_event_g_enter
-    .on("click", function (d, i) {
+    .on("click", function (event, d) {
       if (!globals.playback_mode) {
-        return eventClickListener(tl_representation, unit_width, configurableTL, d, i);
+        return eventClickListener(event, tl_representation, unit_width, configurableTL, d);
       }
     })
-    .on("mouseover", function (d) {
-      return eventMouseOverListener(d, tl_representation, unit_width, configurableTL);
+    .on("mouseover", function (event, d) {
+      return eventMouseOverListener(event, d, tl_representation, unit_width, configurableTL);
     })
     .on("mouseout", eventMouseOutListener);
 
@@ -654,7 +659,7 @@ function initializeElements(timeline_container, data, duration, width, height, u
           dateTime,
           event_id: d.event_id
         };
-      }) : undefined;
+      }) : [];
     }, function (d) {
       return d && (d.event_id + d.dateTime);
     })
@@ -684,13 +689,13 @@ function initializeElements(timeline_container, data, duration, width, height, u
   timeline_event_g_enter.append("path")
     .attr("class", "path_end_indicator")
     .style("opacity", 0)
-    .attr("d", d3.svg.symbol()
-      .type("triangle-up")
+    .attr("d", d3.symbol()
+      .type(d3.symbolTriangle)
       .size(unit_width * 1.5)
     )
     .style("display", "none");
 
-  return timeline_event_g;
+  return timeline_event_g_enter.merge(timeline_event_g_join);
 }
 
 function updateElements(interim_duration_scale, timeline_event_g, duration, configurableTL, tl_layout, tl_scale, tl_representation, width, height, data, unit_width, prev_tl_layout, prev_tl_representation, prev_tl_scale, timeline_scale) {
@@ -762,7 +767,7 @@ function configureTimelineScaleSegments(tl_layout, tl_representation, tl_scale, 
       if (representation === "Radial") {
         // valid scale
         // initialize the time scale
-        timeline_scale = d3.time.scale()
+        timeline_scale = d3.scaleTime()
           .range([0, 2 * Math.PI]);
 
         const endYear = data.max_end_date.getUTCFullYear();
@@ -816,12 +821,12 @@ function configureTimelineScaleSegments(tl_layout, tl_representation, tl_scale, 
       } else {
         // valid scale
         if (globals.date_granularity === "epochs") { // eslint-disable-line no-lonely-if
-          timeline_scale = d3.scale.linear()
+          timeline_scale = d3.scaleLinear()
             .range([0, width - unit_width])
             .domain([data.min_start_date.valueOf(), data.max_end_date.valueOf()]);
           tick_format = format;
         } else {
-          timeline_scale = d3.time.scale()
+          timeline_scale = d3.scaleTime()
             .range([0, width - unit_width])
             .domain([data.min_start_date, data.max_end_date]);
           if (globals.date_granularity === "years" && data.min_start_date.getUTCFullYear() <= 100) {
@@ -839,7 +844,7 @@ function configureTimelineScaleSegments(tl_layout, tl_representation, tl_scale, 
       }
       logEvent(scale + " scale updated with " + globals.date_granularity + " date granularity and range: " + data.min_start_date + " - " + data.max_end_date, "scale_update");
     } else if (scale === "Log") {
-      timeline_scale = d3.scale.log()
+      timeline_scale = d3.scaleLog()
         .range([0, width - unit_width]);
 
       log_bounds = -1 * Math.abs(data.max_end_date.valueOf() - data.min_start_date.valueOf()) - 1;
@@ -900,13 +905,13 @@ function configureTimelineScaleSegments(tl_layout, tl_representation, tl_scale, 
         } else {
           index_offset = 1;
         }
-        timeline_scale = d3.scale.linear()
+        timeline_scale = d3.scaleLinear()
           .range([0, 2 * Math.PI])
           .domain([0, (Math.ceil(globals.max_seq_index / index_offset) + 1) * index_offset]);
         timeline_scale_segments = d3.range(0, (Math.ceil(globals.max_seq_index / index_offset) + 1) * index_offset, index_offset);
         logEvent(tl_scale + " scale updated with range: 0 - " + globals.max_seq_index, "scale_update");
       } else {
-        timeline_scale = d3.scale.linear()
+        timeline_scale = d3.scaleLinear()
           .range([0, globals.max_seq_index * 1.5 * unit_width - unit_width])
           .domain([0, globals.max_seq_index * unit_width]);
 
@@ -941,10 +946,10 @@ function configureTimelineScaleSegments(tl_layout, tl_representation, tl_scale, 
 
                 // initialize the time scale
           if (globals.date_granularity === "epochs") {
-            interim_duration_scale = d3.scale.log().range([0.25 * unit_width, 4 * unit_width])
+            interim_duration_scale = d3.scaleLog().range([0.25 * unit_width, 4 * unit_width])
                     .domain([1, max_time_elapsed]);
           } else {
-            interim_duration_scale = d3.scale.linear().range([0.25 * unit_width, 4 * unit_width])
+            interim_duration_scale = d3.scaleLinear().range([0.25 * unit_width, 4 * unit_width])
                     .domain([0, max_time_elapsed]);
           }
         }
@@ -983,12 +988,12 @@ function configureTimelineScaleSegments(tl_layout, tl_representation, tl_scale, 
       case "Relative":
               // valid scale
         if (globals.date_granularity === "epochs") {
-          timeline_scale = d3.scale.linear()
+          timeline_scale = d3.scaleLinear()
                   .range([0, width - unit_width])
                   .domain([0, globals.max_end_age]);
           tick_format = format;
         } else {
-          timeline_scale = d3.scale.linear()
+          timeline_scale = d3.scaleLinear()
                   .range([0, width - unit_width])
                   .domain([0, globals.max_end_age]);
           tick_format = function (d) {
@@ -1024,7 +1029,7 @@ function configureTimelineScaleSegments(tl_layout, tl_representation, tl_scale, 
 
       case "Relative":
               // valid scale
-        timeline_scale = d3.scale.linear()
+        timeline_scale = d3.scaleLinear()
                 .range([0, 2 * Math.PI]);
 
         if (globals.segment_granularity === "days") {
@@ -1046,7 +1051,7 @@ function configureTimelineScaleSegments(tl_layout, tl_representation, tl_scale, 
   case "Segmented":
     if (tl_representation === "Linear" && tl_scale === "Chronological") {
         // valid scale
-      timeline_scale = d3.scale.linear()
+      timeline_scale = d3.scaleLinear()
           .range([0, width - unit_width]);
 
       switch (globals.segment_granularity) {
@@ -1080,7 +1085,7 @@ function configureTimelineScaleSegments(tl_layout, tl_representation, tl_scale, 
       logEvent(tl_scale + " scale updated with domain: " + timeline_scale.domain(), "scale_update");
     } else if (tl_representation === "Radial" && tl_scale === "Chronological") {
         // valid scale
-      timeline_scale = d3.scale.linear()
+      timeline_scale = d3.scaleLinear()
           .range([0, 2 * Math.PI]);
 
       switch (globals.segment_granularity) {
@@ -1128,20 +1133,22 @@ function configureTimelineScaleSegments(tl_layout, tl_representation, tl_scale, 
 }
 
 function configureSegments(timeline_container, duration, width, height, tl_layout, tl_representation, tl_scale, unit_width) {
-  const timeline_segment = timeline_container.selectAll(".timeline_segment")
+  const timeline_segment_join = timeline_container.selectAll(".timeline_segment")
     .data(globals.segments.domain());
 
   let segment_number = 0;
 
-  const timeline_segment_exit = timeline_segment.exit().transition("timeline_segment_exit")
+  const timeline_segment_exit = timeline_segment_join.exit().transition("timeline_segment_exit")
     .duration(duration)
-    .remove();
+    .call(removeOnEnd);
 
   // define each segment and its rect container
-  const timeline_segment_enter = timeline_segment.enter()
+  const timeline_segment_enter = timeline_segment_join.enter()
     .append("g")
     .attr("class", "timeline_segment")
     .each(insertFacetAtAxis);
+
+  const timeline_segment = timeline_segment_enter.merge(timeline_segment_join);
 
   const timeline_segment_update = timeline_segment.transition("timeline_segment_update")
     .duration(duration);
@@ -1240,20 +1247,22 @@ function configureSegments(timeline_container, duration, width, height, tl_layou
 
 
 function configureFacets(timeline_container, duration, width, height, tl_layout, tl_representation, tl_scale, unit_width) {
-  const timeline_facet = timeline_container.selectAll(".timeline_facet")
+  const timeline_facet_join = timeline_container.selectAll(".timeline_facet")
     .data(globals.facets.domain());
 
-  const timeline_facet_exit = timeline_facet.exit().transition("timeline_facet_exit")
+  const timeline_facet_exit = timeline_facet_join.exit().transition("timeline_facet_exit")
     .duration(duration)
-    .remove();
+    .call(removeOnEnd);
 
   let facet_number = 0;
 
   // define each facet and its rect container
-  const timeline_facet_enter = timeline_facet.enter()
+  const timeline_facet_enter = timeline_facet_join.enter()
     .append("g")
     .attr("class", "timeline_facet")
     .each(insertFacetAtAxis);
+
+  const timeline_facet = timeline_facet_enter.merge(timeline_facet_join);
 
   // update facet container dimensions
   const timeline_facet_update = timeline_facet.transition("timeline_facet_update")
@@ -1401,9 +1410,9 @@ function eventColorMapping(d) {
   return d.category === undefined ? "#E45641" : globals.categories(d.category);
 }
 
-function eventMouseOutListener(d) {
+function eventMouseOutListener(event, d) {
   selectAllWithParent(".temporary_annotation").transition("event_hover_hide").duration(100).style("opacity", 0);
-  selectAllWithParent(".temporary_annotation").transition("event_hover_remove").delay(100).remove();
+  selectAllWithParent(".temporary_annotation").transition("event_hover_remove").delay(100).call(removeOnEnd);
 
   d3.select(this)
     .selectAll(".event_span")
@@ -1427,7 +1436,7 @@ function eventMouseOutListener(d) {
   }
 }
 
-function eventMouseOverListener(d, tl_representation, unit_width, configurableTL) {
+function eventMouseOverListener(event, d, tl_representation, unit_width, configurableTL) {
   d3.select(this)
     .selectAll(".event_span")
     .attr("filter", "url(#drop-shadow)")
@@ -1442,8 +1451,8 @@ function eventMouseOverListener(d, tl_representation, unit_width, configurableTL
 
   const eventHasAnnotations = selectAllWithParent(`.event_${d.event_id}_annotation`).size() > 0;
   if (!eventHasAnnotations) {
-    var x_pos = d3.event.x,
-      y_pos = d3.event.y;
+    var x_pos = event.x,
+      y_pos = event.y;
 
     var item_x_pos = 0;
     var item_y_pos = 0;
@@ -1466,12 +1475,12 @@ function eventMouseOverListener(d, tl_representation, unit_width, configurableTL
   }
 }
 
-function eventClickListener(tl_representation, unit_width, configurableTL, d) {
+function eventClickListener(event, tl_representation, unit_width, configurableTL, d) {
   logEvent("event " + d.event_id + " clicked", "event_click");
 
   if (!d.selected || d.selected === undefined) {
-    var x_pos = d3.event.x,
-      y_pos = d3.event.y;
+    var x_pos = event.x,
+      y_pos = event.y;
     d.selected = true;
 
     d3.select(this)
@@ -1485,9 +1494,9 @@ function eventClickListener(tl_representation, unit_width, configurableTL, d) {
       .style("stroke-width", "1px");
 
     // annotate the event with its label if shift is not clicked
-    if (!d3.event.shiftKey) {
-      x_pos = d3.event.x;
-      y_pos = d3.event.y;
+    if (!event.shiftKey) {
+      x_pos = event.x;
+      y_pos = event.y;
 
       var item_x_pos = 0;
       var item_y_pos = 0;
@@ -1536,7 +1545,7 @@ function eventClickListener(tl_representation, unit_width, configurableTL, d) {
     } else {
       logEvent("event " + d.event_id + " annotation supressed (shift key)");
     }
-  } else if (!d3.event.shiftKey) {
+  } else if (!event.shiftKey) {
     d.selected = false;
     d3.select(this)
       .selectAll(".event_span")
@@ -1595,7 +1604,7 @@ function hideAxis(timeline_container, duration, selector) {
   timeline_container.selectAll(".grid_axis")
     .transition(`${selector}_remove`)
     .delay(duration * 3)
-    .remove();
+    .call(removeOnEnd);
 }
 
 function configureCalendarAxis(tl_representation, duration, data, calendar_axis, timeline_container, prev_tl_representation) {
@@ -1867,6 +1876,7 @@ function configureCollapsedAxis(tl_representation, prev_tl_scale, tl_scale, tl_l
   if (tl_representation === "Linear" && tl_scale === "Collapsed" && tl_layout === "Unified") {
     interim_duration_axis.ticks(2);
     interim_duration_axis.scale(interim_duration_scale);
+    interim_duration_axis.tickValues(utils.ticks(interim_duration_scale, 2));
 
     interim_duration_axis.tickFormat(function (d) {
       var converted_tick = d;
@@ -1910,11 +1920,11 @@ function configureCollapsedAxis(tl_representation, prev_tl_scale, tl_scale, tl_l
 }
 
 function configureLinearAxis(timeline_scale, tl_layout, tl_representation, prev_tl_representation, tl_scale, data, tick_format, unit_width, timeline_container, duration, width, height) {
-  const timeline_axis = d3.svg.axis().orient("top");
+  const timeline_axis = d3.axisTop().offset(0);
   if (tl_representation === "Linear") {
     timeline_axis.scale(timeline_scale);
     timeline_axis.ticks(10);
-    timeline_axis.tickSize(6, 0);
+    timeline_axis.tickSizeInner(6).tickSizeOuter(0);
     timeline_axis.tickFormat(undefined);
     timeline_axis.tickValues(undefined);
 
@@ -1923,14 +1933,14 @@ function configureLinearAxis(timeline_scale, tl_layout, tl_representation, prev_
       timeline_axis.tickValues(undefined);
     } else if (tl_scale === "Sequential" || tl_scale === "Collapsed") {
       timeline_axis.ticks(10);
-      timeline_axis.tickSize(6, 0);
+      timeline_axis.tickSizeInner(6).tickSizeOuter(0);
       timeline_axis.tickValues(d3.range(0, globals.max_seq_index * 1.5 * unit_width - unit_width, unit_width * 10));
       timeline_axis.tickFormat(function (d) {
         return d / unit_width;
       });
     } else if (tl_scale === "Log") {
       timeline_axis.ticks(10, tick_format);
-      timeline_axis.tickSize(6, 0);
+      timeline_axis.tickSizeInner(6).tickSizeOuter(0);
       timeline_axis.tickValues(undefined);
     } else if (tl_scale === "Relative" || globals.date_granularity === "epochs") {
       timeline_axis.tickFormat(tick_format);
@@ -2001,6 +2011,10 @@ function configureLinearAxis(timeline_scale, tl_layout, tl_representation, prev_
       });
     }
 
+    if (timeline_axis.tickValues() === null && tl_scale !== "Log") {
+      timeline_axis.tickValues(utils.ticks(timeline_scale, 10));
+    }
+
     // update the timeline axis for linear timelines
     var timeline_axis_container = timeline_container.selectAll(".timeline_axis")
       .data([null]);
@@ -2030,7 +2044,7 @@ function configureLinearAxis(timeline_scale, tl_layout, tl_representation, prev_
 
     timeline_axis_update.selectAll(".tick line")
       .delay(function (d, i) { // eslint-disable-line no-shadow
-        return i * duration / timeline_axis_update.selectAll(".tick line")[0].length;
+        return i * duration / timeline_axis_update.selectAll(".tick line").size();
       })
       .attr("y1", -6)
       .attr("y2", 0);
@@ -2044,7 +2058,7 @@ function configureLinearAxis(timeline_scale, tl_layout, tl_representation, prev_
 
     bottom_timeline_axis_update.selectAll("text")
       .delay(function (d, i) { // eslint-disable-line no-shadow
-        return i * duration / bottom_timeline_axis_update.selectAll(".tick line")[0].length;
+        return i * duration / bottom_timeline_axis_update.selectAll(".tick line").size();
       })
       .attr("y", height + 18);
 
@@ -2055,7 +2069,7 @@ function configureLinearAxis(timeline_scale, tl_layout, tl_representation, prev_
 
     bottom_timeline_axis_update.selectAll(".tick line")
       .delay(function (d, i) { // eslint-disable-line no-shadow
-        return i * duration / bottom_timeline_axis_update.selectAll(".tick line")[0].length;
+        return i * duration / bottom_timeline_axis_update.selectAll(".tick line").size();
       })
       .attr("y1", 0)
       .attr("y2", height + 6);
@@ -2802,7 +2816,7 @@ function update(tl_layout, tl_scale, tl_representation, width, height, data, uni
           if (globals.segment_granularity === "centuries" || globals.segment_granularity === "millenia" || globals.segment_granularity === "epochs") {
             x_pos = 0;
           } else {
-            x_pos = d3.max([0, d3.time.weekOfYear(dateTime) * 20]);
+            x_pos = d3.max([0, utils.weekOfYear(dateTime) * 20]);
           }
         }
       }
@@ -2970,7 +2984,7 @@ function update(tl_layout, tl_scale, tl_representation, width, height, data, uni
           const range_floor = data.min_start_date.getUTCFullYear();
           const year_offset = year_height * (d.start_date.getUTCFullYear() - range_floor);
           rotation = 180;
-          x_pos = d3.max([0, d3.time.weekOfYear(d.start_date) * 20 + 0.33 * unit_width]);
+          x_pos = d3.max([0, utils.weekOfYear(d.start_date) * 20 + 0.33 * unit_width]);
           y_pos = d3.max([0, d.start_date.getDay() * cell_size + year_offset + unit_width * 0.33]);
         }
       } else if (tl_layout === "Unified" && tl_scale === "Chronological") {
@@ -3053,7 +3067,7 @@ function delayedUpdate(tl_layout, tl_representation, tl_scale, interim_duration_
 
   if (tl_representation === "Radial") {
     transition.select("path.event_span")
-      .attrTween("d", arcTween(d3.svg.arc()
+      .attrTween("d", arcTween(d3.arc()
         .innerRadius(function (d) {
           var inner_radius = globals.centre_radius;
           switch (tl_scale) {
@@ -3275,7 +3289,7 @@ function delayedUpdate(tl_layout, tl_representation, tl_scale, interim_duration_
     });
   if (tl_representation === "Radial") {
     transition.selectAll("path.event_span_component")
-      .attrTween("d", arcTween(d3.svg.arc()
+      .attrTween("d", arcTween(d3.arc()
         .innerRadius(function () {
           var inner_radius = globals.centre_radius;
           if (tl_scale === "Relative" || tl_scale === "Chronological") {

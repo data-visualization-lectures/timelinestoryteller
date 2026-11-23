@@ -107,7 +107,8 @@ function reset() {
     reader: new FileReader(),
     timeline_json_data: [],
     timeline_story: {},
-    formatNumber: d3.format(".0f"),
+    // a plain hyphen for negative numbers, as before (d3 now defaults to the minus sign U+2212)
+    formatNumber: d3.formatLocale({ decimal: ".", thousands: ",", grouping: [3], currency: ["$", ""], minus: "-" }).format(".0f"),
     range_text: "",
     color_palette: [],
     color_swap_target: 0,

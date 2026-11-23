@@ -51,8 +51,8 @@ module.exports = function (caption, caption_width, x_rel_pos, y_rel_pos, caption
         .attr("filter", "none");
     });
 
-  var drag = d3.behavior.drag()
-    .origin(function () {
+  var drag = d3.drag()
+    .subject(function () {
       var t = d3.select(this);
 
       return {
@@ -60,9 +60,9 @@ module.exports = function (caption, caption_width, x_rel_pos, y_rel_pos, caption
         y: t.attr("y")
       };
     })
-    .on("drag", function () {
-      x_pos = d3.event.x;
-      y_pos = d3.event.y;
+    .on("drag", function (event) {
+      x_pos = event.x;
+      y_pos = event.y;
 
       captionObj.x_rel_pos = x_pos / globals.width;
       captionObj.y_rel_pos = y_pos / globals.height;
@@ -87,12 +87,12 @@ module.exports = function (caption, caption_width, x_rel_pos, y_rel_pos, caption
         .attr("x", x_pos + caption_width + 7.5 + 20)
         .attr("y", y_pos);
     })
-    .on("dragend", function () {
+    .on("end", function () {
       logEvent("caption " + captionObj.id + " moved to [" + x_pos + "," + y_pos + "]");
     });
 
-  var resize = d3.behavior.drag()
-    .origin(function () {
+  var resize = d3.drag()
+    .subject(function () {
       var t = d3.select(this);
       y_pos = +t.attr("y");
 
@@ -101,10 +101,10 @@ module.exports = function (caption, caption_width, x_rel_pos, y_rel_pos, caption
         y: t.attr("y")
       };
     })
-    .on("drag", function () {
-      d3.select(this).attr("x", d3.max([x_pos + caption_width + 7.5, x_pos + 7.5 + (d3.event.x - x_pos)]));
+    .on("drag", function (event) {
+      d3.select(this).attr("x", d3.max([x_pos + caption_width + 7.5, x_pos + 7.5 + (event.x - x_pos)]));
 
-      caption_width = d3.max([min_caption_width, d3.event.x - x_pos]);
+      caption_width = d3.max([min_caption_width, event.x - x_pos]);
 
       captionObj.caption_width = caption_width;
 
@@ -128,7 +128,7 @@ module.exports = function (caption, caption_width, x_rel_pos, y_rel_pos, caption
         .text(caption)
         .call(wrap, caption_width - 7.5);
     })
-    .on("dragend", function () {
+    .on("end", function () {
       logEvent("caption " + captionObj.id + " resized to " + caption_width + "px");
     });
 

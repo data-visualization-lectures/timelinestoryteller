@@ -19,6 +19,7 @@ var GIF = require("./lib/gif").GIF;
 var svgImageUtils = require("./lib/saveSvgAsPng");
 var imageUrls = require("./imageUrls");
 var utils = require("./utils");
+var removeOnEnd = utils.removeOnEnd;
 var selectWithParent = utils.selectWithParent;
 var selectAllWithParent = utils.selectAllWithParent;
 var setScaleValue = utils.setScaleValue;
@@ -37,6 +38,15 @@ var gif = new GIF({
 });
 var getNextZIndex = require("./annotations").getNextZIndex;
 var helpUrl = "help.html?lang=" + tr.locale();
+
+/**
+ * The selected filter options as [[option, ...]]: the shape the filter events read and that saved stories store
+ * @param {d3.Selection} selection A selection of option elements
+ * @returns {Array} The option elements in one group
+ */
+function optionGroups(selection) {
+  return [selection.nodes()];
+}
 
 /**
  * Describes the time between two dates in words, e.g. "158 years"
@@ -179,8 +189,8 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       .attr("y", instance._container.node().scrollTop - 6);
   });
 
-  var legendDrag = d3.behavior.drag()
-    .origin(function () {
+  var legendDrag = d3.drag()
+    .subject(function () {
       var t = d3.select(this);
 
       return {
@@ -188,9 +198,9 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
         y: t.attr("y")
       };
     })
-    .on("drag", function () {
-      var x_pos = d3.event.x;
-      var y_pos = d3.event.y;
+    .on("drag", function (event) {
+      var x_pos = event.x;
+      var y_pos = event.y;
 
       if (x_pos < 0) {
         x_pos = 0;
@@ -206,15 +216,15 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
         .attr("x", x_pos)
         .attr("y", y_pos);
     })
-    .on("dragend", function () {
+    .on("end", function () {
       globals.legend_x = d3.select(this).attr("x");
       globals.legend_y = d3.select(this).attr("y");
 
       logEvent("legend moved to: " + globals.legend_x + ", " + globals.legend_y, "legend");
     });
 
-  var filterDrag = d3.behavior.drag()
-    .origin(function () {
+  var filterDrag = d3.drag()
+    .subject(function () {
       var t = selectWithParent("#filter_div");
 
       return {
@@ -222,9 +232,9 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
         y: parseInt(t.style("top"), 10)
       };
     })
-    .on("drag", function () {
-      var x_pos = d3.event.x;
-      var y_pos = d3.event.y;
+    .on("drag", function (event) {
+      var x_pos = event.x;
+      var y_pos = event.y;
 
       if (x_pos < (10 + parseInt(selectWithParent("#menu_div").style("width"), 10) + 10)) {
         x_pos = (10 + parseInt(selectWithParent("#menu_div").style("width"), 10) + 10);
@@ -242,7 +252,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
         .style("left", x_pos + "px")
         .style("top", y_pos + "px");
     })
-    .on("dragend", function () {
+    .on("end", function () {
       var filter_x = selectWithParent("#filter_div").style("left");
       var filter_y = selectWithParent("#filter_div").style("top");
 
@@ -255,8 +265,8 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
   --------------------------------------------------------------------------------------
   **/
 
-  selectWithParent().on("keydown", function () {
-    if (d3.event.keyCode === 76 && d3.event.altKey) {
+  selectWithParent().on("keydown", function (event) {
+    if (event.keyCode === 76 && event.altKey) {
       // recover legend
       selectWithParent(".legend")
         .transition()
@@ -267,18 +277,18 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       globals.legend_x = 0;
       globals.legend_y = 0;
     }
-    if (d3.event.keyCode === 82 && d3.event.altKey) {
+    if (event.keyCode === 82 && event.altKey) {
       // recover legend
       if (!instance.playback_mode) {
         instance._recordScene();
       }
-    } else if (instance.playback_mode && d3.event.keyCode === 39) {
+    } else if (instance.playback_mode && event.keyCode === 39) {
       goNextScene();
-    } else if (instance.playback_mode && d3.event.keyCode === 37) {
+    } else if (instance.playback_mode && event.keyCode === 37) {
       goPreviousScene();
-    } else if (d3.event.keyCode === 80 && d3.event.altKey) {
+    } else if (event.keyCode === 80 && event.altKey) {
       instance.setPlaybackMode(!instance.playback_mode);
-    } else if (d3.event.keyCode === 46 && selectWithParent("#caption_div").style("display") === "none" && instance._addImagePopup.hidden() && !instance.importPanel.visible) {
+    } else if (event.keyCode === 46 && selectWithParent("#caption_div").style("display") === "none" && instance._addImagePopup.hidden() && !instance.importPanel.visible) {
       globals.deleteScene();
     }
   });
@@ -361,7 +371,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
   **/
 
   selectWithParent("#export_div").append("input")
-    .attr({
+    .call(utils.attrs({
       type: "image",
       name: tr("Hide export panel"),
       id: "export_close_btn",
@@ -370,7 +380,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       height: 15,
       width: 15,
       title: tr("Hide export panel")
-    })
+    }))
     .style("margin-top", "5px")
     .on("click", function () {
       selectWithParent("#export_div").style("top", -185 + "px");
@@ -386,7 +396,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     .attr("id", "export_formats");
 
   export_formats.append("input")
-    .attr({
+    .call(utils.attrs({
       type: "image",
       name: tr("Export PNG"),
       class: "img_btn_enabled export--image",
@@ -394,7 +404,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       height: 30,
       width: 30,
       title: tr("Export PNG")
-    })
+    }))
     .on("click", function () {
       selectAllWithParent("foreignObject").remove();
 
@@ -404,7 +414,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     });
 
   export_formats.append("input")
-    .attr({
+    .call(utils.attrs({
       type: "image",
       name: tr("Export SVG"),
       class: "img_btn_enabled export--image",
@@ -412,7 +422,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       height: 30,
       width: 30,
       title: tr("Export SVG")
-    })
+    }))
     .on("click", function () {
       selectAllWithParent("foreignObject").remove();
 
@@ -422,7 +432,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     });
 
   export_formats.append("input")
-    .attr({
+    .call(utils.attrs({
       type: "image",
       name: tr("Export animated GIF"),
       class: "img_btn_enabled export--image",
@@ -430,7 +440,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       height: 30,
       width: 30,
       title: tr("Export animated GIF")
-    })
+    }))
     .on("click", function () {
       selectAllWithParent("foreignObject").remove();
 
@@ -470,7 +480,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     });
 
   export_formats.append("input")
-    .attr({
+    .call(utils.attrs({
       type: "image",
       name: tr("Export story"),
       class: "img_btn_enabled",
@@ -478,7 +488,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       height: 30,
       width: 30,
       title: tr("Export story")
-    })
+    }))
     .on("click", function () {
       selectAllWithParent("foreignObject").remove();
 
@@ -557,7 +567,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     .html("<span class='boilerplate_title'>Timeline Storyteller</span>");
 
   boilerplate.append("input")
-    .attr({
+    .call(utils.attrs({
       type: "image",
       name: tr("Hide import panel"),
       id: "import_close_btn",
@@ -566,7 +576,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       height: 15,
       width: 15,
       title: tr("Hide import panel")
-    })
+    }))
     .style("margin-top", "5px")
     .on("click", function () {
       logEvent("hiding import panel", "load");
@@ -594,11 +604,11 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     .attr("id", "timeline_metadata_contents");
 
   timeline_metadata.append("div")
-    .attr({
+    .call(utils.attrs({
       id: "draw_timeline",
       class: "img_btn_enabled import_label draw_timeline",
       title: tr("Draw Timeline")
-    })
+    }))
     .on("click", function () {
       drawTimeline(globals.active_data);
 
@@ -636,7 +646,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
   var representation_rb_label = representation_rb.append("label")
     .attr("class", "option_rb")
-    .on("mouseover", function (d) {
+    .on("mouseover", function (event, d) {
       var pos_x = this.getBoundingClientRect().left;
       var offset_x = 0;
       if (pos_x > globals.width / 2) {
@@ -668,27 +678,27 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     });
 
   representation_rb_label.append("input")
-    .attr({
+    .call(utils.attrs({
       type: "radio",
       name: "representation_rb",
       value: function (d) {
         return d.name;
       }
-    })
+    }))
     .property("checked", function (d) {
       return d.name === timeline_vis.tl_representation();
     })
     .property("disabled", true);
 
   representation_rb_label.append("img")
-    .attr({
+    .call(utils.attrs({
       height: 40,
       width: 40,
       class: "img_btn_disabled",
       src: function (d) {
         return d.icon;
       }
-    });
+    }));
 
   representation_rb_label.append("span")
     .attr("class", "option_rb_label")
@@ -711,7 +721,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
   var scale_rb_label = scale_rb.append("label")
     .attr("class", "option_rb")
-    .on("mouseover", function (d) {
+    .on("mouseover", function (event, d) {
       var pos_x = this.getBoundingClientRect().left;
       var offset_x = 0;
       if (pos_x > globals.width / 2) {
@@ -743,27 +753,27 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     });
 
   scale_rb_label.append("input")
-    .attr({
+    .call(utils.attrs({
       type: "radio",
       name: "scale_rb",
       value: function (d) {
         return d.name;
       }
-    })
+    }))
     .property("checked", function (d) {
       return d.name === timeline_vis.tl_scale();
     })
     .property("disabled", true);
 
   scale_rb_label.append("img")
-    .attr({
+    .call(utils.attrs({
       height: 40,
       width: 40,
       class: "img_btn_disabled",
       src: function (d) {
         return d.icon;
       }
-    });
+    }));
 
   scale_rb_label.append("span")
     .attr("class", "option_rb_label")
@@ -787,7 +797,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
   var layout_rb_label = layout_rb.append("label")
     .attr("class", "option_rb")
-    .on("mouseover", function (d) {
+    .on("mouseover", function (event, d) {
       var pos_x = this.getBoundingClientRect().left;
       var offset_x = 0;
       if (pos_x > globals.width / 2) {
@@ -819,27 +829,27 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     });
 
   layout_rb_label.append("input")
-    .attr({
+    .call(utils.attrs({
       type: "radio",
       name: "layout_rb",
       value: function (d) {
         return d.name;
       }
-    })
+    }))
     .property("checked", function (d) {
       return d.name === timeline_vis.tl_layout();
     })
     .property("disabled", true);
 
   layout_rb_label.append("img")
-    .attr({
+    .call(utils.attrs({
       height: 40,
       width: 40,
       class: "img_btn_disabled",
       src: function (d) {
         return d.icon;
       }
-    });
+    }));
 
   layout_rb_label.append("span")
     .attr("class", "option_rb_label")
@@ -848,17 +858,17 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     });
 
   selectWithParent("#caption_div").append("textarea")
-    .attr({
+    .call(utils.attrs({
       cols: 37,
       rows: 5,
       placeholder: tr("Caption text"),
       class: "text_input",
       maxlength: 140,
       id: "add_caption_text_input"
-    });
+    }));
 
   selectWithParent("#caption_div").append("input")
-    .attr({
+    .call(utils.attrs({
       type: "image",
       name: tr("Add Caption"),
       id: "add_caption_btn",
@@ -867,7 +877,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       height: 20,
       width: 20,
       title: tr("Add Caption")
-    })
+    }))
     .on("click", function () {
       selectWithParent("#caption_div").style("display", "none");
       var caption = selectWithParent("#add_caption_text_input").property("value");
@@ -977,13 +987,13 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
           globals.legend_rect_size = globals.unit_width;
           globals.legend_spacing = 5;
           globals.categories = undefined;
-          globals.categories = d3.scale.ordinal(); // scale for event types
+          globals.categories = d3.scaleOrdinal(); // scale for event types
           if (globals.color_palette !== undefined) {
             globals.categories.range(globals.color_palette);
           }
-          globals.facets = d3.scale.ordinal(); // scale for facets (timelines)
-          globals.segments = d3.scale.ordinal(); // scale for segments
-          globals.present_segments = d3.scale.ordinal();
+          globals.facets = d3.scaleOrdinal(); // scale for facets (timelines)
+          globals.segments = d3.scaleOrdinal(); // scale for segments
+          globals.present_segments = d3.scaleOrdinal();
           globals.num_categories = 0;
           globals.num_facets = 0;
           globals.timeline_facets = [];
@@ -1004,14 +1014,14 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
             .attr("id", "record_scene_div")
             .attr("class", "nav_bttn")
             .append("img")
-            .attr({
+            .call(utils.attrs({
               id: "record_scene_btn",
               class: "img_btn_disabled",
               src: imageUrls("record.png"),
               height: 20,
               width: 20,
               title: tr("Record Scene")
-            })
+            }))
             .on("click", function () {
               if (!instance.playback_mode) {
                 instance._recordScene();
@@ -1054,25 +1064,25 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
             .attr("class", "nav_cb");
 
           playback_cb_label.append("input")
-            .attr({
+            .call(utils.attrs({
               type: "checkbox",
               name: "playback_cb",
               value: instance.playback_mode
-            })
+            }))
             .property("checked", false)
             .on("change", function () {
               instance.setPlaybackMode(!instance.playback_mode);
             });
 
           playback_cb_label.append("img")
-            .attr({
+            .call(utils.attrs({
               id: "play_scene_btn",
               class: "img_btn_disabled",
               src: imageUrls("play.png"),
               height: 20,
               width: 20,
               title: tr("Toggle Playback Mode")
-            });
+            }));
 
           playback_bar.append("div")
             .attr("id", "stepper_container")
@@ -1175,7 +1185,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
    * @returns {void}
    */
   function initTimelineData(data, shouldDrawTimeline) {
-    var unique_values = d3.map([]);
+    var unique_values = new Map();
     var unique_data = [];
 
     globals.timeline_json_data = data;
@@ -1189,7 +1199,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
     // find unique values
     unique_values.forEach(function (d) {
-      unique_data.push(unique_values.get(d));
+      unique_data.push(d);
     });
     logEvent(unique_data.length + " unique events", "preprocessing");
 
@@ -1293,7 +1303,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     }
 
     filter_div.append("input")
-      .attr({
+      .call(utils.attrs({
         type: "image",
         name: tr("Hide filter panel"),
         id: "export_close_btn",
@@ -1302,7 +1312,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
         height: 15,
         width: 15,
         title: tr("Hide filter panel")
-      })
+      }))
       .style("position", "absolute")
       .style("top", "0px")
       .style("left", "5px")
@@ -1342,20 +1352,20 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       .attr("class", "menu_rb");
 
     filter_type_rb_label.append("input")
-      .attr({
+      .call(utils.attrs({
         type: "radio",
         name: "filter_type_rb",
         value: function (d) {
           return d;
         }
-      })
+      }))
       .property("disabled", false)
       .property("checked", function (d) {
         return d === "Emphasize";
       });
 
     filter_type_rb_label.append("img")
-      .attr({
+      .call(utils.attrs({
         class: "img_btn_enabled",
         height: 30,
         width: 30,
@@ -1365,7 +1375,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
         src: function (d) {
           return imageUrls(d === "Emphasize" ? "highlight.png" : "hide.png");
         }
-      })
+      }))
       .style("margin-bottom", "0px");
 
     filter_type_rb_label.append("span")
@@ -1375,9 +1385,9 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       });
 
     selectAllWithParent("#filter_type_picker input[name=filter_type_rb]").on("change", function () {
-      const newCategories = selectWithParent("#category_picker").select("option");
-      const newFacets = selectWithParent("#facet_picker").select("option");
-      const newSegments = selectWithParent("#segment_picker").select("option");
+      const newCategories = optionGroups(selectWithParent("#category_picker").select("option"));
+      const newFacets = optionGroups(selectWithParent("#facet_picker").select("option"));
+      const newSegments = optionGroups(selectWithParent("#segment_picker").select("option"));
 
       globals.filter_type = this.value;
 
@@ -1396,10 +1406,8 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
         globals.selected_segments[0].length !== 1 || globals.selected_segments[0][0].value !== "( All )";
 
       if (trigger_remove_filter) {
-        const remove = globals.dispatch.remove;
-        const emphasize = globals.dispatch.Emphasize;
-        (isHide ? emphasize : remove).call(globals.dispatch, newCategories, newFacets, newSegments);
-        (isHide ? remove : emphasize).call(globals.dispatch, globals.selected_categories, globals.selected_facets, globals.selected_segments);
+        globals.dispatch.call(isHide ? "Emphasize" : "remove", globals.dispatch, newCategories, newFacets, newSegments);
+        globals.dispatch.call(isHide ? "remove" : "Emphasize", globals.dispatch, globals.selected_categories, globals.selected_facets, globals.selected_segments);
       }
     });
 
@@ -1419,14 +1427,14 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       .style("margin-right", "100%")
       .attr("id", "category_picker_label")
       .append("img")
-      .attr({
+      .call(utils.attrs({
         name: tr("Filter by event category"),
         class: "filter_header_icon",
         height: 30,
         width: 30,
         title: tr("Filter by event category"),
         src: imageUrls("categories.png")
-      });
+      }));
 
     var all_categories = ["( All )"];
 
@@ -1434,9 +1442,9 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       .attr("class", "filter_select")
       .attr("size", 8)
       .attr("id", "category_picker")
-      .attr({
+      .call(utils.attrs({
         multiple: true
-      })
+      }))
       .on("change", function () {
         instance._updateSelectedFilters(d3.select(this), "selected_categories");
       })
@@ -1450,11 +1458,11 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
         return d === "( All )";
       });
 
-    globals.selected_categories = selectWithParent("#category_picker")
+    globals.selected_categories = optionGroups(selectWithParent("#category_picker")
       .selectAll("option")
       .filter(function () {
         return this.selected;
-      });
+      }));
 
     /**
     ---------------------------------------------------------------------------------------
@@ -1467,7 +1475,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       return d.facet;
     }));
 
-    globals.facets.domain().sort();
+    globals.facets.domain(globals.facets.domain().sort());
 
     globals.num_facets = globals.facets.domain().length;
     globals.total_num_facets = globals.num_facets;
@@ -1492,14 +1500,14 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       .style("margin-right", "100%")
       .attr("id", "facet_picker_label")
       .append("img")
-      .attr({
+      .call(utils.attrs({
         name: tr("Filter by event facet"),
         class: "filter_header_icon",
         height: 30,
         width: 30,
         title: tr("Filter by event facet"),
         src: imageUrls("facets.png")
-      });
+      }));
 
     var all_facets = ["( All )"];
 
@@ -1507,9 +1515,9 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       .attr("class", "filter_select")
       .attr("size", 8)
       .attr("id", "facet_picker")
-      .attr({
+      .call(utils.attrs({
         multiple: true
-      })
+      }))
       .on("change", function () {
         instance._updateSelectedFilters(d3.select(this), "selected_facets");
       })
@@ -1523,11 +1531,11 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
         return d === "( All )";
       });
 
-    globals.selected_facets = selectWithParent("#facet_picker")
+    globals.selected_facets = optionGroups(selectWithParent("#facet_picker")
       .selectAll("option")
       .filter(function () {
         return this.selected;
-      });
+      }));
 
     /**
     ---------------------------------------------------------------------------------------
@@ -1584,14 +1592,14 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       .style("margin-right", "100%")
       .attr("id", "segment_picker_label")
       .append("img")
-      .attr({
+      .call(utils.attrs({
         name: tr("Filter by chronological segment"),
         class: "filter_header_icon",
         height: 30,
         width: 30,
         title: tr("Filter by chronological segment"),
         src: imageUrls("segments.png")
-      });
+      }));
 
     var all_segments = ["( All )"];
 
@@ -1599,9 +1607,9 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       .attr("id", "segment_picker")
       .attr("class", "filter_select")
       .attr("size", 8)
-      .attr({
+      .call(utils.attrs({
         multiple: true
-      })
+      }))
       .on("change", function () {
         instance._updateSelectedFilters(d3.select(this), "selected_segments");
       })
@@ -1615,11 +1623,11 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
         return d === "( All )";
       });
 
-    globals.selected_segments = selectWithParent("#segment_picker")
+    globals.selected_segments = optionGroups(selectWithParent("#segment_picker")
       .selectAll("option")
       .filter(function () {
         return this.selected;
-      });
+      }));
 
     globals.all_data = data;
     globals.active_data = globals.all_data;
@@ -1658,8 +1666,9 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       .attr("class", "colorpicker_wrapper")
       .attr("filter", "url(#drop-shadow)")
       .style("background-color", globals.categories)
-      .on("click", function (d, i) {
+      .on("click", function (event, d) {
         var colorEle = this;
+        var i = globals.categories.domain().sort().indexOf(d);
         instance._colorPicker.show(this, globals.categories(d), function (value) {
           // Update the display
           d3.select(colorEle).style("background-color", value);
@@ -1799,7 +1808,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
     navigation_step.exit().transition()
       .delay(1000)
-      .remove();
+      .call(removeOnEnd);
 
     var navigation_step_update = navigation_step.transition()
       .duration(instance.options.animations ? 1000 : 0);
@@ -1832,7 +1841,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
         return tr("Scene {number}", { number: d.s_order + 1 });
       });
 
-    function changeSceneClickHandler(d) {
+    function changeSceneClickHandler(event, d) {
       instance._currentSceneIndex = d.s_order;
       changeScene(instance._currentSceneIndex);
     }
@@ -1907,7 +1916,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       .on("mouseout", function () {
         d3.select(this).style("stroke", "#ccc");
       })
-      .on("click", function (d) {
+      .on("click", function (event, d) {
         selectWithParent("#frame" + d.s_order).remove();
         selectAllWithParent(".frame_hover").remove();
         // delete current scene unless image or caption div is open
@@ -1932,7 +1941,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
         updateNavigationStepper();
 
-        instance._dispatch.stateChanged();
+        instance._dispatch.call("stateChanged");
 
         if (instance._currentSceneIndex === d.s_order) { // is current scene to be deleted?
           if (instance._currentSceneIndex === globals.scenes.length - 1) { // is it the final scene?
@@ -1989,7 +1998,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
             .attr("width", 296)
             .attr("height", 296);
         })
-        .on("mouseout", function (d) {
+        .on("mouseout", function (event, d) {
           d3.select(this).select(".scene_delete")
             .style("opacity", 0);
 
@@ -2153,10 +2162,10 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
           return d === "Hide";
         });
       if (globals.filter_type === "Emphasize") {
-        globals.dispatch.Emphasize(selectWithParent("#category_picker").select("option"), selectWithParent("#facet_picker").select("option"), selectWithParent("#segment_picker").select("option"));
+        globals.dispatch.call("Emphasize", globals.dispatch, optionGroups(selectWithParent("#category_picker").select("option")), optionGroups(selectWithParent("#facet_picker").select("option")), optionGroups(selectWithParent("#segment_picker").select("option")));
       }
       globals.filter_type = "Hide";
-      globals.dispatch.remove(globals.selected_categories, globals.selected_facets, globals.selected_segments);
+      globals.dispatch.call("remove", globals.dispatch, globals.selected_categories, globals.selected_facets, globals.selected_segments);
     } else if (scene.s_filter_type === "Emphasize") {
       selectAllWithParent("#filter_type_picker input[name=filter_type_rb]")
         .property("checked", function (d) {
@@ -2164,10 +2173,10 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
         });
       if (globals.filter_type === "Hide") {
         globals.active_data = globals.all_data;
-        globals.dispatch.remove(selectWithParent("#category_picker").select("option"), selectWithParent("#facet_picker").select("option"), selectWithParent("#segment_picker").select("option"));
+        globals.dispatch.call("remove", globals.dispatch, optionGroups(selectWithParent("#category_picker").select("option")), optionGroups(selectWithParent("#facet_picker").select("option")), optionGroups(selectWithParent("#segment_picker").select("option")));
       }
       globals.filter_type = "Emphasize";
-      globals.dispatch.Emphasize(globals.selected_categories, globals.selected_facets, globals.selected_segments);
+      globals.dispatch.call("Emphasize", globals.dispatch, globals.selected_categories, globals.selected_facets, globals.selected_segments);
     }
 
     // where is the legend in the scene?
@@ -2252,17 +2261,20 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     logEvent("range: " + globals.range_text, "preprocessing");
 
     // create a nested data structure to contain faceted data
-    globals.timeline_facets = d3.nest()
-      .key(function (d) {
-        return d.facet;
+    globals.timeline_facets = d3.groups(data, function (d) {
+      return String(d.facet);
+    })
+      .sort(function (a, b) {
+        return d3.ascending(a[0], b[0]);
       })
-      .sortKeys(d3.ascending)
-      .entries(data);
+      .map(function (group) {
+        return { key: group[0], values: group[1] };
+      });
 
     // get event durations
     data.forEach(function (item) {
       if (globals.date_granularity === "days") {
-        item.duration = d3.time.days(item.start_date, item.end_date).length;
+        item.duration = d3.timeDays(item.start_date, item.end_date).length;
       } else if (globals.date_granularity === "years") {
         item.duration = item.end_date.getUTCFullYear() - item.start_date.getUTCFullYear();
       } else if (globals.date_granularity === "epochs") {
@@ -2422,7 +2434,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
         return ("translate(0," + (35 + (i + 1) * globals.track_height) + ")");
       });
 
-      globals.legend.on("mouseover", function (d) {
+      globals.legend.on("mouseover", function (event, d) {
         var hovered_legend_element = d;
 
         logEvent("legend hover: " + hovered_legend_element, "legend");
@@ -2448,7 +2460,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
         });
       });
 
-      globals.legend.on("mouseout", function (d) {
+      globals.legend.on("mouseout", function (event, d) {
         d3.select(this).select("rect").style("stroke", "#fff");
         d3.select(this).select("text").style("font-weight", "normal")
           .style("fill", "#666");
@@ -2483,8 +2495,9 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
         .attr("height", globals.legend_rect_size)
         .attr("transform", "translate(0,-35)")
         .style("fill", globals.categories)
-        .on("click", function (d, i) {
+        .on("click", function (event, d) {
           var colorEle = this;
+          var i = globals.categories.domain().sort().indexOf(d);
           instance._colorPicker.show(this, globals.categories(d), function (value) {
             // Update the display
             selectWithParent(".legend").selectAll(".legend_element_g rect").each(function () {
@@ -2878,67 +2891,67 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     switch (globals.segment_granularity) {
 
     case "days":
-      var day_array = d3.time.days(start_date, end_date);
+      var day_array = d3.timeDays(start_date, end_date);
       day_array.forEach(function (d) {
         segments_domain.push(getSegment(d));
       });
       break;
 
     case "weeks":
-      var week_array = d3.time.weeks(d3.time.week.floor(start_date), d3.time.week.ceil(end_date));
+      var week_array = d3.timeWeeks(d3.timeWeek.floor(start_date), d3.timeWeek.ceil(end_date));
       week_array.forEach(function (d) {
         segments_domain.push(getSegment(d));
       });
       break;
 
     case "months":
-      var month_array = d3.time.months(d3.time.month.floor(start_date), d3.time.month.ceil(end_date));
+      var month_array = d3.timeMonths(d3.timeMonth.floor(start_date), d3.timeMonth.ceil(end_date));
       month_array.forEach(function (d) {
         segments_domain.push(getSegment(d));
       });
       break;
 
     case "years":
-      var year_array = d3.time.years(d3.time.year.floor(start_date), d3.time.year.ceil(end_date));
+      var year_array = d3.timeYears(d3.timeYear.floor(start_date), d3.timeYear.ceil(end_date));
       year_array.forEach(function (d) {
         segments_domain.push(getSegment(d));
       });
       break;
 
     case "decades":
-      var min_decade_start_date = d3.time.year.floor(start_date);
+      var min_decade_start_date = d3.timeYear.floor(start_date);
       var min_decade_offset = start_date.getUTCFullYear() % 10;
       if (min_decade_offset < 0) {
         min_decade_offset += 10;
       }
       min_decade_start_date.setUTCFullYear(start_date.getUTCFullYear() - min_decade_offset);
-      var decade_array = d3.time.years(d3.time.year.floor(min_decade_start_date), d3.time.year.ceil(end_date), 10);
+      var decade_array = d3.timeYears(d3.timeYear.floor(min_decade_start_date), d3.timeYear.ceil(end_date), 10);
       decade_array.forEach(function (d) {
         segments_domain.push(getSegment(d));
       });
       break;
 
     case "centuries":
-      var min_century_start_date = d3.time.year.floor(start_date);
+      var min_century_start_date = d3.timeYear.floor(start_date);
       var min_century_offset = start_date.getUTCFullYear() % 100;
       if (min_century_offset < 0) {
         min_century_offset += 100;
       }
       min_century_start_date.setUTCFullYear(start_date.getUTCFullYear() - min_century_offset);
-      var century_array = d3.time.years(d3.time.year.floor(min_century_start_date), d3.time.year.ceil(end_date), 100);
+      var century_array = d3.timeYears(d3.timeYear.floor(min_century_start_date), d3.timeYear.ceil(end_date), 100);
       century_array.forEach(function (d) {
         segments_domain.push(getSegment(d));
       });
       break;
 
     case "millenia":
-      var min_millenia_start_date = d3.time.year.floor(start_date);
+      var min_millenia_start_date = d3.timeYear.floor(start_date);
       var min_millenia_offset = start_date.getUTCFullYear() % 1000;
       if (min_millenia_offset < 0) {
         min_millenia_offset += 1000;
       }
       min_millenia_start_date.setUTCFullYear(start_date.getUTCFullYear() - min_millenia_offset);
-      var millenia_array = d3.time.years(d3.time.year.floor(min_millenia_start_date), d3.time.year.ceil(end_date), 1000);
+      var millenia_array = d3.timeYears(d3.timeYear.floor(min_millenia_start_date), d3.timeYear.ceil(end_date), 1000);
       millenia_array.forEach(function (d) {
         segments_domain.push(getSegment(d));
       });
@@ -3543,10 +3556,10 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
         (selected_segment_values.indexOf("( All )") !== -1 || selected_segment_values.indexOf(d.segment) !== -1);
     });
 
-    if (mismatches[0].length !== 0) {
-      logEvent(matches[0].length + " out of " + (matches[0].length + mismatches[0].length) + " events", "Emphasize");
+    if (mismatches.size() !== 0) {
+      logEvent(matches.size() + " out of " + (matches.size() + mismatches.size()) + " events", "Emphasize");
     } else {
-      logEvent(matches[0].length + " events", "Emphasize");
+      logEvent(matches.size() + " events", "Emphasize");
     }
 
     globals.all_data.forEach(function (item) {
@@ -3612,10 +3625,10 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       globals.active_event_list = active_event_list;
       globals.active_data = active_data;
 
-      if (mismatches[0].length !== 0) {
-        logEvent(matches[0].length + " out of " + (matches[0].length + mismatches[0].length) + " events", "remove");
+      if (mismatches.size() !== 0) {
+        logEvent(matches.size() + " out of " + (matches.size() + mismatches.size()) + " events", "remove");
       } else {
-        logEvent(matches[0].length + " events", "remove");
+        logEvent(matches.size() + " events", "remove");
       }
 
       measureTimeline(globals.active_data);
@@ -3640,7 +3653,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
         return d.facet;
       }));
 
-      globals.facets.domain().sort();
+      globals.facets.domain(globals.facets.domain().sort());
 
       globals.num_facets = globals.facets.domain().length;
       globals.num_facet_cols = Math.ceil(Math.sqrt(globals.num_facets));
@@ -3992,12 +4005,12 @@ TimelineStoryteller.DEFAULT_OPTIONS = Object.freeze({
           init: function (inst, element) {
             element
               .append("input")
-              .attr({
+              .call(utils.attrs({
                 type: "file",
                 id: "story_uploader",
                 style: "opacity:0;width:100%;height:100%;cursor:pointer;cursor:pointer",
                 accept: ".cdc"
-              })
+              }))
               .on("change", function () {
                 var file = this.files[0];
                 globals.reader.readAsText(file);
@@ -4056,12 +4069,12 @@ TimelineStoryteller.DEFAULT_OPTIONS = Object.freeze({
           init: (inst, element) => {
             element
               .append("input")
-              .attr({
+              .call(utils.attrs({
                 type: "file",
                 id: "json_uploader",
                 style: "display:none;",
                 accept: ".json"
-              })
+              }))
               .on("change", function () {
                 var file = this.files[0];
                 globals.reader.readAsText(file);
@@ -4070,7 +4083,7 @@ TimelineStoryteller.DEFAULT_OPTIONS = Object.freeze({
                   var blob = new Blob([contents], { type: "application/json" });
                   setTimeout(() => {
                     logEvent("loading (json)", "load");
-                    d3.json(URL.createObjectURL(blob), function (error, data) {
+                    d3.json(URL.createObjectURL(blob)).then(function (data) {
                       inst.load(data.timeline_json_data ? data : { timeline_json_data: data }, false);
                     });
                   }, 500);
@@ -4087,12 +4100,12 @@ TimelineStoryteller.DEFAULT_OPTIONS = Object.freeze({
           init: (inst, element) => {
             element
               .append("input")
-              .attr({
+              .call(utils.attrs({
                 type: "file",
                 id: "csv_uploader",
                 style: "opacity:0;width:100%;height:100%;cursor:pointer",
                 accept: ".csv"
-              })
+              }))
               .on("change", function () {
                 var file = this.files[0];
                 globals.reader.readAsText(file);
@@ -4101,7 +4114,7 @@ TimelineStoryteller.DEFAULT_OPTIONS = Object.freeze({
                   var blob = new Blob([contents], { type: "application/csv" });
                   setTimeout(() => {
                     logEvent("loading (csv)", "load");
-                    d3.csv(URL.createObjectURL(blob), function (error, data) {
+                    d3.csv(URL.createObjectURL(blob)).then(function (data) {
                       inst.load({ timeline_json_data: data }, false);
                     });
                   }, 500);
@@ -4170,17 +4183,17 @@ TimelineStoryteller.prototype._initializeMenu = function (menu) {
       var item = sectionItems[itemKey];
       var itemEle =
         that._control_panel.append("input")
-          .attr({
+          .call(utils.attrs({
             type: "image",
             name: item.text || item.name,
             class: "img_btn_disabled" + (" " + (item.class || "")),
             src: item.image,
             title: item.text || item.name
-          });
-      itemEle.style({
+          }));
+      itemEle.call(utils.styles({
         height: (item.height || 30) + "px",
         width: (item.width || 30) + "px"
-      });
+      }));
       if (item.id) {
         itemEle.attr("id", item.id);
       }
@@ -4277,7 +4290,7 @@ TimelineStoryteller.prototype._loadAnnotations = function (scene, scene_index) {
         addImage(that._timeline_vis, item.i_url, item.x_rel_pos, item.y_rel_pos, item.i_width, item.i_height, item);
       } else {
         var itemSel = selectWithParent("#event_g" + item.item_index).select("rect.event_span");
-        var itemEle = itemSel[0][0].__data__,
+        var itemEle = itemSel.datum(),
           item_x_pos = 0,
           item_y_pos = 0;
 
@@ -4315,7 +4328,7 @@ TimelineStoryteller.prototype._loadAnnotations = function (scene, scene_index) {
     .style("display", globals.playback_mode ? "none" : "");
 
   // toggle selected events in the scene
-  this._main_svg.selectAll(".timeline_event_g")[0].forEach(function (event) {
+  this._main_svg.selectAll(".timeline_event_g").nodes().forEach(function (event) {
     if (scene.s_selections.indexOf(event.__data__.event_id) !== -1) {
       event.__data__.selected = true;
       selectWithParent("#event_g" + event.__data__.event_id)
@@ -4476,7 +4489,7 @@ TimelineStoryteller.prototype._recordScene = function () {
     scene_annotations.push(scene_annotation);
   });
 
-  this._main_svg.selectAll(".timeline_event_g")[0].forEach(function (event) {
+  this._main_svg.selectAll(".timeline_event_g").nodes().forEach(function (event) {
     if (event.__data__.selected === true) {
       scene_selections.push(event.__data__.event_id);
     }
@@ -4543,7 +4556,7 @@ TimelineStoryteller.prototype._recordScene = function () {
     this._updateNavigationStepper();
 
     // Dispatch after state has changed
-    this._dispatch.stateChanged();
+    this._dispatch.call("stateChanged");
   } else {
     var compressed = !(this.options.export && this.options.export.images);
     var renderOptions = {
@@ -4568,7 +4581,7 @@ TimelineStoryteller.prototype._recordScene = function () {
         clearInterval(checkExist);
 
         // Dispatch after state has changed
-        that._dispatch.stateChanged();
+        that._dispatch.call("stateChanged");
       }
     }, 100); // check every 100ms
   }
@@ -4720,13 +4733,13 @@ TimelineStoryteller.prototype._createImportPanelButton = function (button) {
       .attr("style",  sizeCss);
     item
       .append("img")
-      .attr({
+      .call(utils.attrs({
         name: button.text,
         class: "img_btn_enabled " + (button.class || ""),
         title: button.text,
         src: button.image,
         style: "width:100%;height:100%;position:absolute;left:0;top:0"
-      });
+      }));
     item.on("click", () => {
       if (button.click) {
         button.click(this, element);
@@ -4814,17 +4827,17 @@ TimelineStoryteller.prototype._updateSelectedFilters = function (filterContainer
     filterContainer
       .selectAll("option")
       .attr("selected", false);
-    if (globals[type]) {
-      globals[type].each(function () {
-        this.selected = true;
+    if (globals[type] && globals[type][0]) {
+      globals[type][0].forEach(function (option) {
+        option.selected = true;
       });
     }
   } else {
-    globals[type] = newOptions;
+    globals[type] = optionGroups(newOptions);
     if (globals.filter_type === "Hide") {
-      globals.dispatch.remove(globals.selected_categories, globals.selected_facets, globals.selected_segments);
+      globals.dispatch.call("remove", globals.dispatch, globals.selected_categories, globals.selected_facets, globals.selected_segments);
     } else if (globals.filter_type === "Emphasize") {
-      globals.dispatch.Emphasize(globals.selected_categories, globals.selected_facets, globals.selected_segments);
+      globals.dispatch.call("Emphasize", globals.dispatch, globals.selected_categories, globals.selected_facets, globals.selected_segments);
     }
   }
 };
@@ -4997,7 +5010,7 @@ TimelineStoryteller.prototype.setOptions = function (options) {
 TimelineStoryteller.prototype.clearCanvas = function () {
   logEvent("clear annotations", "annotation");
 
-  this._main_svg.selectAll(".timeline_event_g")[0].forEach(function (event) {
+  this._main_svg.selectAll(".timeline_event_g").nodes().forEach(function (event) {
     event.__data__.selected = false;
     selectWithParent("#event_g" + event.__data__.event_id)
       .selectAll(".event_span, .event_span_component")
@@ -5015,7 +5028,7 @@ TimelineStoryteller.prototype.clearCanvas = function () {
  * @returns {void}
  */
 TimelineStoryteller.prototype.update = function (data) {
-  var unique_values = d3.map([]);
+  var unique_values = new Map();
   var unique_data = [];
 
   globals.timeline_json_data = data;
@@ -5025,7 +5038,7 @@ TimelineStoryteller.prototype.update = function (data) {
   });
 
   unique_values.forEach(function (d) {
-    unique_data.push(unique_values.get(d));
+    unique_data.push(d);
   });
 
   logEvent("Updating data", "update");
@@ -5037,9 +5050,9 @@ TimelineStoryteller.prototype.update = function (data) {
 
   // updateCategories
 
-  var categories = d3.map(function (d) {
-    return d.category;
-  }).keys();
+  // This list has always been empty (d3.map() was given a function, which has no keys),
+  // so categories are never added here; kept as it was.
+  var categories = [];
   var existingCategories = globals.categories.domain();
 
   // Don't worry about removed/changed categories, hopefully if you called updateData

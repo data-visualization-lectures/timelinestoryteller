@@ -9,6 +9,8 @@ describe("addImage", function () {
     globals.reset();
   });
   afterEach(() => {
+    // do not leave this fixture in the page: other specs select the first .timeline_storyteller in the document
+    document.body.innerHTML = "";
     globals.reset();
   });
 

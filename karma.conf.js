@@ -8,7 +8,7 @@ module.exports = function(config) {
     files: [
 
       // The externals
-      "https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js",
+      "https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js",
       "https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js",
       "https://cdnjs.cloudflare.com/ajax/libs/ellipsize/0.0.3/ellipsize.min.js",
 

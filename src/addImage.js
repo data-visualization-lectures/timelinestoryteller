@@ -45,13 +45,13 @@ module.exports = function (timeline_vis, image_url, x_rel_pos, y_rel_pos, image_
     });
   };
 
-  timeline_image.on("click", function () {
-    if (d3.event.shiftKey)      {
+  timeline_image.on("click", function (event) {
+    if (event.shiftKey)      {
       d3.select(this)
         .style("opacity", 0.3)
         .moveToBack();
     }
-    if (d3.event.ctrlKey)      {
+    if (event.ctrlKey)      {
       d3.select(this)
         .style("opacity", 1)
         .moveToFront();
@@ -80,8 +80,8 @@ module.exports = function (timeline_vis, image_url, x_rel_pos, y_rel_pos, image_
         .attr("filter", "none");
     });
 
-  var drag = d3.behavior.drag()
-    .origin(function () {
+  var drag = d3.drag()
+    .subject(function () {
       var t = d3.select(this);
 
       return {
@@ -89,9 +89,9 @@ module.exports = function (timeline_vis, image_url, x_rel_pos, y_rel_pos, image_
         y: t.attr("y")
       };
     })
-    .on("drag", function () {
-      x_pos = d3.event.x;
-      y_pos = d3.event.y;
+    .on("drag", function (event) {
+      x_pos = event.x;
+      y_pos = event.y;
 
       imageObj.x_rel_pos = x_pos / globals.width;
       imageObj.y_rel_pos = y_pos / globals.height;
@@ -117,12 +117,12 @@ module.exports = function (timeline_vis, image_url, x_rel_pos, y_rel_pos, image_
         .attr("x", x_pos + image_width + 20)
         .attr("y", y_pos);
     })
-    .on("dragend", function () {
+    .on("end", function () {
       logEvent("image " + imageObj.id + " moved to [" + x_pos + "," + y_pos + "]");
     });
 
-  var resize = d3.behavior.drag()
-    .origin(function () {
+  var resize = d3.drag()
+    .subject(function () {
       var t = d3.select(this);
       y_pos = +t.attr("y");
 
@@ -131,10 +131,10 @@ module.exports = function (timeline_vis, image_url, x_rel_pos, y_rel_pos, image_
         y: t.attr("y")
       };
     })
-    .on("drag", function () {
-      d3.select(this).attr("x", d3.max([x_pos + image_width, x_pos + (d3.event.x - x_pos)]));
+    .on("drag", function (event) {
+      d3.select(this).attr("x", d3.max([x_pos + image_width, x_pos + (event.x - x_pos)]));
 
-      image_width = d3.max([min_image_width, d3.event.x - x_pos]);
+      image_width = d3.max([min_image_width, event.x - x_pos]);
 
       scaling_ratio = image_width / orig_image_weight;
 
@@ -162,7 +162,7 @@ module.exports = function (timeline_vis, image_url, x_rel_pos, y_rel_pos, image_
         .attr("width", image_width)
         .attr("height", image_height * scaling_ratio);
     })
-    .on("dragend", function () {
+    .on("end", function () {
       logEvent("image " + imageObj.id + " resized to " + image_width + "px");
     });
 

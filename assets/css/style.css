@@ -1154,7 +1154,13 @@ input[type="color"]::-moz-color-swatch {
 
 .x_axis text, .interim_duration_axis text, .timeline_axis text {
   font-size: 12px;
+  fill: #000;
   z-index: 1;
+}
+
+/* d3-axis sets its own font on the axis group; keep the app's font. */
+.interim_duration_axis, .timeline_axis {
+  font-family: inherit;
 }
 
 .event_rect {

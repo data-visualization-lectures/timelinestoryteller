@@ -86,239 +86,10 @@ module.exports = __WEBPACK_EXTERNAL_MODULE_0__;
 /* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-var imageUrls = __webpack_require__(2);
-var d3 = __webpack_require__(0);
-var tr = __webpack_require__(4);
-var u;
-var globals = {};
-
-// global dimensions
-function reset() {
-  _extends(globals, {
-    margin: { top: 100, right: 50, bottom: 105, left: 50 },
-    padding: { top: 100, right: 50, bottom: 105, left: 50 },
-    effective_filter_width: u,
-    effective_filter_height: u,
-    width: u,
-    height: u,
-
-    // initialize global variables
-    date_granularity: u,
-    segment_granularity: u,
-    usage_log: [],
-    max_num_tracks: u,
-    max_num_seq_tracks: u,
-    legend_panel: u,
-    legend: u,
-    legend_rect_size: u,
-    legend_spacing: u,
-    legend_expanded: true,
-    legend_x: 100,
-    legend_y: 100,
-    source: u,
-    source_format: u,
-    earliest_date: u,
-    latest_start_date: u,
-    latest_end_date: u,
-    categories: u, // scale for event types
-    selected_categories: [],
-    num_categories: u,
-    max_legend_item_width: 0,
-    facets: u, // scale for facets (timelines)
-    num_facets: u,
-    selected_facets: [],
-    total_num_facets: u,
-    num_facet_rows: u,
-    num_facet_cols: u,
-    segments: u, // scale for segments
-    present_segments: u,
-
-    /**
-     * The selected date granularities used for filtering
-     */
-    selected_segments: [],
-    num_segments: u,
-    num_segment_cols: u,
-    num_segment_rows: u,
-    buffer: 25,
-    time_scale: u, // scale for time (years)
-    timeline_facets: u,
-    num_tracks: u,
-    num_seq_tracks: u,
-    global_min_start_date: u,
-    global_max_end_date: u,
-    max_end_age: u,
-    max_seq_index: u,
-    dispatch: d3.dispatch("Emphasize", "remove"),
-    filter_result: u,
-    scales: [{ "name": "Chronological", "icon": imageUrls("s-chron.png"), "hint": tr("A <span class='rb_hint_scale_highlight'>CHRONOLOGICAL</span> scale is useful for showing absolute dates and times, like 2017, or 1999-12-31, or 6:37 PM.") }, { "name": "Relative", "icon": imageUrls("s-rel.png"), "hint": tr("A <span class='rb_hint_scale_highlight'>RELATIVE</span> scale is useful when comparing <span class='rb_hint_layout_highlight'>Faceted</span> timelines with a common baseline at time 'zero'.For example, consider a timeline of person 'A' who lived between 1940 to 2010 and person 'B' who lived between 1720 and 1790. A <span class='rb_hint_scale_highlight'>Relative</span> scale in this case would span from 0 to 70 years.") }, { "name": "Log", "icon": imageUrls("s-log.png"), "hint": tr("A base-10 <span class='rb_hint_scale_highlight'>LOGARITHMIC</span> scale is useful for long-spanning timelines and a skewed distributions of events.  This scale is compatible with a <span class='rb_hint_rep_highlight'>Linear</span> representation.") }, { "name": "Sequential", "icon": imageUrls("s-seq.png"), "hint": tr("A <span class='rb_hint_scale_highlight'>SEQUENTIAL</span> scale is useful for showing simply the order and number of events.") }, { "name": "Collapsed", "icon": imageUrls("s-intdur.png"), "hint": tr("A <span class='rb_hint_scale_highlight'>COLLAPSED</span> scale is a hybrid between <span class='rb_hint_scale_highlight'>Sequential</span> and <span class='rb_hint_scale_highlight'>Chronological</span>, and is useful for showing uneven distributions of events. It is compatible with a <span class='rb_hint_rep_highlight'>Linear</span> representation and <span class='rb_hint_layout_highlight'>Unified</span> layout. The duration between events is encoded as the length of bars.") }],
-    layouts: [{ "name": "Unified", "icon": imageUrls("l-uni.png"), "hint": tr("A <span class='rb_hint_layout_highlight'>UNIFIED</span> layout is a single uninterrupted timeline and is useful when your data contains no facets.") }, { "name": "Faceted", "icon": imageUrls("l-fac.png"), "hint": tr("A <span class='rb_hint_layout_highlight'>FACETED</span> layout is useful when you have multiple timelines to compare.") }, { "name": "Segmented", "icon": imageUrls("l-seg.png"), "hint": tr("A <span class='rb_hint_layout_highlight'>SEGMENTED</span> layout splits a timeline into meaningful segments like centuries or days, depending on the extent of your timeline.It is compatible with a <span class='rb_hint_scale_highlight'>Chronological</span> scale and is useful for showing patterns or differences across segments, such as periodicity.") }],
-    representations: [{ "name": "Linear", "icon": imageUrls("r-lin.png"), "hint": tr("A <span class='rb_hint_rep_highlight'>LINEAR</span> representation is read left-to-right and is the most familiar timeline representation.") }, { "name": "Radial", "icon": imageUrls("r-rad.png"), "hint": tr("A <span class='rb_hint_rep_highlight'>RADIAL</span> representation is useful for showing cyclical patterns. It has the added benefit of a square aspect ratio.") }, { "name": "Spiral", "icon": imageUrls("r-spi.png"), "hint": tr("A <span class='rb_hint_rep_highlight'>SPIRAL</span> is a compact and playful way to show a sequence of events. It has a square aspect ratio and is only compatible with a <span class='rb_hint_scale_highlight'>Sequential</span> scale.") }, { "name": "Curve", "icon": imageUrls("r-arb.png"), "hint": tr("A <span class='rb_hint_rep_highlight'>CURVE</span> is a playful way to show a sequence of events. It is only compatible with a <span class='rb_hint_scale_highlight'>Sequential</span> scale and a <span class='rb_hint_layout_highlight'>Unified</span> layout.Drag to draw a curve on the canvas; double click the canvas to reset the curve.") }, { "name": "Calendar", "icon": imageUrls("r-cal.png"), "hint": tr("A month-week-day <span class='rb_hint_rep_highlight'>CALENDAR</span> is a familiar representation that is compatible with a <span class='rb_hint_scale_highlight'>Chronological</span> scale and a <span class='rb_hint_layout_highlight'>Segmented</span> layout. This representation does not currently support timelines spanning decades or longer.") }, { "name": "Grid", "icon": imageUrls("r-grid.png"), "hint": tr("A 10x10 <span class='rb_hint_rep_highlight'>GRID</span> representation is compatible with a <span class='rb_hint_scale_highlight'>Chronological</span> scale and a <span class='rb_hint_layout_highlight'>Segmented</span> layout. This representation is ideal for timelines spanning decades or centuries.") }],
-    unit_width: 15,
-    track_height: 15 * 1.5,
-    spiral_padding: 15 * 1.25,
-    spiral_dim: 0,
-    centre_radius: 50,
-    max_item_index: 0,
-    filter_type: "Emphasize",
-    active_data: [],
-    all_data: [],
-    active_event_list: [],
-    prev_active_event_list: [],
-    all_event_ids: [],
-    scenes: [],
-    caption_list: [],
-    image_list: [],
-    annotation_list: [],
-    gif_index: 0,
-    filter_set_length: 0,
-    leader_line_styles: ["Rectangular", "Octoline", "Curved"],
-    leader_line_style: 1, // 0=OCTO, 1=RECT, 2=CURVE
-    curve: false,
-    dirty_curve: false,
-    record_width: u,
-    record_height: u,
-    reader: new FileReader(),
-    timeline_json_data: [],
-    timeline_story: {},
-    formatNumber: d3.format(".0f"),
-    range_text: "",
-    color_palette: [],
-    color_swap_target: 0,
-    use_custom_palette: false,
-    serverless: false,
-    playback_mode: u
-  }); // Defined in main.js
-}
-
-globals.reset = reset;
-
-reset(); // Set the initial values
-
-globals.formatAbbreviation = function (x) {
-  "use strict";
-
-  var v = Math.abs(x);
-  if (v >= 0.9995e9) {
-    return globals.formatNumber(x / 1e9) + "B";
-  } else if (v >= 0.9995e6) {
-    return globals.formatNumber(x / 1e6) + "M";
-  } else if (v >= 0.9995e3) {
-    return globals.formatNumber(x / 1e3) + "k";
-  }
-  return globals.formatNumber(x);
-};
-
-// function for checking if string is a number
-globals.isNumber = function (n) {
-  "use strict";
-
-  return !isNaN(parseFloat(n)) && isFinite(n);
-};
-
-module.exports = globals;
-
-/***/ }),
-/* 2 */
-/***/ (function(module, exports, __webpack_require__) {
-
-/**
- * Forms the url for the given image name
- * @param {string} name The name of the image to get the url for
- * @returns {string} The final url for the given image
- */
-function formUrl(name) {
-  if (name.indexOf("demo") >= 0) {
-    return "img/" + name;
-  }
-
-  var raw = __webpack_require__(14)("./" + name);
-  var imageContents = toArrayBuffer(raw);
-  var blob = new Blob([imageContents], {
-    type: name.indexOf(".png") >= 0 ? "image/png" : "image/svg+xml"
-  });
-  return URL.createObjectURL(blob);
-}
-
-function toArrayBuffer(str) {
-  var buffer = new ArrayBuffer(str.length);
-  var array = new Uint8Array(buffer);
-  for (var i = 0; i < str.length; i++) {
-    array[i] = str.charCodeAt(i);
-  }
-  return buffer;
-}
-
-var imageUrlMapping = {
-  "caption.png": formUrl("caption.png"),
-  "categories.png": formUrl("categories.png"),
-  "check.png": formUrl("check.png"),
-  "clear.png": formUrl("clear.png"),
-  "close.png": formUrl("close.png"),
-  "csv.png": formUrl("csv.png"),
-  "delete.png": formUrl("delete.png"),
-
-  /**
-   * Demo images
-   */
-  "demo.png": formUrl("demo.png"),
-  "demo_story.png": formUrl("demo_story.png"),
-
-  "draw.png": formUrl("draw.png"),
-  "expand.png": formUrl("expand.png"),
-  "export.png": formUrl("export.png"),
-  "facets.png": formUrl("facets.png"),
-  "filter.png": formUrl("filter.png"),
-  "gif.png": formUrl("gif.png"),
-  "hide.png": formUrl("hide.png"),
-  "highlight.png": formUrl("highlight.png"),
-  "image.png": formUrl("image.png"),
-  "json.png": formUrl("json.png"),
-  "l-fac.png": formUrl("l-fac.png"),
-  "l-seg.png": formUrl("l-seg.png"),
-  "l-uni.png": formUrl("l-uni.png"),
-  "min.png": formUrl("min.png"),
-  "next.png": formUrl("next.png"),
-  "open.png": formUrl("open.png"),
-  "pin.png": formUrl("pin.png"),
-  "play.png": formUrl("play.png"),
-  "png.png": formUrl("png.png"),
-  "prev.png": formUrl("prev.png"),
-  "q.png": formUrl("q.png"),
-  "r-arb.png": formUrl("r-arb.png"),
-  "r-cal.png": formUrl("r-cal.png"),
-  "r-grid.png": formUrl("r-grid.png"),
-  "r-lin.png": formUrl("r-lin.png"),
-  "r-rad.png": formUrl("r-rad.png"),
-  "r-spi.png": formUrl("r-spi.png"),
-  "record.png": formUrl("record.png"),
-  "reset.png": formUrl("reset.png"),
-  "resetBasic.png": formUrl("resetBasic.png"),
-  "s-chron.png": formUrl("s-chron.png"),
-  "s-intdur.png": formUrl("s-intdur.png"),
-  "s-log.png": formUrl("s-log.png"),
-  "s-rel.png": formUrl("s-rel.png"),
-  "s-seq.png": formUrl("s-seq.png"),
-  "segments.png": formUrl("segments.png"),
-  "story.png": formUrl("story.png"),
-  "svg.png": formUrl("svg.png"),
-  "timeline.png": formUrl("timeline.png"),
-  "vl.png": formUrl("vl.png")
-};
-module.exports = function (imageName) {
-  return imageUrlMapping[imageName];
-};
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var d3 = __webpack_require__(0);
-var globals = __webpack_require__(1);
+var globals = __webpack_require__(2);
 var log = __webpack_require__(5)("TimelineStoryteller:utils");
 var _nextId = 0;
 
@@ -514,7 +285,7 @@ var utils = {
       var n = 0;
       transition.each(function () {
         return ++n;
-      }).each("end", function () {
+      }).on("end.onTransitionComplete", function () {
         if (! --n) {
           resolve();
         }
@@ -638,6 +409,116 @@ var utils = {
   },
 
   /**
+   * Removes the elements of a transition when it ends; use as transition.call(utils.removeOnEnd).
+   * transition.remove() now keeps an element while a transition of any other name is running on it;
+   * this removes it when this transition ends, as d3 v3 did.
+   * @param {d3.Transition} transition The transition whose elements to remove
+   * @returns {void}
+   */
+  removeOnEnd: function removeOnEnd(transition) {
+    transition.on("end.removeOnEnd", function () {
+      if (this.parentNode) {
+        this.parentNode.removeChild(this);
+      }
+    });
+  },
+
+  /**
+   * Sets several attributes at once; use as selection.call(utils.attrs({ name: value }))
+   * @param {Object} map Attribute values (or functions) by attribute name
+   * @returns {function} A function that applies the attributes to a selection or transition
+   */
+  attrs: function attrs(map) {
+    return function (selection) {
+      Object.keys(map).forEach(function (name) {
+        selection.attr(name, map[name]);
+      });
+    };
+  },
+
+  /**
+   * Sets several styles at once; use as selection.call(utils.styles({ name: value }))
+   * @param {Object} map Style values (or functions) by style name
+   * @returns {function} A function that applies the styles to a selection or transition
+   */
+  styles: function styles(map) {
+    return function (selection) {
+      Object.keys(map).forEach(function (name) {
+        selection.style(name, map[name]);
+      });
+    };
+  },
+
+  /**
+   * The Sunday-based week of the year (0-53) of a date, as d3 v3's d3.time.weekOfYear
+   * @param {Date} date The date
+   * @returns {number} The week number
+   */
+  weekOfYear: function weekOfYear(date) {
+    var year = d3.timeYear(date);
+    var dayOfYear = Math.floor((date - year - (date.getTimezoneOffset() - year.getTimezoneOffset()) * 6e4) / 864e5);
+    return Math.floor((dayOfYear + year.getDay()) / 7);
+  },
+
+  /**
+   * Tick values for a linear or time scale, spaced as d3 v3 spaced them.
+   * Later versions of d3 round the tick step slightly differently, which changes which labels appear.
+   * @param {d3.Scale} scale A linear or time scale
+   * @param {number} count The approximate number of ticks
+   * @returns {Array} The tick values, or null to leave the choice to the scale (log scales)
+   */
+  ticks: function ticks(scale, count) {
+    if (typeof scale.base === "function") {
+      return null;
+    }
+    var domain = scale.domain();
+    var isTime = domain[0] instanceof Date;
+    var start = Math.min(+domain[0], +domain[domain.length - 1]);
+    var stop = Math.max(+domain[0], +domain[domain.length - 1]);
+    var year = 31536e6;
+
+    // the tick step d3 v3 chose for a linear extent
+    function linearStep(span) {
+      var step = Math.pow(10, Math.floor(Math.log(span / count) / Math.LN10));
+      var err = count / span * step;
+      if (err <= 0.15) {
+        step *= 10;
+      } else if (err <= 0.35) {
+        step *= 5;
+      } else if (err <= 0.75) {
+        step *= 2;
+      }
+      return step;
+    }
+
+    if (!(stop > start)) {
+      return scale.ticks(count);
+    }
+
+    if (isTime) {
+      // spans shorter than about ten years use calendar intervals, which did not change
+      if ((stop - start) / count <= year) {
+        return scale.ticks(count);
+      }
+      return scale.ticks(d3.timeYear.every(Math.max(1, Math.round(linearStep((stop - start) / year)))));
+    }
+
+    var step = linearStep(stop - start);
+    var first = Math.ceil(start / step) * step;
+    var last = Math.floor(stop / step) * step + step * 0.5;
+    // scale to integers while stepping, as d3 v3 did, to avoid accumulating rounding error
+    var k = 1;
+    while (step * k % 1) {
+      k *= 10;
+    }
+    var values = [];
+    for (var i = 0; first * k + step * k * i < last * k; i++) {
+      values.push((first * k + step * k * i) / k);
+    }
+    return values;
+  },
+
+  /**
    * Whether a character is drawn about as wide as it is tall (CJK ideographs, kana, hangul, full-width forms)
    * @param {string} ch A single character
    * @returns {boolean} true if the character is a wide character
@@ -754,6 +635,236 @@ var utils = {
 };
 
 module.exports = utils;
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var imageUrls = __webpack_require__(3);
+var d3 = __webpack_require__(0);
+var tr = __webpack_require__(4);
+var u;
+var globals = {};
+
+// global dimensions
+function reset() {
+  _extends(globals, {
+    margin: { top: 100, right: 50, bottom: 105, left: 50 },
+    padding: { top: 100, right: 50, bottom: 105, left: 50 },
+    effective_filter_width: u,
+    effective_filter_height: u,
+    width: u,
+    height: u,
+
+    // initialize global variables
+    date_granularity: u,
+    segment_granularity: u,
+    usage_log: [],
+    max_num_tracks: u,
+    max_num_seq_tracks: u,
+    legend_panel: u,
+    legend: u,
+    legend_rect_size: u,
+    legend_spacing: u,
+    legend_expanded: true,
+    legend_x: 100,
+    legend_y: 100,
+    source: u,
+    source_format: u,
+    earliest_date: u,
+    latest_start_date: u,
+    latest_end_date: u,
+    categories: u, // scale for event types
+    selected_categories: [],
+    num_categories: u,
+    max_legend_item_width: 0,
+    facets: u, // scale for facets (timelines)
+    num_facets: u,
+    selected_facets: [],
+    total_num_facets: u,
+    num_facet_rows: u,
+    num_facet_cols: u,
+    segments: u, // scale for segments
+    present_segments: u,
+
+    /**
+     * The selected date granularities used for filtering
+     */
+    selected_segments: [],
+    num_segments: u,
+    num_segment_cols: u,
+    num_segment_rows: u,
+    buffer: 25,
+    time_scale: u, // scale for time (years)
+    timeline_facets: u,
+    num_tracks: u,
+    num_seq_tracks: u,
+    global_min_start_date: u,
+    global_max_end_date: u,
+    max_end_age: u,
+    max_seq_index: u,
+    dispatch: d3.dispatch("Emphasize", "remove"),
+    filter_result: u,
+    scales: [{ "name": "Chronological", "icon": imageUrls("s-chron.png"), "hint": tr("A <span class='rb_hint_scale_highlight'>CHRONOLOGICAL</span> scale is useful for showing absolute dates and times, like 2017, or 1999-12-31, or 6:37 PM.") }, { "name": "Relative", "icon": imageUrls("s-rel.png"), "hint": tr("A <span class='rb_hint_scale_highlight'>RELATIVE</span> scale is useful when comparing <span class='rb_hint_layout_highlight'>Faceted</span> timelines with a common baseline at time 'zero'.For example, consider a timeline of person 'A' who lived between 1940 to 2010 and person 'B' who lived between 1720 and 1790. A <span class='rb_hint_scale_highlight'>Relative</span> scale in this case would span from 0 to 70 years.") }, { "name": "Log", "icon": imageUrls("s-log.png"), "hint": tr("A base-10 <span class='rb_hint_scale_highlight'>LOGARITHMIC</span> scale is useful for long-spanning timelines and a skewed distributions of events.  This scale is compatible with a <span class='rb_hint_rep_highlight'>Linear</span> representation.") }, { "name": "Sequential", "icon": imageUrls("s-seq.png"), "hint": tr("A <span class='rb_hint_scale_highlight'>SEQUENTIAL</span> scale is useful for showing simply the order and number of events.") }, { "name": "Collapsed", "icon": imageUrls("s-intdur.png"), "hint": tr("A <span class='rb_hint_scale_highlight'>COLLAPSED</span> scale is a hybrid between <span class='rb_hint_scale_highlight'>Sequential</span> and <span class='rb_hint_scale_highlight'>Chronological</span>, and is useful for showing uneven distributions of events. It is compatible with a <span class='rb_hint_rep_highlight'>Linear</span> representation and <span class='rb_hint_layout_highlight'>Unified</span> layout. The duration between events is encoded as the length of bars.") }],
+    layouts: [{ "name": "Unified", "icon": imageUrls("l-uni.png"), "hint": tr("A <span class='rb_hint_layout_highlight'>UNIFIED</span> layout is a single uninterrupted timeline and is useful when your data contains no facets.") }, { "name": "Faceted", "icon": imageUrls("l-fac.png"), "hint": tr("A <span class='rb_hint_layout_highlight'>FACETED</span> layout is useful when you have multiple timelines to compare.") }, { "name": "Segmented", "icon": imageUrls("l-seg.png"), "hint": tr("A <span class='rb_hint_layout_highlight'>SEGMENTED</span> layout splits a timeline into meaningful segments like centuries or days, depending on the extent of your timeline.It is compatible with a <span class='rb_hint_scale_highlight'>Chronological</span> scale and is useful for showing patterns or differences across segments, such as periodicity.") }],
+    representations: [{ "name": "Linear", "icon": imageUrls("r-lin.png"), "hint": tr("A <span class='rb_hint_rep_highlight'>LINEAR</span> representation is read left-to-right and is the most familiar timeline representation.") }, { "name": "Radial", "icon": imageUrls("r-rad.png"), "hint": tr("A <span class='rb_hint_rep_highlight'>RADIAL</span> representation is useful for showing cyclical patterns. It has the added benefit of a square aspect ratio.") }, { "name": "Spiral", "icon": imageUrls("r-spi.png"), "hint": tr("A <span class='rb_hint_rep_highlight'>SPIRAL</span> is a compact and playful way to show a sequence of events. It has a square aspect ratio and is only compatible with a <span class='rb_hint_scale_highlight'>Sequential</span> scale.") }, { "name": "Curve", "icon": imageUrls("r-arb.png"), "hint": tr("A <span class='rb_hint_rep_highlight'>CURVE</span> is a playful way to show a sequence of events. It is only compatible with a <span class='rb_hint_scale_highlight'>Sequential</span> scale and a <span class='rb_hint_layout_highlight'>Unified</span> layout.Drag to draw a curve on the canvas; double click the canvas to reset the curve.") }, { "name": "Calendar", "icon": imageUrls("r-cal.png"), "hint": tr("A month-week-day <span class='rb_hint_rep_highlight'>CALENDAR</span> is a familiar representation that is compatible with a <span class='rb_hint_scale_highlight'>Chronological</span> scale and a <span class='rb_hint_layout_highlight'>Segmented</span> layout. This representation does not currently support timelines spanning decades or longer.") }, { "name": "Grid", "icon": imageUrls("r-grid.png"), "hint": tr("A 10x10 <span class='rb_hint_rep_highlight'>GRID</span> representation is compatible with a <span class='rb_hint_scale_highlight'>Chronological</span> scale and a <span class='rb_hint_layout_highlight'>Segmented</span> layout. This representation is ideal for timelines spanning decades or centuries.") }],
+    unit_width: 15,
+    track_height: 15 * 1.5,
+    spiral_padding: 15 * 1.25,
+    spiral_dim: 0,
+    centre_radius: 50,
+    max_item_index: 0,
+    filter_type: "Emphasize",
+    active_data: [],
+    all_data: [],
+    active_event_list: [],
+    prev_active_event_list: [],
+    all_event_ids: [],
+    scenes: [],
+    caption_list: [],
+    image_list: [],
+    annotation_list: [],
+    gif_index: 0,
+    filter_set_length: 0,
+    leader_line_styles: ["Rectangular", "Octoline", "Curved"],
+    leader_line_style: 1, // 0=OCTO, 1=RECT, 2=CURVE
+    curve: false,
+    dirty_curve: false,
+    record_width: u,
+    record_height: u,
+    reader: new FileReader(),
+    timeline_json_data: [],
+    timeline_story: {},
+    // a plain hyphen for negative numbers, as before (d3 now defaults to the minus sign U+2212)
+    formatNumber: d3.formatLocale({ decimal: ".", thousands: ",", grouping: [3], currency: ["$", ""], minus: "-" }).format(".0f"),
+    range_text: "",
+    color_palette: [],
+    color_swap_target: 0,
+    use_custom_palette: false,
+    serverless: false,
+    playback_mode: u
+  }); // Defined in main.js
+}
+
+globals.reset = reset;
+
+reset(); // Set the initial values
+
+globals.formatAbbreviation = function (x) {
+  "use strict";
+
+  var v = Math.abs(x);
+  if (v >= 0.9995e9) {
+    return globals.formatNumber(x / 1e9) + "B";
+  } else if (v >= 0.9995e6) {
+    return globals.formatNumber(x / 1e6) + "M";
+  } else if (v >= 0.9995e3) {
+    return globals.formatNumber(x / 1e3) + "k";
+  }
+  return globals.formatNumber(x);
+};
+
+// function for checking if string is a number
+globals.isNumber = function (n) {
+  "use strict";
+
+  return !isNaN(parseFloat(n)) && isFinite(n);
+};
+
+module.exports = globals;
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * Forms the url for the given image name
+ * @param {string} name The name of the image to get the url for
+ * @returns {string} The final url for the given image
+ */
+function formUrl(name) {
+  if (name.indexOf("demo") >= 0) {
+    return "img/" + name;
+  }
+
+  var raw = __webpack_require__(14)("./" + name);
+  var imageContents = toArrayBuffer(raw);
+  var blob = new Blob([imageContents], {
+    type: name.indexOf(".png") >= 0 ? "image/png" : "image/svg+xml"
+  });
+  return URL.createObjectURL(blob);
+}
+
+function toArrayBuffer(str) {
+  var buffer = new ArrayBuffer(str.length);
+  var array = new Uint8Array(buffer);
+  for (var i = 0; i < str.length; i++) {
+    array[i] = str.charCodeAt(i);
+  }
+  return buffer;
+}
+
+var imageUrlMapping = {
+  "caption.png": formUrl("caption.png"),
+  "categories.png": formUrl("categories.png"),
+  "check.png": formUrl("check.png"),
+  "clear.png": formUrl("clear.png"),
+  "close.png": formUrl("close.png"),
+  "csv.png": formUrl("csv.png"),
+  "delete.png": formUrl("delete.png"),
+
+  /**
+   * Demo images
+   */
+  "demo.png": formUrl("demo.png"),
+  "demo_story.png": formUrl("demo_story.png"),
+
+  "draw.png": formUrl("draw.png"),
+  "expand.png": formUrl("expand.png"),
+  "export.png": formUrl("export.png"),
+  "facets.png": formUrl("facets.png"),
+  "filter.png": formUrl("filter.png"),
+  "gif.png": formUrl("gif.png"),
+  "hide.png": formUrl("hide.png"),
+  "highlight.png": formUrl("highlight.png"),
+  "image.png": formUrl("image.png"),
+  "json.png": formUrl("json.png"),
+  "l-fac.png": formUrl("l-fac.png"),
+  "l-seg.png": formUrl("l-seg.png"),
+  "l-uni.png": formUrl("l-uni.png"),
+  "min.png": formUrl("min.png"),
+  "next.png": formUrl("next.png"),
+  "open.png": formUrl("open.png"),
+  "pin.png": formUrl("pin.png"),
+  "play.png": formUrl("play.png"),
+  "png.png": formUrl("png.png"),
+  "prev.png": formUrl("prev.png"),
+  "q.png": formUrl("q.png"),
+  "r-arb.png": formUrl("r-arb.png"),
+  "r-cal.png": formUrl("r-cal.png"),
+  "r-grid.png": formUrl("r-grid.png"),
+  "r-lin.png": formUrl("r-lin.png"),
+  "r-rad.png": formUrl("r-rad.png"),
+  "r-spi.png": formUrl("r-spi.png"),
+  "record.png": formUrl("record.png"),
+  "reset.png": formUrl("reset.png"),
+  "resetBasic.png": formUrl("resetBasic.png"),
+  "s-chron.png": formUrl("s-chron.png"),
+  "s-intdur.png": formUrl("s-intdur.png"),
+  "s-log.png": formUrl("s-log.png"),
+  "s-rel.png": formUrl("s-rel.png"),
+  "s-seq.png": formUrl("s-seq.png"),
+  "segments.png": formUrl("segments.png"),
+  "story.png": formUrl("story.png"),
+  "svg.png": formUrl("svg.png"),
+  "timeline.png": formUrl("timeline.png"),
+  "vl.png": formUrl("vl.png")
+};
+module.exports = function (imageName) {
+  return imageUrlMapping[imageName];
+};
 
 /***/ }),
 /* 4 */
@@ -1195,12 +1306,12 @@ anotateEvent: //on-demand persistent annotationText label for an event
 
 **/
 
-var imageUrls = __webpack_require__(2);
+var imageUrls = __webpack_require__(3);
 var d3 = __webpack_require__(0);
-var globals = __webpack_require__(1);
+var globals = __webpack_require__(2);
 var tr = __webpack_require__(4);
 
-var utils = __webpack_require__(3);
+var utils = __webpack_require__(1);
 var selectWithParent = utils.selectWithParent;
 var logEvent = utils.logEvent;
 var ellipsize = __webpack_require__(11);
@@ -1221,7 +1332,7 @@ module.exports = function (timeline_vis, annotationText, x_pos, y_pos, x_offset,
   if (!isIE && !isEdge) {
     if (timeline_vis.tl_layout() === "Segmented") {
       if (timeline_vis.tl_representation() !== "Radial") {
-        target = selectWithParent("#event_g" + item_index + " rect.event_span_component")[0][0];
+        target = selectWithParent("#event_g" + item_index + " rect.event_span_component").node();
 
         // TODO consolidate the duplicate code (7 lines x 4 places below)
         if (target.transform.baseVal.length > 0) {
@@ -1249,7 +1360,7 @@ module.exports = function (timeline_vis, annotationText, x_pos, y_pos, x_offset,
         y_pos = Math.round(target.getPointAtLength(-globals.unit_width).y + y_offset + globals.padding.top);
       }
     } else if (timeline_vis.tl_representation() !== "Radial") {
-      target = selectWithParent("#event_g" + item_index + " rect.event_span")[0][0];
+      target = selectWithParent("#event_g" + item_index + " rect.event_span").node();
 
       if (target.transform.baseVal.length > 0) {
         x_offset = target.transform.baseVal[0].matrix.e;
@@ -1280,16 +1391,16 @@ module.exports = function (timeline_vis, annotationText, x_pos, y_pos, x_offset,
   var min_label_width = utils.labelWidth(annotationText);
 
   var leader_line_path = [];
-  var drawLeaderLine = d3.svg.line().x(function (d) {
+  var drawLeaderLine = d3.line().x(function (d) {
     return d.x;
   }).y(function (d) {
     return d.y;
   });
 
   if (globals.leader_line_style === LINE_CURVE) {
-    drawLeaderLine.interpolate("basis");
+    drawLeaderLine.curve(d3.curveBasis);
   } else {
-    drawLeaderLine.interpolate("linear");
+    drawLeaderLine.curve(d3.curveLinear);
   }
 
   // TODO: ID HERE
@@ -1303,16 +1414,16 @@ module.exports = function (timeline_vis, annotationText, x_pos, y_pos, x_offset,
     d3.select(this).select(".annotation_frame").transition().duration(250).style("stroke", "transparent").attr("filter", "none");
   });
 
-  var drag = d3.behavior.drag().origin(function () {
+  var drag = d3.drag().subject(function () {
     var t = d3.select(this);
 
     return {
       x: t.attr("x"),
       y: t.attr("y")
     };
-  }).on("drag", function () {
-    x_anno_offset = d3.event.x - x_pos;
-    y_anno_offset = d3.event.y - y_pos;
+  }).on("drag", function (event) {
+    x_anno_offset = event.x - x_pos;
+    y_anno_offset = event.y - y_pos;
 
     d3.select(this).attr("x", x_pos + x_anno_offset).attr("y", y_pos + y_anno_offset);
 
@@ -1343,21 +1454,21 @@ module.exports = function (timeline_vis, annotationText, x_pos, y_pos, x_offset,
 
     annotationObj.x_anno_offset = x_anno_offset;
     annotationObj.y_anno_offset = y_anno_offset;
-  }).on("dragend", function () {
+  }).on("end", function () {
     logEvent("event " + item_index + " annotation moved to [" + (x_pos + x_anno_offset) + "," + (y_pos + y_anno_offset) + "]");
   });
 
-  var resize = d3.behavior.drag().origin(function () {
+  var resize = d3.drag().subject(function () {
     var t = d3.select(this);
 
     return {
       x: t.attr("x"),
       y: t.attr("y")
     };
-  }).on("drag", function () {
-    d3.select(this).attr("x", d3.max([x_pos + x_anno_offset + label_width + 7.5, x_pos + x_anno_offset + 7.5 + (d3.event.x - (x_pos + x_anno_offset))]));
+  }).on("drag", function (event) {
+    d3.select(this).attr("x", d3.max([x_pos + x_anno_offset + label_width + 7.5, x_pos + x_anno_offset + 7.5 + (event.x - (x_pos + x_anno_offset))]));
 
-    label_width = d3.max([min_label_width, d3.event.x - (x_pos + x_anno_offset)]);
+    label_width = d3.max([min_label_width, event.x - (x_pos + x_anno_offset)]);
 
     annotationObj.label_width = label_width;
 
@@ -1387,7 +1498,7 @@ module.exports = function (timeline_vis, annotationText, x_pos, y_pos, x_offset,
     d3.select(this.parentNode).select(".annotation_line").data([leader_line_path]).attr("d", function (d) {
       return drawLeaderLine(d);
     });
-  }).on("dragend", function () {
+  }).on("end", function () {
     logEvent("event " + item_index + " annotation resized to " + label_width + "px");
   });
 
@@ -1418,7 +1529,7 @@ module.exports = function (timeline_vis, annotationText, x_pos, y_pos, x_offset,
 
     logEvent("event " + item_index + " annotation removed");
 
-    corresponding_event[0][0].__data__.selected = false;
+    corresponding_event.datum().selected = false;
 
     corresponding_event.selectAll(".event_span").attr("filter", "none").style("stroke", "#333").style("stroke-width", "0.25px");
 
@@ -1470,7 +1581,7 @@ module.exports = function (timeline_vis, annotationText, x_pos, y_pos, x_offset,
 /* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var globals = __webpack_require__(1);
+var globals = __webpack_require__(2);
 
 module.exports = {
 
@@ -1948,8 +2059,9 @@ var colorSchemes = __webpack_require__(19);
 var time = __webpack_require__(7);
 var GIF = __webpack_require__(25).GIF;
 var svgImageUtils = __webpack_require__(26);
-var imageUrls = __webpack_require__(2);
-var utils = __webpack_require__(3);
+var imageUrls = __webpack_require__(3);
+var utils = __webpack_require__(1);
+var removeOnEnd = utils.removeOnEnd;
 var selectWithParent = utils.selectWithParent;
 var selectAllWithParent = utils.selectAllWithParent;
 var setScaleValue = utils.setScaleValue;
@@ -1957,7 +2069,7 @@ var getHighestId = utils.getHighestId;
 var clone = utils.clone;
 var debounce = utils.debounce;
 var logEvent = utils.logEvent;
-var globals = __webpack_require__(1);
+var globals = __webpack_require__(2);
 var tr = __webpack_require__(4);
 var addImagePopup = __webpack_require__(21);
 var gif = new GIF({
@@ -1968,6 +2080,15 @@ var gif = new GIF({
 });
 var getNextZIndex = __webpack_require__(9).getNextZIndex;
 var helpUrl = "help.html?lang=" + tr.locale();
+
+/**
+ * The selected filter options as [[option, ...]]: the shape the filter events read and that saved stories store
+ * @param {d3.Selection} selection A selection of option elements
+ * @returns {Array} The option elements in one group
+ */
+function optionGroups(selection) {
+  return [selection.nodes()];
+}
 
 /**
  * Describes the time between two dates in words, e.g. "158 years"
@@ -2097,16 +2218,16 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     axis.selectAll(".tick text").attr("y", instance._container.node().scrollTop - 6);
   });
 
-  var legendDrag = d3.behavior.drag().origin(function () {
+  var legendDrag = d3.drag().subject(function () {
     var t = d3.select(this);
 
     return {
       x: t.attr("x"),
       y: t.attr("y")
     };
-  }).on("drag", function () {
-    var x_pos = d3.event.x;
-    var y_pos = d3.event.y;
+  }).on("drag", function (event) {
+    var x_pos = event.x;
+    var y_pos = event.y;
 
     if (x_pos < 0) {
       x_pos = 0;
@@ -2119,23 +2240,23 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     }
 
     d3.select(this).attr("x", x_pos).attr("y", y_pos);
-  }).on("dragend", function () {
+  }).on("end", function () {
     globals.legend_x = d3.select(this).attr("x");
     globals.legend_y = d3.select(this).attr("y");
 
     logEvent("legend moved to: " + globals.legend_x + ", " + globals.legend_y, "legend");
   });
 
-  var filterDrag = d3.behavior.drag().origin(function () {
+  var filterDrag = d3.drag().subject(function () {
     var t = selectWithParent("#filter_div");
 
     return {
       x: parseInt(t.style("left"), 10),
       y: parseInt(t.style("top"), 10)
     };
-  }).on("drag", function () {
-    var x_pos = d3.event.x;
-    var y_pos = d3.event.y;
+  }).on("drag", function (event) {
+    var x_pos = event.x;
+    var y_pos = event.y;
 
     if (x_pos < 10 + parseInt(selectWithParent("#menu_div").style("width"), 10) + 10) {
       x_pos = 10 + parseInt(selectWithParent("#menu_div").style("width"), 10) + 10;
@@ -2150,7 +2271,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     }
 
     selectWithParent("#filter_div").style("left", x_pos + "px").style("top", y_pos + "px");
-  }).on("dragend", function () {
+  }).on("end", function () {
     var filter_x = selectWithParent("#filter_div").style("left");
     var filter_y = selectWithParent("#filter_div").style("top");
 
@@ -2163,26 +2284,26 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
   --------------------------------------------------------------------------------------
   **/
 
-  selectWithParent().on("keydown", function () {
-    if (d3.event.keyCode === 76 && d3.event.altKey) {
+  selectWithParent().on("keydown", function (event) {
+    if (event.keyCode === 76 && event.altKey) {
       // recover legend
       selectWithParent(".legend").transition().duration(instance._getAnimationStepDuration()).attr("x", 0).attr("y", 0);
 
       globals.legend_x = 0;
       globals.legend_y = 0;
     }
-    if (d3.event.keyCode === 82 && d3.event.altKey) {
+    if (event.keyCode === 82 && event.altKey) {
       // recover legend
       if (!instance.playback_mode) {
         instance._recordScene();
       }
-    } else if (instance.playback_mode && d3.event.keyCode === 39) {
+    } else if (instance.playback_mode && event.keyCode === 39) {
       goNextScene();
-    } else if (instance.playback_mode && d3.event.keyCode === 37) {
+    } else if (instance.playback_mode && event.keyCode === 37) {
       goPreviousScene();
-    } else if (d3.event.keyCode === 80 && d3.event.altKey) {
+    } else if (event.keyCode === 80 && event.altKey) {
       instance.setPlaybackMode(!instance.playback_mode);
-    } else if (d3.event.keyCode === 46 && selectWithParent("#caption_div").style("display") === "none" && instance._addImagePopup.hidden() && !instance.importPanel.visible) {
+    } else if (event.keyCode === 46 && selectWithParent("#caption_div").style("display") === "none" && instance._addImagePopup.hidden() && !instance.importPanel.visible) {
       globals.deleteScene();
     }
   });
@@ -2253,7 +2374,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
   ---------------------------------------------------------------------------------------
   **/
 
-  selectWithParent("#export_div").append("input").attr({
+  selectWithParent("#export_div").append("input").call(utils.attrs({
     type: "image",
     name: tr("Hide export panel"),
     id: "export_close_btn",
@@ -2262,7 +2383,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     height: 15,
     width: 15,
     title: tr("Hide export panel")
-  }).style("margin-top", "5px").on("click", function () {
+  })).style("margin-top", "5px").on("click", function () {
     selectWithParent("#export_div").style("top", -185 + "px");
 
     logEvent("hide export panel", "export");
@@ -2272,7 +2393,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
   var export_formats = export_div.append("div").attr("id", "export_formats");
 
-  export_formats.append("input").attr({
+  export_formats.append("input").call(utils.attrs({
     type: "image",
     name: tr("Export PNG"),
     class: "img_btn_enabled export--image",
@@ -2280,7 +2401,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     height: 30,
     width: 30,
     title: tr("Export PNG")
-  }).on("click", function () {
+  })).on("click", function () {
     selectAllWithParent("foreignObject").remove();
 
     logEvent("exporting main_svg as PNG", "export");
@@ -2288,7 +2409,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     svgImageUtils.saveSvgAsPng(document.querySelector(".timeline_storyteller #main_svg"), "timeline_image.png", { backgroundColor: "white" });
   });
 
-  export_formats.append("input").attr({
+  export_formats.append("input").call(utils.attrs({
     type: "image",
     name: tr("Export SVG"),
     class: "img_btn_enabled export--image",
@@ -2296,7 +2417,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     height: 30,
     width: 30,
     title: tr("Export SVG")
-  }).on("click", function () {
+  })).on("click", function () {
     selectAllWithParent("foreignObject").remove();
 
     logEvent("exporting main_svg as SVG", "export");
@@ -2304,7 +2425,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     svgImageUtils.saveSvg(document.querySelector(".timeline_storyteller #main_svg"), "timeline_image.svg", { backgroundColor: "white" });
   });
 
-  export_formats.append("input").attr({
+  export_formats.append("input").call(utils.attrs({
     type: "image",
     name: tr("Export animated GIF"),
     class: "img_btn_enabled export--image",
@@ -2312,7 +2433,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     height: 30,
     width: 30,
     title: tr("Export animated GIF")
-  }).on("click", function () {
+  })).on("click", function () {
     selectAllWithParent("foreignObject").remove();
 
     gif.frames = [];
@@ -2350,7 +2471,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     gif_scenes = [];
   });
 
-  export_formats.append("input").attr({
+  export_formats.append("input").call(utils.attrs({
     type: "image",
     name: tr("Export story"),
     class: "img_btn_enabled",
@@ -2358,7 +2479,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     height: 30,
     width: 30,
     title: tr("Export story")
-  }).on("click", function () {
+  })).on("click", function () {
     selectAllWithParent("foreignObject").remove();
 
     logEvent("exporting story as .cdc", "export");
@@ -2420,7 +2541,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
   var boilerplate = instance.importPanel.element.append("div").attr("id", "boilerplate").html("<span class='boilerplate_title'>Timeline Storyteller</span>");
 
-  boilerplate.append("input").attr({
+  boilerplate.append("input").call(utils.attrs({
     type: "image",
     name: tr("Hide import panel"),
     id: "import_close_btn",
@@ -2429,7 +2550,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     height: 15,
     width: 15,
     title: tr("Hide import panel")
-  }).style("margin-top", "5px").on("click", function () {
+  })).style("margin-top", "5px").on("click", function () {
     logEvent("hiding import panel", "load");
 
     instance.importPanel.hide();
@@ -2445,11 +2566,11 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
   timeline_metadata.append("div").attr("id", "timeline_metadata_contents");
 
-  timeline_metadata.append("div").attr({
+  timeline_metadata.append("div").call(utils.attrs({
     id: "draw_timeline",
     class: "img_btn_enabled import_label draw_timeline",
     title: tr("Draw Timeline")
-  }).on("click", function () {
+  })).on("click", function () {
     drawTimeline(globals.active_data);
 
     instance.setPlaybackMode(false, false);
@@ -2472,7 +2593,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
   var representation_rb = representation_picker.selectAll("div").data(globals.representations).enter();
 
-  var representation_rb_label = representation_rb.append("label").attr("class", "option_rb").on("mouseover", function (d) {
+  var representation_rb_label = representation_rb.append("label").attr("class", "option_rb").on("mouseover", function (event, d) {
     var pos_x = this.getBoundingClientRect().left;
     var offset_x = 0;
     if (pos_x > globals.width / 2) {
@@ -2496,24 +2617,24 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     selectWithParent("#rb_hint").remove();
   });
 
-  representation_rb_label.append("input").attr({
+  representation_rb_label.append("input").call(utils.attrs({
     type: "radio",
     name: "representation_rb",
     value: function value(d) {
       return d.name;
     }
-  }).property("checked", function (d) {
+  })).property("checked", function (d) {
     return d.name === timeline_vis.tl_representation();
   }).property("disabled", true);
 
-  representation_rb_label.append("img").attr({
+  representation_rb_label.append("img").call(utils.attrs({
     height: 40,
     width: 40,
     class: "img_btn_disabled",
     src: function src(d) {
       return d.icon;
     }
-  });
+  }));
 
   representation_rb_label.append("span").attr("class", "option_rb_label").text(function (d) {
     return tr(d.name);
@@ -2526,7 +2647,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
   var scale_rb = scale_picker.selectAll("div").data(globals.scales).enter();
 
-  var scale_rb_label = scale_rb.append("label").attr("class", "option_rb").on("mouseover", function (d) {
+  var scale_rb_label = scale_rb.append("label").attr("class", "option_rb").on("mouseover", function (event, d) {
     var pos_x = this.getBoundingClientRect().left;
     var offset_x = 0;
     if (pos_x > globals.width / 2) {
@@ -2550,24 +2671,24 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     selectWithParent("#rb_hint").remove();
   });
 
-  scale_rb_label.append("input").attr({
+  scale_rb_label.append("input").call(utils.attrs({
     type: "radio",
     name: "scale_rb",
     value: function value(d) {
       return d.name;
     }
-  }).property("checked", function (d) {
+  })).property("checked", function (d) {
     return d.name === timeline_vis.tl_scale();
   }).property("disabled", true);
 
-  scale_rb_label.append("img").attr({
+  scale_rb_label.append("img").call(utils.attrs({
     height: 40,
     width: 40,
     class: "img_btn_disabled",
     src: function src(d) {
       return d.icon;
     }
-  });
+  }));
 
   scale_rb_label.append("span").attr("class", "option_rb_label").text(function (d) {
     return tr(d.name);
@@ -2580,7 +2701,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
   var layout_rb = layout_picker.selectAll("div").data(globals.layouts).enter();
 
-  var layout_rb_label = layout_rb.append("label").attr("class", "option_rb").on("mouseover", function (d) {
+  var layout_rb_label = layout_rb.append("label").attr("class", "option_rb").on("mouseover", function (event, d) {
     var pos_x = this.getBoundingClientRect().left;
     var offset_x = 0;
     if (pos_x > globals.width / 2) {
@@ -2604,39 +2725,39 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     selectWithParent("#rb_hint").remove();
   });
 
-  layout_rb_label.append("input").attr({
+  layout_rb_label.append("input").call(utils.attrs({
     type: "radio",
     name: "layout_rb",
     value: function value(d) {
       return d.name;
     }
-  }).property("checked", function (d) {
+  })).property("checked", function (d) {
     return d.name === timeline_vis.tl_layout();
   }).property("disabled", true);
 
-  layout_rb_label.append("img").attr({
+  layout_rb_label.append("img").call(utils.attrs({
     height: 40,
     width: 40,
     class: "img_btn_disabled",
     src: function src(d) {
       return d.icon;
     }
-  });
+  }));
 
   layout_rb_label.append("span").attr("class", "option_rb_label").text(function (d) {
     return tr(d.name);
   });
 
-  selectWithParent("#caption_div").append("textarea").attr({
+  selectWithParent("#caption_div").append("textarea").call(utils.attrs({
     cols: 37,
     rows: 5,
     placeholder: tr("Caption text"),
     class: "text_input",
     maxlength: 140,
     id: "add_caption_text_input"
-  });
+  }));
 
-  selectWithParent("#caption_div").append("input").attr({
+  selectWithParent("#caption_div").append("input").call(utils.attrs({
     type: "image",
     name: tr("Add Caption"),
     id: "add_caption_btn",
@@ -2645,7 +2766,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     height: 20,
     width: 20,
     title: tr("Add Caption")
-  }).on("click", function () {
+  })).on("click", function () {
     selectWithParent("#caption_div").style("display", "none");
     var caption = selectWithParent("#add_caption_text_input").property("value");
     logEvent("caption added: \"" + caption + "\"", "annotation");
@@ -2745,13 +2866,13 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
           globals.legend_rect_size = globals.unit_width;
           globals.legend_spacing = 5;
           globals.categories = undefined;
-          globals.categories = d3.scale.ordinal(); // scale for event types
+          globals.categories = d3.scaleOrdinal(); // scale for event types
           if (globals.color_palette !== undefined) {
             globals.categories.range(globals.color_palette);
           }
-          globals.facets = d3.scale.ordinal(); // scale for facets (timelines)
-          globals.segments = d3.scale.ordinal(); // scale for segments
-          globals.present_segments = d3.scale.ordinal();
+          globals.facets = d3.scaleOrdinal(); // scale for facets (timelines)
+          globals.segments = d3.scaleOrdinal(); // scale for segments
+          globals.present_segments = d3.scaleOrdinal();
           globals.num_categories = 0;
           globals.num_facets = 0;
           globals.timeline_facets = [];
@@ -2762,14 +2883,14 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
           var playback_bar = navigation_div.append("div").attr("id", "playback_bar");
 
-          playback_bar.append("div").attr("id", "record_scene_div").attr("class", "nav_bttn").append("img").attr({
+          playback_bar.append("div").attr("id", "record_scene_div").attr("class", "nav_bttn").append("img").call(utils.attrs({
             id: "record_scene_btn",
             class: "img_btn_disabled",
             src: imageUrls("record.png"),
             height: 20,
             width: 20,
             title: tr("Record Scene")
-          }).on("click", function () {
+          })).on("click", function () {
             if (!instance.playback_mode) {
               instance._recordScene();
             }
@@ -2787,22 +2908,22 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
           var playback_cb_label = playback_cb.append("label").attr("class", "nav_cb");
 
-          playback_cb_label.append("input").attr({
+          playback_cb_label.append("input").call(utils.attrs({
             type: "checkbox",
             name: "playback_cb",
             value: instance.playback_mode
-          }).property("checked", false).on("change", function () {
+          })).property("checked", false).on("change", function () {
             instance.setPlaybackMode(!instance.playback_mode);
           });
 
-          playback_cb_label.append("img").attr({
+          playback_cb_label.append("img").call(utils.attrs({
             id: "play_scene_btn",
             class: "img_btn_disabled",
             src: imageUrls("play.png"),
             height: 20,
             width: 20,
             title: tr("Toggle Playback Mode")
-          });
+          }));
 
           playback_bar.append("div").attr("id", "stepper_container")
           // .style('width', function () {
@@ -2878,7 +2999,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
    * @returns {void}
    */
   function initTimelineData(data, shouldDrawTimeline) {
-    var unique_values = d3.map([]);
+    var unique_values = new Map();
     var unique_data = [];
 
     globals.timeline_json_data = data;
@@ -2892,7 +3013,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
     // find unique values
     unique_values.forEach(function (d) {
-      unique_data.push(unique_values.get(d));
+      unique_data.push(d);
     });
     logEvent(unique_data.length + " unique events", "preprocessing");
 
@@ -2995,7 +3116,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       logEvent("custom palette: " + globals.categories.range(), "color palette");
     }
 
-    filter_div.append("input").attr({
+    filter_div.append("input").call(utils.attrs({
       type: "image",
       name: tr("Hide filter panel"),
       id: "export_close_btn",
@@ -3004,7 +3125,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       height: 15,
       width: 15,
       title: tr("Hide filter panel")
-    }).style("position", "absolute").style("top", "0px").style("left", "5px").style("margin-top", "5px").on("click", function () {
+    })).style("position", "absolute").style("top", "0px").style("left", "5px").style("margin-top", "5px").on("click", function () {
       selectWithParent("#filter_div").style("display", "none");
 
       logEvent("hide filter panel", "export");
@@ -3023,17 +3144,17 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
     var filter_type_rb_label = filter_type_rb.append("label").attr("class", "menu_rb");
 
-    filter_type_rb_label.append("input").attr({
+    filter_type_rb_label.append("input").call(utils.attrs({
       type: "radio",
       name: "filter_type_rb",
       value: function value(d) {
         return d;
       }
-    }).property("disabled", false).property("checked", function (d) {
+    })).property("disabled", false).property("checked", function (d) {
       return d === "Emphasize";
     });
 
-    filter_type_rb_label.append("img").attr({
+    filter_type_rb_label.append("img").call(utils.attrs({
       class: "img_btn_enabled",
       height: 30,
       width: 30,
@@ -3043,16 +3164,16 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       src: function src(d) {
         return imageUrls(d === "Emphasize" ? "highlight.png" : "hide.png");
       }
-    }).style("margin-bottom", "0px");
+    })).style("margin-bottom", "0px");
 
     filter_type_rb_label.append("span").attr("class", "option_rb_label").html(function (d) {
       return tr(d);
     });
 
     selectAllWithParent("#filter_type_picker input[name=filter_type_rb]").on("change", function () {
-      var newCategories = selectWithParent("#category_picker").select("option");
-      var newFacets = selectWithParent("#facet_picker").select("option");
-      var newSegments = selectWithParent("#segment_picker").select("option");
+      var newCategories = optionGroups(selectWithParent("#category_picker").select("option"));
+      var newFacets = optionGroups(selectWithParent("#facet_picker").select("option"));
+      var newSegments = optionGroups(selectWithParent("#segment_picker").select("option"));
 
       globals.filter_type = this.value;
 
@@ -3068,10 +3189,8 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       var trigger_remove_filter = globals.selected_categories[0].length !== 1 || globals.selected_categories[0][0].value !== "( All )" || globals.selected_facets[0].length !== 1 || globals.selected_facets[0][0].value !== "( All )" || globals.selected_segments[0].length !== 1 || globals.selected_segments[0][0].value !== "( All )";
 
       if (trigger_remove_filter) {
-        var remove = globals.dispatch.remove;
-        var emphasize = globals.dispatch.Emphasize;
-        (isHide ? emphasize : remove).call(globals.dispatch, newCategories, newFacets, newSegments);
-        (isHide ? remove : emphasize).call(globals.dispatch, globals.selected_categories, globals.selected_facets, globals.selected_segments);
+        globals.dispatch.call(isHide ? "Emphasize" : "remove", globals.dispatch, newCategories, newFacets, newSegments);
+        globals.dispatch.call(isHide ? "remove" : "Emphasize", globals.dispatch, globals.selected_categories, globals.selected_facets, globals.selected_segments);
       }
     });
 
@@ -3081,20 +3200,20 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
     category_filter_header.append("text").attr("class", "menu_label filter_label").text(tr("Category"));
 
-    category_filter_header.append("label").attr("for", "category_picker").style("display", "block").style("margin-right", "100%").attr("id", "category_picker_label").append("img").attr({
+    category_filter_header.append("label").attr("for", "category_picker").style("display", "block").style("margin-right", "100%").attr("id", "category_picker_label").append("img").call(utils.attrs({
       name: tr("Filter by event category"),
       class: "filter_header_icon",
       height: 30,
       width: 30,
       title: tr("Filter by event category"),
       src: imageUrls("categories.png")
-    });
+    }));
 
     var all_categories = ["( All )"];
 
-    category_filter.append("select").attr("class", "filter_select").attr("size", 8).attr("id", "category_picker").attr({
+    category_filter.append("select").attr("class", "filter_select").attr("size", 8).attr("id", "category_picker").call(utils.attrs({
       multiple: true
-    }).on("change", function () {
+    })).on("change", function () {
       instance._updateSelectedFilters(d3.select(this), "selected_categories");
     }).selectAll("option").data(all_categories.concat(globals.categories.domain().sort())).enter().append("option").attr("value", function (d) {
       return d;
@@ -3104,9 +3223,9 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       return d === "( All )";
     });
 
-    globals.selected_categories = selectWithParent("#category_picker").selectAll("option").filter(function () {
+    globals.selected_categories = optionGroups(selectWithParent("#category_picker").selectAll("option").filter(function () {
       return this.selected;
-    });
+    }));
 
     /**
     ---------------------------------------------------------------------------------------
@@ -3119,7 +3238,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       return d.facet;
     }));
 
-    globals.facets.domain().sort();
+    globals.facets.domain(globals.facets.domain().sort());
 
     globals.num_facets = globals.facets.domain().length;
     globals.total_num_facets = globals.num_facets;
@@ -3134,20 +3253,20 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
     facet_filter_header.append("text").attr("class", "menu_label filter_label").text(tr("Facet"));
 
-    facet_filter_header.append("label").attr("for", "facet_picker").style("display", "block").style("margin-right", "100%").attr("id", "facet_picker_label").append("img").attr({
+    facet_filter_header.append("label").attr("for", "facet_picker").style("display", "block").style("margin-right", "100%").attr("id", "facet_picker_label").append("img").call(utils.attrs({
       name: tr("Filter by event facet"),
       class: "filter_header_icon",
       height: 30,
       width: 30,
       title: tr("Filter by event facet"),
       src: imageUrls("facets.png")
-    });
+    }));
 
     var all_facets = ["( All )"];
 
-    facet_filter.append("select").attr("class", "filter_select").attr("size", 8).attr("id", "facet_picker").attr({
+    facet_filter.append("select").attr("class", "filter_select").attr("size", 8).attr("id", "facet_picker").call(utils.attrs({
       multiple: true
-    }).on("change", function () {
+    })).on("change", function () {
       instance._updateSelectedFilters(d3.select(this), "selected_facets");
     }).selectAll("option").data(all_facets.concat(globals.facets.domain().sort())).enter().append("option").attr("value", function (d) {
       return d;
@@ -3157,9 +3276,9 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       return d === "( All )";
     });
 
-    globals.selected_facets = selectWithParent("#facet_picker").selectAll("option").filter(function () {
+    globals.selected_facets = optionGroups(selectWithParent("#facet_picker").selectAll("option").filter(function () {
       return this.selected;
-    });
+    }));
 
     /**
     ---------------------------------------------------------------------------------------
@@ -3206,20 +3325,20 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
     segment_filter_header.append("text").attr("class", "menu_label filter_label").text(tr("Segment"));
 
-    segment_filter_header.append("label").attr("for", "segment_picker").style("display", "block").style("margin-right", "100%").attr("id", "segment_picker_label").append("img").attr({
+    segment_filter_header.append("label").attr("for", "segment_picker").style("display", "block").style("margin-right", "100%").attr("id", "segment_picker_label").append("img").call(utils.attrs({
       name: tr("Filter by chronological segment"),
       class: "filter_header_icon",
       height: 30,
       width: 30,
       title: tr("Filter by chronological segment"),
       src: imageUrls("segments.png")
-    });
+    }));
 
     var all_segments = ["( All )"];
 
-    segment_filter.append("select").attr("id", "segment_picker").attr("class", "filter_select").attr("size", 8).attr({
+    segment_filter.append("select").attr("id", "segment_picker").attr("class", "filter_select").attr("size", 8).call(utils.attrs({
       multiple: true
-    }).on("change", function () {
+    })).on("change", function () {
       instance._updateSelectedFilters(d3.select(this), "selected_segments");
     }).selectAll("option").data(all_segments.concat(globals.present_segments.domain().sort())).enter().append("option").attr("value", function (d) {
       return d;
@@ -3229,9 +3348,9 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       return d === "( All )";
     });
 
-    globals.selected_segments = selectWithParent("#segment_picker").selectAll("option").filter(function () {
+    globals.selected_segments = optionGroups(selectWithParent("#segment_picker").selectAll("option").filter(function () {
       return this.selected;
-    });
+    }));
 
     globals.all_data = data;
     globals.active_data = globals.all_data;
@@ -3248,8 +3367,9 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
     var category_metadata_element = category_metadata_p.selectAll(".category_element").data(globals.categories.domain().sort()).enter().append("g").attr("class", "category_element");
 
-    category_metadata_element.append("div").attr("class", "colorpicker_wrapper").attr("filter", "url(#drop-shadow)").style("background-color", globals.categories).on("click", function (d, i) {
+    category_metadata_element.append("div").attr("class", "colorpicker_wrapper").attr("filter", "url(#drop-shadow)").style("background-color", globals.categories).on("click", function (event, d) {
       var colorEle = this;
+      var i = globals.categories.domain().sort().indexOf(d);
       instance._colorPicker.show(this, globals.categories(d), function (value) {
         // Update the display
         d3.select(colorEle).style("background-color", value);
@@ -3367,7 +3487,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
     var navigation_step = navigation_step_svg.selectAll(".framePoint").data(globals.scenes);
 
-    navigation_step.exit().transition().delay(1000).remove();
+    navigation_step.exit().transition().delay(1000).call(removeOnEnd);
 
     var navigation_step_update = navigation_step.transition().duration(instance.options.animations ? 1000 : 0);
 
@@ -3391,7 +3511,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       return tr("Scene {number}", { number: d.s_order + 1 });
     });
 
-    function changeSceneClickHandler(d) {
+    function changeSceneClickHandler(event, d) {
       instance._currentSceneIndex = d.s_order;
       changeScene(instance._currentSceneIndex);
     }
@@ -3426,7 +3546,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       d3.select(this).style("stroke", "#f00");
     }).on("mouseout", function () {
       d3.select(this).style("stroke", "#ccc");
-    }).on("click", function (d) {
+    }).on("click", function (event, d) {
       selectWithParent("#frame" + d.s_order).remove();
       selectAllWithParent(".frame_hover").remove();
       // delete current scene unless image or caption div is open
@@ -3451,7 +3571,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
 
       updateNavigationStepper();
 
-      instance._dispatch.stateChanged();
+      instance._dispatch.call("stateChanged");
 
       if (instance._currentSceneIndex === d.s_order) {
         // is current scene to be deleted?
@@ -3494,7 +3614,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
         d3.select(this).select(".scene_delete").style("opacity", 1);
 
         selectWithParent().append("div").attr("class", "frame_hover").style("left", x_pos + "px").style("top", y_pos - popupSize - 20 + "px").append("svg").style("padding", "0px").style("width", popupSize + "px").style("height", popupSize + "px").append("svg:image").attr("xlink:href", img_src).attr("x", 2).attr("y", 2).attr("width", 296).attr("height", 296);
-      }).on("mouseout", function (d) {
+      }).on("mouseout", function (event, d) {
         d3.select(this).select(".scene_delete").style("opacity", 0);
 
         if (d.s_order === instance._currentSceneIndex) {
@@ -3640,20 +3760,20 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
         return d === "Hide";
       });
       if (globals.filter_type === "Emphasize") {
-        globals.dispatch.Emphasize(selectWithParent("#category_picker").select("option"), selectWithParent("#facet_picker").select("option"), selectWithParent("#segment_picker").select("option"));
+        globals.dispatch.call("Emphasize", globals.dispatch, optionGroups(selectWithParent("#category_picker").select("option")), optionGroups(selectWithParent("#facet_picker").select("option")), optionGroups(selectWithParent("#segment_picker").select("option")));
       }
       globals.filter_type = "Hide";
-      globals.dispatch.remove(globals.selected_categories, globals.selected_facets, globals.selected_segments);
+      globals.dispatch.call("remove", globals.dispatch, globals.selected_categories, globals.selected_facets, globals.selected_segments);
     } else if (scene.s_filter_type === "Emphasize") {
       selectAllWithParent("#filter_type_picker input[name=filter_type_rb]").property("checked", function (d) {
         return d === "Emphasize";
       });
       if (globals.filter_type === "Hide") {
         globals.active_data = globals.all_data;
-        globals.dispatch.remove(selectWithParent("#category_picker").select("option"), selectWithParent("#facet_picker").select("option"), selectWithParent("#segment_picker").select("option"));
+        globals.dispatch.call("remove", globals.dispatch, optionGroups(selectWithParent("#category_picker").select("option")), optionGroups(selectWithParent("#facet_picker").select("option")), optionGroups(selectWithParent("#segment_picker").select("option")));
       }
       globals.filter_type = "Emphasize";
-      globals.dispatch.Emphasize(globals.selected_categories, globals.selected_facets, globals.selected_segments);
+      globals.dispatch.call("Emphasize", globals.dispatch, globals.selected_categories, globals.selected_facets, globals.selected_segments);
     }
 
     // where is the legend in the scene?
@@ -3728,14 +3848,18 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     logEvent("range: " + globals.range_text, "preprocessing");
 
     // create a nested data structure to contain faceted data
-    globals.timeline_facets = d3.nest().key(function (d) {
-      return d.facet;
-    }).sortKeys(d3.ascending).entries(data);
+    globals.timeline_facets = d3.groups(data, function (d) {
+      return String(d.facet);
+    }).sort(function (a, b) {
+      return d3.ascending(a[0], b[0]);
+    }).map(function (group) {
+      return { key: group[0], values: group[1] };
+    });
 
     // get event durations
     data.forEach(function (item) {
       if (globals.date_granularity === "days") {
-        item.duration = d3.time.days(item.start_date, item.end_date).length;
+        item.duration = d3.timeDays(item.start_date, item.end_date).length;
       } else if (globals.date_granularity === "years") {
         item.duration = item.end_date.getUTCFullYear() - item.start_date.getUTCFullYear();
       } else if (globals.date_granularity === "epochs") {
@@ -3863,7 +3987,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
         return "translate(0," + (35 + (i + 1) * globals.track_height) + ")";
       });
 
-      globals.legend.on("mouseover", function (d) {
+      globals.legend.on("mouseover", function (event, d) {
         var hovered_legend_element = d;
 
         logEvent("legend hover: " + hovered_legend_element, "legend");
@@ -3882,7 +4006,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
         });
       });
 
-      globals.legend.on("mouseout", function (d) {
+      globals.legend.on("mouseout", function (event, d) {
         d3.select(this).select("rect").style("stroke", "#fff");
         d3.select(this).select("text").style("font-weight", "normal").style("fill", "#666");
         selectAllWithParent(".timeline_event_g").each(function () {
@@ -3895,8 +4019,9 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
         });
       });
 
-      globals.legend.append("rect").attr("class", "legend_element").attr("x", globals.legend_spacing).attr("y", 2).attr("width", globals.legend_rect_size).attr("height", globals.legend_rect_size).attr("transform", "translate(0,-35)").style("fill", globals.categories).on("click", function (d, i) {
+      globals.legend.append("rect").attr("class", "legend_element").attr("x", globals.legend_spacing).attr("y", 2).attr("width", globals.legend_rect_size).attr("height", globals.legend_rect_size).attr("transform", "translate(0,-35)").style("fill", globals.categories).on("click", function (event, d) {
         var colorEle = this;
+        var i = globals.categories.domain().sort().indexOf(d);
         instance._colorPicker.show(this, globals.categories(d), function (value) {
           // Update the display
           selectWithParent(".legend").selectAll(".legend_element_g rect").each(function () {
@@ -4277,67 +4402,67 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
     switch (globals.segment_granularity) {
 
       case "days":
-        var day_array = d3.time.days(start_date, end_date);
+        var day_array = d3.timeDays(start_date, end_date);
         day_array.forEach(function (d) {
           segments_domain.push(getSegment(d));
         });
         break;
 
       case "weeks":
-        var week_array = d3.time.weeks(d3.time.week.floor(start_date), d3.time.week.ceil(end_date));
+        var week_array = d3.timeWeeks(d3.timeWeek.floor(start_date), d3.timeWeek.ceil(end_date));
         week_array.forEach(function (d) {
           segments_domain.push(getSegment(d));
         });
         break;
 
       case "months":
-        var month_array = d3.time.months(d3.time.month.floor(start_date), d3.time.month.ceil(end_date));
+        var month_array = d3.timeMonths(d3.timeMonth.floor(start_date), d3.timeMonth.ceil(end_date));
         month_array.forEach(function (d) {
           segments_domain.push(getSegment(d));
         });
         break;
 
       case "years":
-        var year_array = d3.time.years(d3.time.year.floor(start_date), d3.time.year.ceil(end_date));
+        var year_array = d3.timeYears(d3.timeYear.floor(start_date), d3.timeYear.ceil(end_date));
         year_array.forEach(function (d) {
           segments_domain.push(getSegment(d));
         });
         break;
 
       case "decades":
-        var min_decade_start_date = d3.time.year.floor(start_date);
+        var min_decade_start_date = d3.timeYear.floor(start_date);
         var min_decade_offset = start_date.getUTCFullYear() % 10;
         if (min_decade_offset < 0) {
           min_decade_offset += 10;
         }
         min_decade_start_date.setUTCFullYear(start_date.getUTCFullYear() - min_decade_offset);
-        var decade_array = d3.time.years(d3.time.year.floor(min_decade_start_date), d3.time.year.ceil(end_date), 10);
+        var decade_array = d3.timeYears(d3.timeYear.floor(min_decade_start_date), d3.timeYear.ceil(end_date), 10);
         decade_array.forEach(function (d) {
           segments_domain.push(getSegment(d));
         });
         break;
 
       case "centuries":
-        var min_century_start_date = d3.time.year.floor(start_date);
+        var min_century_start_date = d3.timeYear.floor(start_date);
         var min_century_offset = start_date.getUTCFullYear() % 100;
         if (min_century_offset < 0) {
           min_century_offset += 100;
         }
         min_century_start_date.setUTCFullYear(start_date.getUTCFullYear() - min_century_offset);
-        var century_array = d3.time.years(d3.time.year.floor(min_century_start_date), d3.time.year.ceil(end_date), 100);
+        var century_array = d3.timeYears(d3.timeYear.floor(min_century_start_date), d3.timeYear.ceil(end_date), 100);
         century_array.forEach(function (d) {
           segments_domain.push(getSegment(d));
         });
         break;
 
       case "millenia":
-        var min_millenia_start_date = d3.time.year.floor(start_date);
+        var min_millenia_start_date = d3.timeYear.floor(start_date);
         var min_millenia_offset = start_date.getUTCFullYear() % 1000;
         if (min_millenia_offset < 0) {
           min_millenia_offset += 1000;
         }
         min_millenia_start_date.setUTCFullYear(start_date.getUTCFullYear() - min_millenia_offset);
-        var millenia_array = d3.time.years(d3.time.year.floor(min_millenia_start_date), d3.time.year.ceil(end_date), 1000);
+        var millenia_array = d3.timeYears(d3.timeYear.floor(min_millenia_start_date), d3.timeYear.ceil(end_date), 1000);
         millenia_array.forEach(function (d) {
           segments_domain.push(getSegment(d));
         });
@@ -4967,10 +5092,10 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       return (selected_category_values.indexOf("( All )") !== -1 || selected_category_values.indexOf(d.category) !== -1) && (selected_facet_values.indexOf("( All )") !== -1 || selected_facet_values.indexOf(d.facet) !== -1) && (selected_segment_values.indexOf("( All )") !== -1 || selected_segment_values.indexOf(d.segment) !== -1);
     });
 
-    if (mismatches[0].length !== 0) {
-      logEvent(matches[0].length + " out of " + (matches[0].length + mismatches[0].length) + " events", "Emphasize");
+    if (mismatches.size() !== 0) {
+      logEvent(matches.size() + " out of " + (matches.size() + mismatches.size()) + " events", "Emphasize");
     } else {
-      logEvent(matches[0].length + " events", "Emphasize");
+      logEvent(matches.size() + " events", "Emphasize");
     }
 
     globals.all_data.forEach(function (item) {
@@ -5033,10 +5158,10 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
       globals.active_event_list = active_event_list;
       globals.active_data = active_data;
 
-      if (mismatches[0].length !== 0) {
-        logEvent(matches[0].length + " out of " + (matches[0].length + mismatches[0].length) + " events", "remove");
+      if (mismatches.size() !== 0) {
+        logEvent(matches.size() + " out of " + (matches.size() + mismatches.size()) + " events", "remove");
       } else {
-        logEvent(matches[0].length + " events", "remove");
+        logEvent(matches.size() + " events", "remove");
       }
 
       measureTimeline(globals.active_data);
@@ -5061,7 +5186,7 @@ function TimelineStoryteller(isServerless, showDemo, parentElement) {
         return d.facet;
       }));
 
-      globals.facets.domain().sort();
+      globals.facets.domain(globals.facets.domain().sort());
 
       globals.num_facets = globals.facets.domain().length;
       globals.num_facet_cols = Math.ceil(Math.sqrt(globals.num_facets));
@@ -5399,12 +5524,12 @@ TimelineStoryteller.DEFAULT_OPTIONS = Object.freeze({
           width: 40,
           height: 40,
           init: function init(inst, element) {
-            element.append("input").attr({
+            element.append("input").call(utils.attrs({
               type: "file",
               id: "story_uploader",
               style: "opacity:0;width:100%;height:100%;cursor:pointer;cursor:pointer",
               accept: ".cdc"
-            }).on("change", function () {
+            })).on("change", function () {
               var file = this.files[0];
               globals.reader.readAsText(file);
 
@@ -5455,12 +5580,12 @@ TimelineStoryteller.DEFAULT_OPTIONS = Object.freeze({
           name: tr("Load from JSON"),
           image: imageUrls("json.png"),
           init: function init(inst, element) {
-            element.append("input").attr({
+            element.append("input").call(utils.attrs({
               type: "file",
               id: "json_uploader",
               style: "display:none;",
               accept: ".json"
-            }).on("change", function () {
+            })).on("change", function () {
               var file = this.files[0];
               globals.reader.readAsText(file);
               globals.reader.onload = function (e) {
@@ -5468,7 +5593,7 @@ TimelineStoryteller.DEFAULT_OPTIONS = Object.freeze({
                 var blob = new Blob([contents], { type: "application/json" });
                 setTimeout(function () {
                   logEvent("loading (json)", "load");
-                  d3.json(URL.createObjectURL(blob), function (error, data) {
+                  d3.json(URL.createObjectURL(blob)).then(function (data) {
                     inst.load(data.timeline_json_data ? data : { timeline_json_data: data }, false);
                   });
                 }, 500);
@@ -5483,12 +5608,12 @@ TimelineStoryteller.DEFAULT_OPTIONS = Object.freeze({
           name: tr("Load from CSV"),
           image: imageUrls("csv.png"),
           init: function init(inst, element) {
-            element.append("input").attr({
+            element.append("input").call(utils.attrs({
               type: "file",
               id: "csv_uploader",
               style: "opacity:0;width:100%;height:100%;cursor:pointer",
               accept: ".csv"
-            }).on("change", function () {
+            })).on("change", function () {
               var file = this.files[0];
               globals.reader.readAsText(file);
               globals.reader.onload = function (e) {
@@ -5496,7 +5621,7 @@ TimelineStoryteller.DEFAULT_OPTIONS = Object.freeze({
                 var blob = new Blob([contents], { type: "application/csv" });
                 setTimeout(function () {
                   logEvent("loading (csv)", "load");
-                  d3.csv(URL.createObjectURL(blob), function (error, data) {
+                  d3.csv(URL.createObjectURL(blob)).then(function (data) {
                     inst.load({ timeline_json_data: data }, false);
                   });
                 }, 500);
@@ -5559,17 +5684,17 @@ TimelineStoryteller.prototype._initializeMenu = function (menu) {
     }
     Object.keys(sectionItems).forEach(function (itemKey) {
       var item = sectionItems[itemKey];
-      var itemEle = that._control_panel.append("input").attr({
+      var itemEle = that._control_panel.append("input").call(utils.attrs({
         type: "image",
         name: item.text || item.name,
         class: "img_btn_disabled" + (" " + (item.class || "")),
         src: item.image,
         title: item.text || item.name
-      });
-      itemEle.style({
+      }));
+      itemEle.call(utils.styles({
         height: (item.height || 30) + "px",
         width: (item.width || 30) + "px"
-      });
+      }));
       if (item.id) {
         itemEle.attr("id", item.id);
       }
@@ -5669,7 +5794,7 @@ TimelineStoryteller.prototype._loadAnnotations = function (scene, scene_index) {
       addImage(that._timeline_vis, item.i_url, item.x_rel_pos, item.y_rel_pos, item.i_width, item.i_height, item);
     } else {
       var itemSel = selectWithParent("#event_g" + item.item_index).select("rect.event_span");
-      var itemEle = itemSel[0][0].__data__,
+      var itemEle = itemSel.datum(),
           item_x_pos = 0,
           item_y_pos = 0;
 
@@ -5704,7 +5829,7 @@ TimelineStoryteller.prototype._loadAnnotations = function (scene, scene_index) {
   d3.selectAll(".annotation_control, .annotation_drag_area, .image_drag_area, .caption_drag_area").style("display", globals.playback_mode ? "none" : "");
 
   // toggle selected events in the scene
-  this._main_svg.selectAll(".timeline_event_g")[0].forEach(function (event) {
+  this._main_svg.selectAll(".timeline_event_g").nodes().forEach(function (event) {
     if (scene.s_selections.indexOf(event.__data__.event_id) !== -1) {
       event.__data__.selected = true;
       selectWithParent("#event_g" + event.__data__.event_id).selectAll(".event_span").attr("filter", "url(#drop-shadow)").style("z-index", 1).style("stroke", "#f00").style("stroke-width", "1.25px");
@@ -5848,7 +5973,7 @@ TimelineStoryteller.prototype._recordScene = function () {
     scene_annotations.push(scene_annotation);
   });
 
-  this._main_svg.selectAll(".timeline_event_g")[0].forEach(function (event) {
+  this._main_svg.selectAll(".timeline_event_g").nodes().forEach(function (event) {
     if (event.__data__.selected === true) {
       scene_selections.push(event.__data__.event_id);
     }
@@ -5916,7 +6041,7 @@ TimelineStoryteller.prototype._recordScene = function () {
     this._updateNavigationStepper();
 
     // Dispatch after state has changed
-    this._dispatch.stateChanged();
+    this._dispatch.call("stateChanged");
   } else {
     var compressed = !(this.options.export && this.options.export.images);
     var renderOptions = {
@@ -5941,7 +6066,7 @@ TimelineStoryteller.prototype._recordScene = function () {
         clearInterval(checkExist);
 
         // Dispatch after state has changed
-        that._dispatch.stateChanged();
+        that._dispatch.call("stateChanged");
       }
     }, 100); // check every 100ms
   }
@@ -6084,13 +6209,13 @@ TimelineStoryteller.prototype._createImportPanelButton = function (button) {
   if (typeof button.visible === "function" && button.visible(this) || button.visible === undefined || typeof button.visible === "boolean" && button.visible) {
     var sizeCss = "height:" + (button.height || 40) + "px;width:" + (button.width || 40) + "px";
     var item = d3.select(document.createElement("div")).attr("class", "import-button").attr("style", sizeCss);
-    item.append("img").attr({
+    item.append("img").call(utils.attrs({
       name: button.text,
       class: "img_btn_enabled " + (button.class || ""),
       title: button.text,
       src: button.image,
       style: "width:100%;height:100%;position:absolute;left:0;top:0"
-    });
+    }));
     item.on("click", function () {
       if (button.click) {
         button.click(_this3, element);
@@ -6174,17 +6299,17 @@ TimelineStoryteller.prototype._updateSelectedFilters = function (filterContainer
   });
   if (newOptions.size() === 0) {
     filterContainer.selectAll("option").attr("selected", false);
-    if (globals[type]) {
-      globals[type].each(function () {
-        this.selected = true;
+    if (globals[type] && globals[type][0]) {
+      globals[type][0].forEach(function (option) {
+        option.selected = true;
       });
     }
   } else {
-    globals[type] = newOptions;
+    globals[type] = optionGroups(newOptions);
     if (globals.filter_type === "Hide") {
-      globals.dispatch.remove(globals.selected_categories, globals.selected_facets, globals.selected_segments);
+      globals.dispatch.call("remove", globals.dispatch, globals.selected_categories, globals.selected_facets, globals.selected_segments);
     } else if (globals.filter_type === "Emphasize") {
-      globals.dispatch.Emphasize(globals.selected_categories, globals.selected_facets, globals.selected_segments);
+      globals.dispatch.call("Emphasize", globals.dispatch, globals.selected_categories, globals.selected_facets, globals.selected_segments);
     }
   }
 };
@@ -6308,7 +6433,7 @@ TimelineStoryteller.prototype.setOptions = function (options) {
 TimelineStoryteller.prototype.clearCanvas = function () {
   logEvent("clear annotations", "annotation");
 
-  this._main_svg.selectAll(".timeline_event_g")[0].forEach(function (event) {
+  this._main_svg.selectAll(".timeline_event_g").nodes().forEach(function (event) {
     event.__data__.selected = false;
     selectWithParent("#event_g" + event.__data__.event_id).selectAll(".event_span, .event_span_component").attr("filter", "none").style("stroke", "#fff").style("stroke-width", "0.25px");
   });
@@ -6322,7 +6447,7 @@ TimelineStoryteller.prototype.clearCanvas = function () {
  * @returns {void}
  */
 TimelineStoryteller.prototype.update = function (data) {
-  var unique_values = d3.map([]);
+  var unique_values = new Map();
   var unique_data = [];
 
   globals.timeline_json_data = data;
@@ -6332,7 +6457,7 @@ TimelineStoryteller.prototype.update = function (data) {
   });
 
   unique_values.forEach(function (d) {
-    unique_data.push(unique_values.get(d));
+    unique_data.push(d);
   });
 
   logEvent("Updating data", "update");
@@ -6344,9 +6469,9 @@ TimelineStoryteller.prototype.update = function (data) {
 
   // updateCategories
 
-  var categories = d3.map(function (d) {
-    return d.category;
-  }).keys();
+  // This list has always been empty (d3.map() was given a function, which has no keys),
+  // so categories are never added here; kept as it was.
+  var categories = [];
   var existingCategories = globals.categories.domain();
 
   // Don't worry about removed/changed categories, hopefully if you called updateData
@@ -6608,12 +6733,12 @@ addCaption: //on-demand captions for a timeline
 
 **/
 
-var imageUrls = __webpack_require__(2);
+var imageUrls = __webpack_require__(3);
 var d3 = __webpack_require__(0);
-var globals = __webpack_require__(1);
+var globals = __webpack_require__(2);
 var tr = __webpack_require__(4);
 
-var utils = __webpack_require__(3);
+var utils = __webpack_require__(1);
 var logEvent = utils.logEvent;
 var selectWithParent = utils.selectWithParent;
 var ellipsize = __webpack_require__(11);
@@ -6636,16 +6761,16 @@ module.exports = function (caption, caption_width, x_rel_pos, y_rel_pos, caption
     d3.select(this).select(".caption_frame").transition().duration(250).style("stroke", "white").attr("filter", "none");
   });
 
-  var drag = d3.behavior.drag().origin(function () {
+  var drag = d3.drag().subject(function () {
     var t = d3.select(this);
 
     return {
       x: t.attr("x"),
       y: t.attr("y")
     };
-  }).on("drag", function () {
-    x_pos = d3.event.x;
-    y_pos = d3.event.y;
+  }).on("drag", function (event) {
+    x_pos = event.x;
+    y_pos = event.y;
 
     captionObj.x_rel_pos = x_pos / globals.width;
     captionObj.y_rel_pos = y_pos / globals.height;
@@ -6659,11 +6784,11 @@ module.exports = function (caption, caption_width, x_rel_pos, y_rel_pos, caption
     d3.select(this.parentNode).selectAll(".frame_resizer").attr("x", x_pos + caption_width + 7.5).attr("y", y_pos);
 
     d3.select(this.parentNode).selectAll(".annotation_delete").attr("x", x_pos + caption_width + 7.5 + 20).attr("y", y_pos);
-  }).on("dragend", function () {
+  }).on("end", function () {
     logEvent("caption " + captionObj.id + " moved to [" + x_pos + "," + y_pos + "]");
   });
 
-  var resize = d3.behavior.drag().origin(function () {
+  var resize = d3.drag().subject(function () {
     var t = d3.select(this);
     y_pos = +t.attr("y");
 
@@ -6671,10 +6796,10 @@ module.exports = function (caption, caption_width, x_rel_pos, y_rel_pos, caption
       x: t.attr("x"),
       y: t.attr("y")
     };
-  }).on("drag", function () {
-    d3.select(this).attr("x", d3.max([x_pos + caption_width + 7.5, x_pos + 7.5 + (d3.event.x - x_pos)]));
+  }).on("drag", function (event) {
+    d3.select(this).attr("x", d3.max([x_pos + caption_width + 7.5, x_pos + 7.5 + (event.x - x_pos)]));
 
-    caption_width = d3.max([min_caption_width, d3.event.x - x_pos]);
+    caption_width = d3.max([min_caption_width, event.x - x_pos]);
 
     captionObj.caption_width = caption_width;
 
@@ -6687,7 +6812,7 @@ module.exports = function (caption, caption_width, x_rel_pos, y_rel_pos, caption
     d3.select(this.parentNode).select(".caption_drag_area").attr("width", caption_width + 7.5);
 
     d3.select(this.parentNode).select(".caption_label").attr("x", x_pos + 7.5).attr("y", y_pos + globals.unit_width).text(caption).call(wrap, caption_width - 7.5);
-  }).on("dragend", function () {
+  }).on("end", function () {
     logEvent("caption " + captionObj.id + " resized to " + caption_width + "px");
   });
 
@@ -6760,11 +6885,11 @@ addImage: //on-demand image for a timeline
 
 **/
 
-var imageUrls = __webpack_require__(2);
+var imageUrls = __webpack_require__(3);
 var d3 = __webpack_require__(0);
-var globals = __webpack_require__(1);
+var globals = __webpack_require__(2);
 var tr = __webpack_require__(4);
-var utils = __webpack_require__(3);
+var utils = __webpack_require__(1);
 var logEvent = utils.logEvent;
 var selectWithParent = utils.selectWithParent;
 var nextId = utils.nextId;
@@ -6797,11 +6922,11 @@ module.exports = function (timeline_vis, image_url, x_rel_pos, y_rel_pos, image_
     });
   };
 
-  timeline_image.on("click", function () {
-    if (d3.event.shiftKey) {
+  timeline_image.on("click", function (event) {
+    if (event.shiftKey) {
       d3.select(this).style("opacity", 0.3).moveToBack();
     }
-    if (d3.event.ctrlKey) {
+    if (event.ctrlKey) {
       d3.select(this).style("opacity", 1).moveToFront();
     }
   }).on("mouseover", function () {
@@ -6812,16 +6937,16 @@ module.exports = function (timeline_vis, image_url, x_rel_pos, y_rel_pos, image_
     d3.select(this).select(".image_frame").transition().duration(250).style("stroke", "none").attr("filter", "none");
   });
 
-  var drag = d3.behavior.drag().origin(function () {
+  var drag = d3.drag().subject(function () {
     var t = d3.select(this);
 
     return {
       x: t.attr("x"),
       y: t.attr("y")
     };
-  }).on("drag", function () {
-    x_pos = d3.event.x;
-    y_pos = d3.event.y;
+  }).on("drag", function (event) {
+    x_pos = event.x;
+    y_pos = event.y;
 
     imageObj.x_rel_pos = x_pos / globals.width;
     imageObj.y_rel_pos = y_pos / globals.height;
@@ -6835,11 +6960,11 @@ module.exports = function (timeline_vis, image_url, x_rel_pos, y_rel_pos, image_
     d3.select(this.parentNode).selectAll(".frame_resizer").attr("x", x_pos + image_width).attr("y", y_pos);
 
     d3.select(this.parentNode).selectAll(".annotation_delete").attr("x", x_pos + image_width + 20).attr("y", y_pos);
-  }).on("dragend", function () {
+  }).on("end", function () {
     logEvent("image " + imageObj.id + " moved to [" + x_pos + "," + y_pos + "]");
   });
 
-  var resize = d3.behavior.drag().origin(function () {
+  var resize = d3.drag().subject(function () {
     var t = d3.select(this);
     y_pos = +t.attr("y");
 
@@ -6847,10 +6972,10 @@ module.exports = function (timeline_vis, image_url, x_rel_pos, y_rel_pos, image_
       x: t.attr("x"),
       y: t.attr("y")
     };
-  }).on("drag", function () {
-    d3.select(this).attr("x", d3.max([x_pos + image_width, x_pos + (d3.event.x - x_pos)]));
+  }).on("drag", function (event) {
+    d3.select(this).attr("x", d3.max([x_pos + image_width, x_pos + (event.x - x_pos)]));
 
-    image_width = d3.max([min_image_width, d3.event.x - x_pos]);
+    image_width = d3.max([min_image_width, event.x - x_pos]);
 
     scaling_ratio = image_width / orig_image_weight;
 
@@ -6866,7 +6991,7 @@ module.exports = function (timeline_vis, image_url, x_rel_pos, y_rel_pos, image_
     d3.select(this.parentNode).selectAll(".annotation_delete").attr("x", x_pos + image_width + 20).attr("y", y_pos);
 
     d3.select(this.parentNode).select(".image_drag_area").attr("width", image_width).attr("height", image_height * scaling_ratio);
-  }).on("dragend", function () {
+  }).on("end", function () {
     logEvent("image " + imageObj.id + " resized to " + image_width + "px");
   });
 
@@ -6930,6 +7055,8 @@ module.exports = function (timeline_vis, image_url, x_rel_pos, y_rel_pos, image_
 
 
 var d3 = __webpack_require__(0);
+var utils = __webpack_require__(1);
+var removeOnEnd = utils.removeOnEnd;
 var moment = __webpack_require__(6);
 
 /**
@@ -6951,15 +7078,17 @@ d3.calendarAxis = function () {
       var g = d3.select(this);
 
       // grid container items for each year
-      var year_grid = g.selectAll(".year_grid").data(data);
+      var year_grid_join = g.selectAll(".year_grid").data(data);
 
       var min_year = data[0];
 
       // var year_number = -1;
 
-      var year_grid_enter = year_grid.enter().append("g").attr("class", "year_grid");
+      var year_grid_enter = year_grid_join.enter().append("g").attr("class", "year_grid");
 
-      var year_grid_exit = year_grid.exit().transition().duration(duration).remove();
+      var year_grid_exit = year_grid_join.exit().transition().duration(duration).call(removeOnEnd);
+
+      var year_grid = year_grid_enter.merge(year_grid_join);
 
       var year_grid_update = year_grid.transition().duration(duration);
 
@@ -6971,11 +7100,11 @@ d3.calendarAxis = function () {
       });
 
       var day_cell = year_grid.selectAll(".day_cell").data(function (d) {
-        return d3.time.days(new Date(d, 0, 1), new Date(d + 1, 0, 1));
+        return d3.timeDays(new Date(d, 0, 1), new Date(d + 1, 0, 1));
       });
 
       day_cell.enter().append("rect").attr("class", "day_cell").attr("width", cell_size).attr("height", cell_size).attr("x", function (d) {
-        return d3.time.weekOfYear(d) * cell_size;
+        return utils.weekOfYear(d) * cell_size;
       }).attr("y", function (d) {
         var year_offset = d.getUTCFullYear() - min_year;
         return d.getDay() * cell_size + year_offset * year_height;
@@ -6984,11 +7113,11 @@ d3.calendarAxis = function () {
       });
 
       var day_cell_label = year_grid.selectAll(".day_cell_label").data(function (d) {
-        return d3.time.days(new Date(d, 0, 1), new Date(d + 1, 0, 1));
+        return d3.timeDays(new Date(d, 0, 1), new Date(d + 1, 0, 1));
       });
 
       day_cell_label.enter().append("text").attr("class", "day_cell_label").attr("x", function (d) {
-        return d3.time.weekOfYear(d) * cell_size + 0.5 * cell_size;
+        return utils.weekOfYear(d) * cell_size + 0.5 * cell_size;
       }).attr("y", function (d) {
         var year_offset = d.getUTCFullYear() - min_year;
         return d.getDay() * cell_size + cell_size + year_offset * year_height;
@@ -6998,7 +7127,7 @@ d3.calendarAxis = function () {
 
       // draw the month paths
       var month_path = year_grid.selectAll(".month").data(function (d) {
-        return d3.time.months(new Date(d, 0, 1), new Date(d + 1, 0, 1));
+        return d3.timeMonths(new Date(d, 0, 1), new Date(d + 1, 0, 1));
       });
 
       month_path.enter().append("path").attr("class", "month").attr("d", monthPath).attr("transform", function (d) {
@@ -7010,7 +7139,7 @@ d3.calendarAxis = function () {
       var weekday_label = year_grid.selectAll(".weekday_label").data(d3.range(0, 7));
 
       weekday_label.enter().append("text").attr("class", "weekday_label").attr("x", year_width).attr("dy", "-0.5em").attr("dx", "-1.3em").attr("y", function (d) {
-        var year_offset = d3.select(this.parentNode)[0][0].__data__ - min_year;
+        var year_offset = d3.select(this.parentNode).datum() - min_year;
         return (d + 1) * cell_size + year_offset * year_height;
       }).text(function (d) {
         return moment().day(d).format("ddd");
@@ -7026,7 +7155,7 @@ d3.calendarAxis = function () {
       year_grid_exit.select(".segment_title").text("");
 
       year_grid_update.selectAll(".day_cell").attr("width", cell_size).attr("height", cell_size).attr("x", function (d) {
-        return d3.time.weekOfYear(d) * cell_size;
+        return utils.weekOfYear(d) * cell_size;
       }).attr("y", function (d) {
         var year_offset = d.getUTCFullYear() - min_year;
         return d.getDay() * cell_size + year_offset * year_height;
@@ -7035,7 +7164,7 @@ d3.calendarAxis = function () {
       year_grid_exit.selectAll(".day_cell").attr("width", 0).attr("height", 0).attr("x", 0).attr("y", 0);
 
       year_grid_update.selectAll(".day_cell_label").attr("x", function (d) {
-        return d3.time.weekOfYear(d) * cell_size + 0.5 * cell_size;
+        return utils.weekOfYear(d) * cell_size + 0.5 * cell_size;
       }).attr("y", function (d) {
         var year_offset = d.getUTCFullYear() - min_year;
         return d.getDay() * cell_size + cell_size + year_offset * year_height;
@@ -7053,7 +7182,7 @@ d3.calendarAxis = function () {
       year_grid_exit.selectAll(".month").attr("y", 0).attr("d", monthPath);
 
       year_grid_update.selectAll(".weekday_label").attr("x", year_width).attr("y", function (d) {
-        var year_offset = d3.select(this.parentNode)[0][0].__data__ - min_year;
+        var year_offset = d3.select(this.parentNode).datum() - min_year;
         return (d + 1) * cell_size + year_offset * year_height;
       }).attr("dy", "-0.5em").attr("dx", "-1.3em").text(function (d) {
         return moment().day(d).format("ddd");
@@ -7061,15 +7190,15 @@ d3.calendarAxis = function () {
 
       year_grid_exit.selectAll(".weekday_label").attr("x", 0).attr("y", 0).text("");
     });
-    d3.timer.flush();
+    d3.timerFlush();
   }
 
   function monthPath(t0) {
     var t1 = new Date(t0.getFullYear(), t0.getMonth() + 1, 0),
         d0 = t0.getDay(),
-        w0 = d3.time.weekOfYear(t0),
+        w0 = utils.weekOfYear(t0),
         d1 = t1.getDay(),
-        w1 = d3.time.weekOfYear(t1);
+        w1 = utils.weekOfYear(t1);
     return "M" + (w0 + 1) * cell_size + "," + d0 * cell_size + "H" + w0 * cell_size + "V" + 7 * cell_size + "H" + w1 * cell_size + "V" + (d1 + 1) * cell_size + "H" + (w1 + 1) * cell_size + "V" + 0 + "H" + (w0 + 1) * cell_size + "Z";
   }
 
@@ -7208,21 +7337,22 @@ configurableTL: //a configurable timeline
 var gridAxis = __webpack_require__(22);
 var calendarAxis = __webpack_require__(17);
 var radialAxis = __webpack_require__(28);
-var imageUrls = __webpack_require__(2);
+var imageUrls = __webpack_require__(3);
 var annotateEvent = __webpack_require__(8);
 var time = __webpack_require__(7);
 var d3 = __webpack_require__(0);
 var moment = __webpack_require__(6);
-var globals = __webpack_require__(1);
+var globals = __webpack_require__(2);
 var log = __webpack_require__(5)("TimelineStoryteller:configurableTL");
 
-var utils = __webpack_require__(3);
+var utils = __webpack_require__(1);
 var tr = __webpack_require__(4);
 var selectWithParent = utils.selectWithParent;
 var selectAllWithParent = utils.selectAllWithParent;
 var logEvent = utils.logEvent;
 var arcTween = utils.arcTween;
 var onTransitionComplete = utils.onTransitionComplete;
+var removeOnEnd = utils.removeOnEnd;
 
 var getNextZIndex = __webpack_require__(9).getNextZIndex;
 
@@ -7242,10 +7372,10 @@ d3.configurableTL = function (unit_width) {
   duration = 0,
       height = 760,
       width = 120,
-      timeline_scale = d3.scale.linear(),
+      timeline_scale = d3.scaleLinear(),
       timeline_scale_segments = [],
-      interim_duration_scale = d3.scale.linear().nice().range([0.25 * unit_width, 4 * unit_width]),
-      interim_duration_axis = d3.svg.axis().orient("right").outerTickSize(0),
+      interim_duration_scale = d3.scaleLinear().nice().range([0.25 * unit_width, 4 * unit_width]),
+      interim_duration_axis = d3.axisRight().offset(0).tickSizeOuter(0),
       tick_format,
       radial_axis = radialAxis(unit_width),
       radial_axis_quantiles = [],
@@ -7270,7 +7400,7 @@ d3.configurableTL = function (unit_width) {
           log_bounds = -1,
           curve_margin = 20;
 
-      render_path = d3.svg.line().x(function (d) {
+      render_path = d3.line().x(function (d) {
         if (d[0] < curve_margin) {
           return curve_margin;
         }
@@ -7286,7 +7416,7 @@ d3.configurableTL = function (unit_width) {
           return d3.max([0, height - curve_margin]);
         }
         return d[1];
-      }).interpolate("basis");
+      }).curve(d3.curveBasis);
 
       // remove event annotations during a transition
       selectAllWithParent(".event_annotation").remove();
@@ -7300,10 +7430,10 @@ d3.configurableTL = function (unit_width) {
       **/
 
       // add parent container for entire timeline
-      var timeline_container = g.selectAll(".timeline").data([null]);
+      var timeline_container_join = g.selectAll(".timeline").data([null]);
 
       // define the parent container
-      var timeline_container_enter = timeline_container.enter().append("g").attr("class", "timeline").attr("transform", function () {
+      var timeline_container_enter = timeline_container_join.enter().append("g").attr("class", "timeline").attr("transform", function () {
         return "translate(" + globals.padding.left + "," + globals.padding.top + ")";
       });
 
@@ -7315,7 +7445,9 @@ d3.configurableTL = function (unit_width) {
         logEvent("curve reset", "curve_reset");
 
         configurableTL.resetCurve();
-      }).call(d3.behavior.drag().on("dragstart", dragStarted).on("drag", dragged).on("dragend", dragEnd));
+      }).call(d3.drag().on("start", dragStarted).on("drag", dragged).on("end", dragEnd));
+
+      var timeline_container = timeline_container_enter.merge(timeline_container_join);
 
       /**
       CURVE-specific timeline
@@ -7426,7 +7558,7 @@ d3.configurableTL = function (unit_width) {
       var renderComplete = updateElements(interim_duration_scale, timeline_event_g, duration, configurableTL, tl_layout, tl_scale, tl_representation, width, height, data, unit_width, old_layout, old_rep, old_scale, timeline_scale);
       promises.push(renderComplete);
     });
-    d3.timer.flush();
+    d3.timerFlush();
 
     promises.push(new Promise(function (resolve) {
       // HACK: A way to ensure that we always at least delay the full animation length
@@ -7445,9 +7577,9 @@ d3.configurableTL = function (unit_width) {
     }
   }
 
-  function dragged() {
+  function dragged(event) {
     if (tl_representation === "Curve" && active_line !== undefined && !globals.dirty_curve) {
-      active_line.datum().push(d3.mouse(this));
+      active_line.datum().push(d3.pointer(event, this));
 
       active_line.attr("d", render_path);
     }
@@ -7458,7 +7590,7 @@ d3.configurableTL = function (unit_width) {
     selectWithParent(".timeline_frame").style("cursor", "auto");
 
     if (tl_representation === "Curve" && fresh_canvas) {
-      selectWithParent("#active_line").transition("active_line_remove").duration(duration).remove();
+      selectWithParent("#active_line").transition("active_line_remove").duration(duration).call(removeOnEnd);
 
       selectAllWithParent("rect.event_span").transition("event_span_update").duration(duration).attr("transform", function (d) {
         return translateAlong(d, d.item_index, active_line.node());
@@ -7466,7 +7598,7 @@ d3.configurableTL = function (unit_width) {
       fresh_canvas = false;
 
       // create actual visible time curve:
-      selectWithParent("#timecurve").attr("d", createTimeCurveFunction(unit_width)(selectAllWithParent(".event_span")[0].filter(function (d, i) {
+      selectWithParent("#timecurve").attr("d", createTimeCurveFunction(unit_width)(selectAllWithParent(".event_span").nodes().filter(function (d, i) {
         return i % 2 === 1;
       }))).style("visibility", "visible");
     }
@@ -7490,14 +7622,14 @@ d3.configurableTL = function (unit_width) {
 
     active_line = selectWithParent(".timeline").append("path").attr("id", "active_line").attr("class", "line").style("visibility", "hidden").attr("d", render_path);
 
-    selectWithParent("#active_line").transition("active_line_reproduce").duration(duration).remove();
+    selectWithParent("#active_line").transition("active_line_reproduce").duration(duration).call(removeOnEnd);
 
     selectAllWithParent("rect.event_span").transition("event_span_reproduce").duration(duration).attr("transform", function (d) {
       return translateAlong(d, d.item_index, active_line.node());
     });
 
     // create actual visible time curve:
-    selectWithParent("#timecurve").attr("d", createTimeCurveFunction(unit_width)(selectAllWithParent(".event_span")[0].filter(function (d, i) {
+    selectWithParent("#timecurve").attr("d", createTimeCurveFunction(unit_width)(selectAllWithParent(".event_span").nodes().filter(function (d, i) {
       return i % 2 === 1;
     }))).style("visibility", "hidden");
   };
@@ -7661,11 +7793,11 @@ d3.configurableTL = function (unit_width) {
 };
 
 function createTimeCurveFunction(unit_width) {
-  return d3.svg.line().x(function (d) {
+  return d3.line().x(function (d) {
     return d.__data__.translated_x + unit_width / 2;
   }).y(function (d) {
     return d.__data__.translated_y + unit_width / 2;
-  }).interpolate("cardinal");
+  }).curve(d3.curveCardinal.tension(0.7));
 }
 
 /**
@@ -7680,7 +7812,7 @@ function unNaN(num) {
 module.exports = d3.configurableTL;
 
 function initializeElements(timeline_container, data, duration, width, height, unit_width, tl_representation, configurableTL) {
-  var timeline_event_g = timeline_container.selectAll(".timeline_event_g").data(data, function (d, idx) {
+  var timeline_event_g_join = timeline_container.selectAll(".timeline_event_g").data(data, function (d, idx) {
     return d && d.hasOwnProperty("id") ? d.id : idx;
   });
 
@@ -7691,7 +7823,7 @@ function initializeElements(timeline_container, data, duration, width, height, u
   **/
 
   // add event containers
-  timeline_event_g.exit().transition("timeline_event_remove").style("opacity", 0).duration(duration).remove();
+  timeline_event_g_join.exit().transition("timeline_event_remove").style("opacity", 0).duration(duration).call(removeOnEnd);
 
   /**
   ---------------------------------------------------------------------------------------
@@ -7700,17 +7832,18 @@ function initializeElements(timeline_container, data, duration, width, height, u
   **/
 
   // define each event and its behaviour
-  var timeline_event_g_enter = timeline_event_g.enter().append("g").attr("class", "timeline_event_g").attr("id", function (d) {
+  // new events go after the existing ones, as they always have (and so are drawn on top)
+  var timeline_event_g_enter = timeline_event_g_join.enter().append("g").attr("class", "timeline_event_g").attr("id", function (d) {
     return "event_g" + d.event_id;
-  });
+  }).raise();
 
   // define event behaviour
-  timeline_event_g_enter.on("click", function (d, i) {
+  timeline_event_g_enter.on("click", function (event, d) {
     if (!globals.playback_mode) {
-      return eventClickListener(tl_representation, unit_width, configurableTL, d, i);
+      return eventClickListener(event, tl_representation, unit_width, configurableTL, d);
     }
-  }).on("mouseover", function (d) {
-    return eventMouseOverListener(d, tl_representation, unit_width, configurableTL);
+  }).on("mouseover", function (event, d) {
+    return eventMouseOverListener(event, d, tl_representation, unit_width, configurableTL);
   }).on("mouseout", eventMouseOutListener);
 
   // add rect events for linear timelines
@@ -7764,7 +7897,7 @@ function initializeElements(timeline_container, data, duration, width, height, u
         dateTime: dateTime,
         event_id: d.event_id
       };
-    }) : undefined;
+    }) : [];
   }, function (d) {
     return d && d.event_id + d.dateTime;
   }).enter();
@@ -7780,9 +7913,9 @@ function initializeElements(timeline_container, data, duration, width, height, u
   **/
 
   // add right-facing triangle path to indicate beginning of span
-  timeline_event_g_enter.append("path").attr("class", "path_end_indicator").style("opacity", 0).attr("d", d3.svg.symbol().type("triangle-up").size(unit_width * 1.5)).style("display", "none");
+  timeline_event_g_enter.append("path").attr("class", "path_end_indicator").style("opacity", 0).attr("d", d3.symbol().type(d3.symbolTriangle).size(unit_width * 1.5)).style("display", "none");
 
-  return timeline_event_g;
+  return timeline_event_g_enter.merge(timeline_event_g_join);
 }
 
 function updateElements(interim_duration_scale, timeline_event_g, duration, configurableTL, tl_layout, tl_scale, tl_representation, width, height, data, unit_width, prev_tl_layout, prev_tl_representation, prev_tl_scale, timeline_scale) {
@@ -7850,7 +7983,7 @@ function configureTimelineScaleSegments(tl_layout, tl_representation, tl_scale, 
 
         // valid scale
         // initialize the time scale
-        timeline_scale = d3.time.scale().range([0, 2 * Math.PI]);
+        timeline_scale = d3.scaleTime().range([0, 2 * Math.PI]);
 
         var endYear = data.max_end_date.getUTCFullYear();
         var startYear = data.min_start_date.getUTCFullYear();
@@ -7897,10 +8030,10 @@ function configureTimelineScaleSegments(tl_layout, tl_representation, tl_scale, 
         // valid scale
         if (globals.date_granularity === "epochs") {
           // eslint-disable-line no-lonely-if
-          timeline_scale = d3.scale.linear().range([0, width - unit_width]).domain([data.min_start_date.valueOf(), data.max_end_date.valueOf()]);
+          timeline_scale = d3.scaleLinear().range([0, width - unit_width]).domain([data.min_start_date.valueOf(), data.max_end_date.valueOf()]);
           tick_format = format;
         } else {
-          timeline_scale = d3.time.scale().range([0, width - unit_width]).domain([data.min_start_date, data.max_end_date]);
+          timeline_scale = d3.scaleTime().range([0, width - unit_width]).domain([data.min_start_date, data.max_end_date]);
           if (globals.date_granularity === "years" && data.min_start_date.getUTCFullYear() <= 100) {
             tick_format = function tick_format(d) {
               if (d.getUTCFullYear() > 0) {
@@ -7916,7 +8049,7 @@ function configureTimelineScaleSegments(tl_layout, tl_representation, tl_scale, 
       }
       logEvent(scale + " scale updated with " + globals.date_granularity + " date granularity and range: " + data.min_start_date + " - " + data.max_end_date, "scale_update");
     } else if (scale === "Log") {
-      timeline_scale = d3.scale.log().range([0, width - unit_width]);
+      timeline_scale = d3.scaleLog().range([0, width - unit_width]);
 
       log_bounds = -1 * Math.abs(data.max_end_date.valueOf() - data.min_start_date.valueOf()) - 1;
       timeline_scale.domain([log_bounds, -1]);
@@ -7976,11 +8109,11 @@ function configureTimelineScaleSegments(tl_layout, tl_representation, tl_scale, 
         } else {
           index_offset = 1;
         }
-        timeline_scale = d3.scale.linear().range([0, 2 * Math.PI]).domain([0, (Math.ceil(globals.max_seq_index / index_offset) + 1) * index_offset]);
+        timeline_scale = d3.scaleLinear().range([0, 2 * Math.PI]).domain([0, (Math.ceil(globals.max_seq_index / index_offset) + 1) * index_offset]);
         timeline_scale_segments = d3.range(0, (Math.ceil(globals.max_seq_index / index_offset) + 1) * index_offset, index_offset);
         logEvent(tl_scale + " scale updated with range: 0 - " + globals.max_seq_index, "scale_update");
       } else {
-        timeline_scale = d3.scale.linear().range([0, globals.max_seq_index * 1.5 * unit_width - unit_width]).domain([0, globals.max_seq_index * unit_width]);
+        timeline_scale = d3.scaleLinear().range([0, globals.max_seq_index * 1.5 * unit_width - unit_width]).domain([0, globals.max_seq_index * unit_width]);
 
         if (scale === "Collapsed") {
           var i = -1,
@@ -8016,9 +8149,9 @@ function configureTimelineScaleSegments(tl_layout, tl_representation, tl_scale, 
 
           // initialize the time scale
           if (globals.date_granularity === "epochs") {
-            interim_duration_scale = d3.scale.log().range([0.25 * unit_width, 4 * unit_width]).domain([1, max_time_elapsed]);
+            interim_duration_scale = d3.scaleLog().range([0.25 * unit_width, 4 * unit_width]).domain([1, max_time_elapsed]);
           } else {
-            interim_duration_scale = d3.scale.linear().range([0.25 * unit_width, 4 * unit_width]).domain([0, max_time_elapsed]);
+            interim_duration_scale = d3.scaleLinear().range([0.25 * unit_width, 4 * unit_width]).domain([0, max_time_elapsed]);
           }
         }
 
@@ -8054,10 +8187,10 @@ function configureTimelineScaleSegments(tl_layout, tl_representation, tl_scale, 
             case "Relative":
               // valid scale
               if (globals.date_granularity === "epochs") {
-                timeline_scale = d3.scale.linear().range([0, width - unit_width]).domain([0, globals.max_end_age]);
+                timeline_scale = d3.scaleLinear().range([0, width - unit_width]).domain([0, globals.max_end_age]);
                 tick_format = format;
               } else {
-                timeline_scale = d3.scale.linear().range([0, width - unit_width]).domain([0, globals.max_end_age]);
+                timeline_scale = d3.scaleLinear().range([0, width - unit_width]).domain([0, globals.max_end_age]);
                 tick_format = function tick_format(d) {
                   var converted_tick = d;
                   if (globals.max_end_age / 86400000 > 1000) {
@@ -8091,7 +8224,7 @@ function configureTimelineScaleSegments(tl_layout, tl_representation, tl_scale, 
 
             case "Relative":
               // valid scale
-              timeline_scale = d3.scale.linear().range([0, 2 * Math.PI]);
+              timeline_scale = d3.scaleLinear().range([0, 2 * Math.PI]);
 
               if (globals.segment_granularity === "days") {
                 timeline_scale.domain([0, globals.max_end_age]);
@@ -8112,7 +8245,7 @@ function configureTimelineScaleSegments(tl_layout, tl_representation, tl_scale, 
     case "Segmented":
       if (tl_representation === "Linear" && tl_scale === "Chronological") {
         // valid scale
-        timeline_scale = d3.scale.linear().range([0, width - unit_width]);
+        timeline_scale = d3.scaleLinear().range([0, width - unit_width]);
 
         switch (globals.segment_granularity) {
           case "days":
@@ -8145,7 +8278,7 @@ function configureTimelineScaleSegments(tl_layout, tl_representation, tl_scale, 
         logEvent(tl_scale + " scale updated with domain: " + timeline_scale.domain(), "scale_update");
       } else if (tl_representation === "Radial" && tl_scale === "Chronological") {
         // valid scale
-        timeline_scale = d3.scale.linear().range([0, 2 * Math.PI]);
+        timeline_scale = d3.scaleLinear().range([0, 2 * Math.PI]);
 
         switch (globals.segment_granularity) {
           case "days":
@@ -8192,14 +8325,16 @@ function configureTimelineScaleSegments(tl_layout, tl_representation, tl_scale, 
 }
 
 function configureSegments(timeline_container, duration, width, height, tl_layout, tl_representation, tl_scale, unit_width) {
-  var timeline_segment = timeline_container.selectAll(".timeline_segment").data(globals.segments.domain());
+  var timeline_segment_join = timeline_container.selectAll(".timeline_segment").data(globals.segments.domain());
 
   var segment_number = 0;
 
-  var timeline_segment_exit = timeline_segment.exit().transition("timeline_segment_exit").duration(duration).remove();
+  var timeline_segment_exit = timeline_segment_join.exit().transition("timeline_segment_exit").duration(duration).call(removeOnEnd);
 
   // define each segment and its rect container
-  var timeline_segment_enter = timeline_segment.enter().append("g").attr("class", "timeline_segment").each(insertFacetAtAxis);
+  var timeline_segment_enter = timeline_segment_join.enter().append("g").attr("class", "timeline_segment").each(insertFacetAtAxis);
+
+  var timeline_segment = timeline_segment_enter.merge(timeline_segment_join);
 
   var timeline_segment_update = timeline_segment.transition("timeline_segment_update").duration(duration);
 
@@ -8280,14 +8415,16 @@ function configureSegments(timeline_container, duration, width, height, tl_layou
 }
 
 function configureFacets(timeline_container, duration, width, height, tl_layout, tl_representation, tl_scale, unit_width) {
-  var timeline_facet = timeline_container.selectAll(".timeline_facet").data(globals.facets.domain());
+  var timeline_facet_join = timeline_container.selectAll(".timeline_facet").data(globals.facets.domain());
 
-  var timeline_facet_exit = timeline_facet.exit().transition("timeline_facet_exit").duration(duration).remove();
+  var timeline_facet_exit = timeline_facet_join.exit().transition("timeline_facet_exit").duration(duration).call(removeOnEnd);
 
   var facet_number = 0;
 
   // define each facet and its rect container
-  var timeline_facet_enter = timeline_facet.enter().append("g").attr("class", "timeline_facet").each(insertFacetAtAxis);
+  var timeline_facet_enter = timeline_facet_join.enter().append("g").attr("class", "timeline_facet").each(insertFacetAtAxis);
+
+  var timeline_facet = timeline_facet_enter.merge(timeline_facet_join);
 
   // update facet container dimensions
   var timeline_facet_update = timeline_facet.transition("timeline_facet_update").duration(duration);
@@ -8422,9 +8559,9 @@ function eventColorMapping(d) {
   return d.category === undefined ? "#E45641" : globals.categories(d.category);
 }
 
-function eventMouseOutListener(d) {
+function eventMouseOutListener(event, d) {
   selectAllWithParent(".temporary_annotation").transition("event_hover_hide").duration(100).style("opacity", 0);
-  selectAllWithParent(".temporary_annotation").transition("event_hover_remove").delay(100).remove();
+  selectAllWithParent(".temporary_annotation").transition("event_hover_remove").delay(100).call(removeOnEnd);
 
   d3.select(this).selectAll(".event_span").attr("filter", "none").style("stroke", "#fff").style("stroke-width", "0.25px");
   d3.select(this).selectAll(".event_span_component").style("stroke", "#fff").style("stroke-width", "0.25px");
@@ -8434,14 +8571,14 @@ function eventMouseOutListener(d) {
   }
 }
 
-function eventMouseOverListener(d, tl_representation, unit_width, configurableTL) {
+function eventMouseOverListener(event, d, tl_representation, unit_width, configurableTL) {
   d3.select(this).selectAll(".event_span").attr("filter", "url(#drop-shadow)").style("stroke", "#f00").style("stroke-width", "1.25px").style("cursor", "url(\"" + imageUrls("pin.png") + "\"),auto");
   d3.select(this).selectAll(".event_span_component").style("stroke", "#f00").style("stroke-width", "0.5px").style("cursor", "url(\"" + imageUrls("pin.png") + "\"),auto");
 
   var eventHasAnnotations = selectAllWithParent(".event_" + d.event_id + "_annotation").size() > 0;
   if (!eventHasAnnotations) {
-    var x_pos = d3.event.x,
-        y_pos = d3.event.y;
+    var x_pos = event.x,
+        y_pos = event.y;
 
     var item_x_pos = 0;
     var item_y_pos = 0;
@@ -8467,21 +8604,21 @@ function eventMouseOverListener(d, tl_representation, unit_width, configurableTL
   }
 }
 
-function eventClickListener(tl_representation, unit_width, configurableTL, d) {
+function eventClickListener(event, tl_representation, unit_width, configurableTL, d) {
   logEvent("event " + d.event_id + " clicked", "event_click");
 
   if (!d.selected || d.selected === undefined) {
-    var x_pos = d3.event.x,
-        y_pos = d3.event.y;
+    var x_pos = event.x,
+        y_pos = event.y;
     d.selected = true;
 
     d3.select(this).selectAll(".event_span").attr("filter", "url(#drop-shadow)").style("stroke", "#f00").style("stroke-width", "1.25px");
     d3.select(this).selectAll(".event_span_component").style("stroke", "#f00").style("stroke-width", "1px");
 
     // annotate the event with its label if shift is not clicked
-    if (!d3.event.shiftKey) {
-      x_pos = d3.event.x;
-      y_pos = d3.event.y;
+    if (!event.shiftKey) {
+      x_pos = event.x;
+      y_pos = event.y;
 
       var item_x_pos = 0;
       var item_y_pos = 0;
@@ -8531,7 +8668,7 @@ function eventClickListener(tl_representation, unit_width, configurableTL, d) {
     } else {
       logEvent("event " + d.event_id + " annotation supressed (shift key)");
     }
-  } else if (!d3.event.shiftKey) {
+  } else if (!event.shiftKey) {
     d.selected = false;
     d3.select(this).selectAll(".event_span").attr("filter", "none").style("stroke", "#fff").style("stroke-width", "0.25px");
     d3.select(this).selectAll(".event_span_component").style("stroke", "#fff").style("stroke-width", "0.25px");
@@ -8568,7 +8705,7 @@ function configureGridAxis(tl_representation, duration, data, grid_axis, timelin
 function hideAxis(timeline_container, duration, selector) {
   timeline_container.selectAll("." + selector).transition(selector + "_hide").duration(duration * 3).style("opacity", 0);
 
-  timeline_container.selectAll(".grid_axis").transition(selector + "_remove").delay(duration * 3).remove();
+  timeline_container.selectAll(".grid_axis").transition(selector + "_remove").delay(duration * 3).call(removeOnEnd);
 }
 
 function configureCalendarAxis(tl_representation, duration, data, calendar_axis, timeline_container, prev_tl_representation) {
@@ -8802,6 +8939,7 @@ function configureCollapsedAxis(tl_representation, prev_tl_scale, tl_scale, tl_l
   if (tl_representation === "Linear" && tl_scale === "Collapsed" && tl_layout === "Unified") {
     interim_duration_axis.ticks(2);
     interim_duration_axis.scale(interim_duration_scale);
+    interim_duration_axis.tickValues(utils.ticks(interim_duration_scale, 2));
 
     interim_duration_axis.tickFormat(function (d) {
       var converted_tick = d;
@@ -8832,11 +8970,11 @@ function configureCollapsedAxis(tl_representation, prev_tl_scale, tl_scale, tl_l
 }
 
 function configureLinearAxis(timeline_scale, tl_layout, tl_representation, prev_tl_representation, tl_scale, data, tick_format, unit_width, timeline_container, duration, width, height) {
-  var timeline_axis = d3.svg.axis().orient("top");
+  var timeline_axis = d3.axisTop().offset(0);
   if (tl_representation === "Linear") {
     timeline_axis.scale(timeline_scale);
     timeline_axis.ticks(10);
-    timeline_axis.tickSize(6, 0);
+    timeline_axis.tickSizeInner(6).tickSizeOuter(0);
     timeline_axis.tickFormat(undefined);
     timeline_axis.tickValues(undefined);
 
@@ -8845,14 +8983,14 @@ function configureLinearAxis(timeline_scale, tl_layout, tl_representation, prev_
       timeline_axis.tickValues(undefined);
     } else if (tl_scale === "Sequential" || tl_scale === "Collapsed") {
       timeline_axis.ticks(10);
-      timeline_axis.tickSize(6, 0);
+      timeline_axis.tickSizeInner(6).tickSizeOuter(0);
       timeline_axis.tickValues(d3.range(0, globals.max_seq_index * 1.5 * unit_width - unit_width, unit_width * 10));
       timeline_axis.tickFormat(function (d) {
         return d / unit_width;
       });
     } else if (tl_scale === "Log") {
       timeline_axis.ticks(10, tick_format);
-      timeline_axis.tickSize(6, 0);
+      timeline_axis.tickSizeInner(6).tickSizeOuter(0);
       timeline_axis.tickValues(undefined);
     } else if (tl_scale === "Relative" || globals.date_granularity === "epochs") {
       timeline_axis.tickFormat(tick_format);
@@ -8923,6 +9061,10 @@ function configureLinearAxis(timeline_scale, tl_layout, tl_representation, prev_
       });
     }
 
+    if (timeline_axis.tickValues() === null && tl_scale !== "Log") {
+      timeline_axis.tickValues(utils.ticks(timeline_scale, 10));
+    }
+
     // update the timeline axis for linear timelines
     var timeline_axis_container = timeline_container.selectAll(".timeline_axis").data([null]);
 
@@ -8936,14 +9078,14 @@ function configureLinearAxis(timeline_scale, tl_layout, tl_representation, prev_
 
     timeline_axis_update.selectAll(".tick line").delay(function (d, i) {
       // eslint-disable-line no-shadow
-      return i * duration / timeline_axis_update.selectAll(".tick line")[0].length;
+      return i * duration / timeline_axis_update.selectAll(".tick line").size();
     }).attr("y1", -6).attr("y2", 0);
 
     var bottom_timeline_axis_update = timeline_container.select("#bottom_timeline_axis").transition("bottom_timeline_axis_update").delay(0).duration(duration).style("opacity", 1).call(timeline_axis);
 
     bottom_timeline_axis_update.selectAll("text").delay(function (d, i) {
       // eslint-disable-line no-shadow
-      return i * duration / bottom_timeline_axis_update.selectAll(".tick line")[0].length;
+      return i * duration / bottom_timeline_axis_update.selectAll(".tick line").size();
     }).attr("y", height + 18);
 
     bottom_timeline_axis_update.select(".domain").attr("transform", function () {
@@ -8952,7 +9094,7 @@ function configureLinearAxis(timeline_scale, tl_layout, tl_representation, prev_
 
     bottom_timeline_axis_update.selectAll(".tick line").delay(function (d, i) {
       // eslint-disable-line no-shadow
-      return i * duration / bottom_timeline_axis_update.selectAll(".tick line")[0].length;
+      return i * duration / bottom_timeline_axis_update.selectAll(".tick line").size();
     }).attr("y1", 0).attr("y2", height + 6);
 
     logEvent("Linear axis updated", "axis_update");
@@ -9658,7 +9800,7 @@ function update(tl_layout, tl_scale, tl_representation, width, height, data, uni
         if (globals.segment_granularity === "centuries" || globals.segment_granularity === "millenia" || globals.segment_granularity === "epochs") {
           x_pos = 0;
         } else {
-          x_pos = d3.max([0, d3.time.weekOfYear(dateTime) * 20]);
+          x_pos = d3.max([0, utils.weekOfYear(dateTime) * 20]);
         }
       }
     }
@@ -9823,7 +9965,7 @@ function update(tl_layout, tl_scale, tl_representation, width, height, data, uni
         var range_floor = data.min_start_date.getUTCFullYear();
         var year_offset = year_height * (d.start_date.getUTCFullYear() - range_floor);
         rotation = 180;
-        x_pos = d3.max([0, d3.time.weekOfYear(d.start_date) * 20 + 0.33 * unit_width]);
+        x_pos = d3.max([0, utils.weekOfYear(d.start_date) * 20 + 0.33 * unit_width]);
         y_pos = d3.max([0, d.start_date.getDay() * cell_size + year_offset + unit_width * 0.33]);
       }
     } else if (tl_layout === "Unified" && tl_scale === "Chronological") {
@@ -9899,7 +10041,7 @@ function delayedUpdate(tl_layout, tl_representation, tl_scale, interim_duration_
   });
 
   if (tl_representation === "Radial") {
-    transition.select("path.event_span").attrTween("d", arcTween(d3.svg.arc().innerRadius(function (d) {
+    transition.select("path.event_span").attrTween("d", arcTween(d3.arc().innerRadius(function (d) {
       var inner_radius = globals.centre_radius;
       switch (tl_scale) {
 
@@ -10110,7 +10252,7 @@ function delayedUpdate(tl_layout, tl_representation, tl_scale, interim_duration_
     return "none";
   });
   if (tl_representation === "Radial") {
-    transition.selectAll("path.event_span_component").attrTween("d", arcTween(d3.svg.arc().innerRadius(function () {
+    transition.selectAll("path.event_span_component").attrTween("d", arcTween(d3.arc().innerRadius(function () {
       var inner_radius = globals.centre_radius;
       if (tl_scale === "Relative" || tl_scale === "Chronological") {
         inner_radius = d3.max([globals.centre_radius, globals.centre_radius + d3.select(this.parentNode).datum().track * globals.track_height]);
@@ -10421,8 +10563,8 @@ function getNumberOfSegmentsForGranularity(granularity) {
 var template = __webpack_require__(29);
 var tr = __webpack_require__(4);
 var d3 = __webpack_require__(0);
-var imageUrls = __webpack_require__(2);
-var utils = __webpack_require__(3);
+var imageUrls = __webpack_require__(3);
+var utils = __webpack_require__(1);
 
 /**
  * An add image dialog
@@ -10521,7 +10663,7 @@ AddImageDialog.prototype._addImageButtonClicked = function () {
   var finalizeImage = function finalizeImage(url) {
     var waitForImagePromise = function waitForImagePromise(p) {
       p.then(function (dataURL) {
-        _this2._dispatcher.imageSelected(dataURL);
+        _this2._dispatcher.call("imageSelected", _this2, dataURL);
         _this2.reset();
       }, function (e) {
         var error = tr("Could not save image. ");
@@ -10548,7 +10690,7 @@ AddImageDialog.prototype._addImageButtonClicked = function () {
     } else if (_this2._offlineEnabled.property("checked")) {
       waitForImagePromise(utils.imageUrlToDataURL(url));
     } else {
-      _this2._dispatcher.imageSelected(url);
+      _this2._dispatcher.call("imageSelected", _this2, url);
       _this2.reset();
     }
   };
@@ -10566,34 +10708,35 @@ AddImageDialog.prototype._addImageButtonClicked = function () {
 
 /**
  * Drag over listener for the drag/drop zone for files
+ * @param {Event} e The drag event
  * @returns {void}
  */
-AddImageDialog.prototype._addImageDropZoneDragOver = function () {
-  stopEvent();
+AddImageDialog.prototype._addImageDropZoneDragOver = function (e) {
+  stopEvent(e);
 
-  var e = d3.event;
   e.dataTransfer.dropEffect = "copy";
   this._addImageDropZone.classed("dragging", true);
 };
 
 /**
  * Drag over listener for the drag/drop zone for files
+ * @param {Event} e The drag event
  * @returns {void}
  */
-AddImageDialog.prototype._addImageDropZoneDragLeave = function () {
-  stopEvent();
+AddImageDialog.prototype._addImageDropZoneDragLeave = function (e) {
+  stopEvent(e);
 
   this._addImageDropZone.classed("dragging", false);
 };
 
 /**
  * Drop listener for the drag/drop zone for files
+ * @param {Event} e The drag event
  * @returns {void}
  */
-AddImageDialog.prototype._addImageDropZoneDrop = function () {
-  stopEvent();
+AddImageDialog.prototype._addImageDropZoneDrop = function (e) {
+  stopEvent(e);
 
-  var e = d3.event;
   var files = e.dataTransfer.files;
   this._addSelectedFile(files[0]);
 };
@@ -10611,11 +10754,11 @@ module.exports = function () {
 };
 
 /**
- * Quick helper to completely stop an d3 event
+ * Quick helper to completely stop an event
+ * @param {Event} e The event to stop
  * @returns {void}
  */
-function stopEvent() {
-  var e = d3.event;
+function stopEvent(e) {
   e.stopPropagation();
   e.preventDefault();
 }
@@ -10628,6 +10771,7 @@ function stopEvent() {
 
 
 var d3 = __webpack_require__(0);
+var removeOnEnd = __webpack_require__(1).removeOnEnd;
 
 /**
 
@@ -10647,9 +10791,9 @@ d3.gridAxis = function (unit_width) {
       var g = d3.select(this);
 
       // grid container items for each year
-      var grid = g.selectAll(".grid").data(data);
+      var grid_join = g.selectAll(".grid").data(data);
 
-      var grid_enter = grid.enter().append("g").attr("class", "grid");
+      var grid_enter = grid_join.enter().append("g").attr("class", "grid");
 
       grid_enter.append("rect").attr("class", "year_cell").attr("width", cell_size).attr("height", cell_size).attr("x", function (d) {
         return getXGridPosition(d);
@@ -10659,7 +10803,9 @@ d3.gridAxis = function (unit_width) {
         return getXGridPosition(d);
       }).attr("y", 0).attr("dy", "-0.3em").attr("dx", "0.3em").text("");
 
-      var grid_exit = grid.exit().transition().duration(duration).remove();
+      var grid_exit = grid_join.exit().transition().duration(duration).call(removeOnEnd);
+
+      var grid = grid_enter.merge(grid_join);
 
       grid_exit.select(".year_cell").attr("height", 0).attr("y", 0);
 
@@ -10681,7 +10827,7 @@ d3.gridAxis = function (unit_width) {
         return d;
       });
     });
-    d3.timer.flush();
+    d3.timerFlush();
   }
 
   // place an element in correct x position on grid axis
@@ -10750,8 +10896,8 @@ module.exports = d3.gridAxis;
 /***/ (function(module, exports, __webpack_require__) {
 
 var TimelineStoryteller = __webpack_require__(13);
-var utils = __webpack_require__(3);
-var imageUrls = __webpack_require__(2);
+var utils = __webpack_require__(1);
+var imageUrls = __webpack_require__(3);
 
 // Expose the utils as well
 TimelineStoryteller.utils = utils;
@@ -11043,7 +11189,7 @@ BEGIN Timeline Storyteller Modification - March 2017
 
 */
 var d3 = __webpack_require__(0);
-var globals = __webpack_require__(1);
+var globals = __webpack_require__(2);
 var log = __webpack_require__(5)("TimelineStoryteller:saveSvgAsPng");
 /*
 
@@ -11604,8 +11750,9 @@ module.exports = {
 var time = __webpack_require__(7);
 var d3 = __webpack_require__(0);
 var moment = __webpack_require__(6);
-var globals = __webpack_require__(1);
-var arcTween = __webpack_require__(3).arcTween;
+var globals = __webpack_require__(2);
+var arcTween = __webpack_require__(1).arcTween;
+var removeOnEnd = __webpack_require__(1).removeOnEnd;
 
 /**
 
@@ -11614,7 +11761,7 @@ radialAxis: //a reusable radial axis
 **/
 
 d3.radialAxis = function (unit_width) {
-  var radial_axis_scale = d3.scale.linear().range([0, 2 * Math.PI]),
+  var radial_axis_scale = d3.scaleLinear().range([0, 2 * Math.PI]),
       radial_axis_units = "Chronological",
       x_pos = 0,
       y_pos = 0,
@@ -11647,19 +11794,21 @@ d3.radialAxis = function (unit_width) {
       this.__chart__ = radial_axis_scale;
 
       // concentric track circles
-      var radial_axis_tracks = g.selectAll(".radial_tracks").data(d3.range(-1, track_bounds));
+      var radial_axis_tracks_join = g.selectAll(".radial_tracks").data(d3.range(-1, track_bounds));
 
-      var radial_axis_tracks_enter = radial_axis_tracks.enter().append("g").attr("class", "radial_tracks");
+      var radial_axis_tracks_enter = radial_axis_tracks_join.enter().append("g").attr("class", "radial_tracks");
 
       radial_axis_tracks_enter.append("path").attr("class", "rad_track").attr("id", function (d, i) {
         return "rad_track" + i;
       }).attr("transform", function () {
         return "translate(" + x_pos + " ," + y_pos + ")";
-      }).style("opacity", 0).attr("d", d3.svg.arc().innerRadius(function () {
+      }).style("opacity", 0).attr("d", d3.arc().innerRadius(function () {
         return globals.centre_radius;
       }).outerRadius(function () {
         return globals.centre_radius;
       }).startAngle(0).endAngle(radial_axis_scale(final_quantile)));
+
+      var radial_axis_tracks = radial_axis_tracks_enter.merge(radial_axis_tracks_join);
 
       var radial_axis_tracks_update = radial_axis_tracks.transition().duration(duration);
 
@@ -11667,13 +11816,13 @@ d3.radialAxis = function (unit_width) {
         return duration + i / track_bounds * duration;
       }).duration(duration);
 
-      var radial_axis_tracks_exit = radial_axis_tracks.exit().transition().delay(duration).duration(duration).remove();
+      var radial_axis_tracks_exit = radial_axis_tracks_join.exit().transition().delay(duration).duration(duration).call(removeOnEnd);
 
       radial_axis_tracks_update.selectAll(".rad_track").attr("transform", function () {
         return "translate(" + x_pos + " ," + y_pos + ")";
       });
 
-      radial_axis_tracks_delayed_update.selectAll(".rad_track").style("opacity", 1).attrTween("d", arcTween(d3.svg.arc().innerRadius(function (d) {
+      radial_axis_tracks_delayed_update.selectAll(".rad_track").style("opacity", 1).attrTween("d", arcTween(d3.arc().innerRadius(function (d) {
         return globals.centre_radius + d * globals.track_height;
       }).outerRadius(function (d) {
         return globals.centre_radius + d * globals.track_height;
@@ -11681,18 +11830,20 @@ d3.radialAxis = function (unit_width) {
 
       radial_axis_tracks_exit.selectAll(".rad_track").attr("transform", function () {
         return "translate(" + x_pos + " ," + y_pos + ")";
-      }).attrTween("d", arcTween(d3.svg.arc().innerRadius(function () {
+      }).attrTween("d", arcTween(d3.arc().innerRadius(function () {
         return globals.centre_radius;
       }).outerRadius(function () {
         return globals.centre_radius;
       }).startAngle(0).endAngle(radial_axis_scale(final_quantile))));
 
       // radial ticks
-      var radial_axis_tick = g.selectAll(".radial_axis_tick").data(data);
+      var radial_axis_tick_join = g.selectAll(".radial_axis_tick").data(data);
 
-      var radial_axis_tick_enter = radial_axis_tick.enter().append("g").attr("class", "radial_axis_tick");
+      var radial_axis_tick_enter = radial_axis_tick_join.enter().append("g").attr("class", "radial_axis_tick");
 
-      var radial_axis_tick_exit = radial_axis_tick.exit().transition().duration(duration).remove();
+      var radial_axis_tick_exit = radial_axis_tick_join.exit().transition().duration(duration).call(removeOnEnd);
+
+      var radial_axis_tick = radial_axis_tick_enter.merge(radial_axis_tick_join);
 
       radial_axis_tick_enter.append("path").attr("class", "radial_axis_tick_path").style("opacity", 0).attr("transform", function () {
         return "translate(" + x_pos + " ," + y_pos + ")";
@@ -11714,7 +11865,7 @@ d3.radialAxis = function (unit_width) {
         return "translate(" + x_pos + " ," + y_pos + ")";
       });
 
-      radial_axis_tick_delayed_update.select("path").style("opacity", 1).attrTween("d", arcTween(d3.svg.arc().innerRadius(globals.centre_radius - globals.track_height).outerRadius(globals.centre_radius + track_bounds * globals.track_height - 0.25 * unit_width).startAngle(function (d) {
+      radial_axis_tick_delayed_update.select("path").style("opacity", 1).attrTween("d", arcTween(d3.arc().innerRadius(globals.centre_radius - globals.track_height).outerRadius(globals.centre_radius + track_bounds * globals.track_height - 0.25 * unit_width).startAngle(function (d) {
         return radial_axis_scale(d);
       }).endAngle(function (d) {
         return radial_axis_scale(d);
@@ -11740,7 +11891,7 @@ d3.radialAxis = function (unit_width) {
         return "translate(" + x_pos + " ," + y_pos + ")rotate(" + angle + "," + (globals.centre_radius + track_bounds * globals.track_height + 0.5 * unit_width) * Math.sin(radial_axis_scale(d)) + " ," + -1 * (globals.centre_radius + track_bounds * globals.track_height + 0.5 * unit_width) * Math.cos(radial_axis_scale(d)) + ")";
       });
 
-      radial_axis_tick_exit.select("path").attrTween("d", arcTween(d3.svg.arc().innerRadius(globals.centre_radius).outerRadius(globals.centre_radius).startAngle(function (d) {
+      radial_axis_tick_exit.select("path").attrTween("d", arcTween(d3.arc().innerRadius(globals.centre_radius).outerRadius(globals.centre_radius).startAngle(function (d) {
         return radial_axis_scale(d);
       }).endAngle(function (d) {
         return radial_axis_scale(d);
@@ -11750,7 +11901,7 @@ d3.radialAxis = function (unit_width) {
         return "";
       });
     });
-    d3.timer.flush();
+    d3.timerFlush();
   }
 
   function formatTick(d, i) {
@@ -14210,7 +14361,7 @@ exports = module.exports = __webpack_require__(10)(undefined);
 
 
 // module
-exports.push([module.i, "@charset \"UTF-8\";\n\nbody, input, textarea, select, text {\n  font-family: \"Segoe UI Web Regular\",\"wf_segoe-ui_normal\",\"Segoe UI\",\"Segoe UI Symbol\",\"Myriad\",\"Calibri\",\"UnDotum\",\"Optima\",\"Tahoma\",\"Century Gothic\",\"Helvetica Neue\",\"BBAlpha Sans\",\"S60 Sans\",\"Arial\",sans-serif;\n  margin: 0px;\n}\n\na {\n  text-decoration: none;\n  color: #626262;\n}\n\na:hover {\n  text-decoration: underline;\n}\n\n.img_btn_enabled {\n  filter: grayscale(0%);\n  cursor: pointer;\n  opacity: 1;\n  transition: all 0.3s ease;\n  border: 1px solid #CCCCCC;\n  margin: 2px;\n  border-radius: 5px;\n  -webkit-box-shadow: #FEFFFF 0px 1px 1px;\n  -moz-box-shadow: #FEFFFF 0px 1px 1px ;\n  box-shadow: #FEFFFF 0px 1px 1px ;\n  -webkit-border-radius: 5px;\n  -moz-border-radius: 5px;\n  display:inline-block;\n  background-color: #f4f5f5;\n  background-image: -webkit-gradient(linear, left top, left bottom, from(#f4f5f5), to(#dfdddd));\n  background-image: -webkit-linear-gradient(top, #f4f5f5, #dfdddd);\n  background-image: -moz-linear-gradient(top, #f4f5f5, #dfdddd);\n  background-image: -ms-linear-gradient(top, #f4f5f5, #dfdddd);\n  background-image: -o-linear-gradient(top, #f4f5f5, #dfdddd);\n  background-image: linear-gradient(to bottom, #f4f5f5, #dfdddd);\n  filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#f4f5f5, endColorstr=#dfdddd);\n  user-select: none;\n}\n\n.img_btn_enabled:hover {\n  border: 1px solid #ff0000;\n  background-color: #d9dddd;\n  background-image: -webkit-gradient(linear, left top, left bottom, from(#d9dddd), to(#c6c3c3));\n  background-image: -webkit-linear-gradient(top, #d9dddd, #c6c3c3);\n  background-image: -moz-linear-gradient(top, #d9dddd, #c6c3c3);\n  background-image: -ms-linear-gradient(top, #d9dddd, #c6c3c3);\n  background-image: -o-linear-gradient(top, #d9dddd, #c6c3c3);\n  background-image: linear-gradient(to bottom, #d9dddd, #c6c3c3);\n  filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#d9dddd, endColorstr=#c6c3c3);\n}\n\n.import-button-container {\n  position:absolute;\n  left:0;\n  top:0;\n  width:100%;\n  height:100%;\n  margin:2px;\n}\n\n.import-button {\n  margin-top:20px;\n  margin-bottom:10px;\n  margin-right:6px;\n  position:relative;\n}\n\n.import-button:hover {\n  cursor: pointer;\n}\n\n.import-button:hover img {\n  border: 1px solid #f00;\n  background-color: #d9dddd;\n  background-image: -webkit-gradient(linear, left top, left bottom, from(#d9dddd), to(#c6c3c3));\n  background-image: -webkit-linear-gradient(top, #d9dddd, #c6c3c3);\n  background-image: -moz-linear-gradient(top, #d9dddd, #c6c3c3);\n  background-image: -ms-linear-gradient(top, #d9dddd, #c6c3c3);\n  background-image: -o-linear-gradient(top, #d9dddd, #c6c3c3);\n  background-image: linear-gradient(to bottom, #d9dddd, #c6c3c3);\n  filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#d9dddd, endColorstr=#c6c3c3);\n}\n\n.img_btn_disabled {\n  filter: grayscale(100%);\n  cursor: default;\n  border: 1px solid #cccccc;\n  border-radius: 5px;\n  -webkit-box-shadow: #FEFFFF 0px 1px 1px ;\n  -moz-box-shadow: #FEFFFF 0px 1px 1px ;\n  box-shadow: #FEFFFF 0px 1px 1px ;\n  -webkit-border-radius: 5px;\n  -moz-border-radius: 5px5px;\n  margin: 2px;\n  user-select: none;\n}\n\n.filter_header_icon {\n  cursor: default;\n  border: 1px solid transparent;\n  user-select: none;\n  border-radius: 5px;\n  -webkit-box-shadow: #FEFFFF 0px 1px 1px ;\n  -moz-box-shadow: #FEFFFF 0px 1px 1px ;\n  box-shadow: #FEFFFF 0px 1px 1px ;\n  -webkit-border-radius: 5px;\n  -moz-border-radius: 5px5px;\n  margin: 2px;\n}\n\n.intro_btn {\n  width: 36px;\n  height: 36px;\n  float: left;\n}\n\n.text_input {\n  margin: 0px ;\n  line-height: 18px;\n  font-size: 14px;\n  padding: 9px;\n  border: 0;\n}\n\n/* This css rule is TOO broad, it makes it difficult to add new elements */\ninput {\n  display: block;\n  float: left;\n}\n\n/* Undo global input changes */\n.offline_image_cb,\n.add_image_popup input {\n  display: inline;\n  float: none;\n}\n\nlabel.option_rb > input,\nlabel.menu_rb > input,\nlabel.nav_cb > input  { /* HIDE RADIO */\n  visibility: hidden; /* Makes input not-clickable */\n  position: absolute; /* Remove input from document flow */\n  height: 0px;\n  width: 0px;\n}\n\ntext {\n  color: #666;\n  -webkit-user-select: none;\n  -moz-user-select: none;\n  user-select: none;\n  -ms-user-select: none;\n  cursor: default;\n}\n\n#footer {\n  bottom: 0px;\n  left: 0px;\n  position: absolute;\n  z-index: 1;\n  background: #F2F2F2;\n  border: 1px solid #999;\n  text-align: right;\n  vertical-align: middle;\n  width: 100%;\n  height: 25px;\n  transition: all 0.5s ease;\n  -webkit-transition: all 0.5s ease;\n  user-select:none;\n}\n\n#footer_left {\n  bottom: 0px;\n  left: 0px;\n  z-index: 1;\n  text-align: left;\n  vertical-align: middle;\n  margin-right: 0px;\n  height: 25px;\n  transition: all 0.5s ease;\n  -webkit-transition: all 0.5s ease;\n  float: left;\n}\n\n#footer_right {\n  bottom: 0px;\n  right: 0px;\n  z-index: 1;\n  text-align: right;\n  vertical-align: middle;\n  margin-left: 0px;\n  height: 25px;\n  transition: all 0.5s ease;\n  -webkit-transition: all 0.5s ease;\n  float: right;\n}\n\n.control_div {\n  background: #F2F2F2;\n  border: 1px solid #999;\n  z-index: 1;\n  box-shadow: 2px 2px 2px #888888;\n  border-radius: 10px;\n  text-align: center;\n  vertical-align: middle;\n  transition: all 0.5s ease;\n  -webkit-transition: all 0.5s ease;\n}\n\n.ui_label {\n  margin-left: auto;\n  margin-right: auto;\n  position: absolute;\n  text-align: center;\n  vertical-align: top;\n  font-size: 12px;\n}\n\n#menu_div {\n  left: -50px;\n  top: 50%;\n  width: 34px;\n  margin-top: -166px;\n  position: absolute;\n  padding: 5px;\n}\n\n.menu_label {\n  font-weight: normal;\n  font-size: 10px;\n}\n\n.menu_hr {\n  margin-bottom: 0px;\n  margin-top: 5px\n}\n\n.menu_rb {\n  float: left;\n}\n\n.menu_rb > input:disabled + img{ /* IMAGE STYLES */\n  cursor:default;\n  opacity: 0.3;\n}\n\n.menu_rb > input:enabled + img{ /* (RADIO CHECKED) IMAGE STYLES */\n  border: 2px solid #ccc;\n  cursor:pointer;\n  opacity: 1;\n}\n\n.menu_rb > input:enabled:hover + img{ /* (RADIO CHECKED) IMAGE STYLES */\n  border-bottom: 2px solid #666;\n  border-right: 2px solid #666;\n}\n\n.menu_rb > input:enabled:checked + img{ /* (RADIO CHECKED) IMAGE STYLES */\n  border-bottom: 2px solid #f00;\n  border-right: 2px solid #f00;\n}\n.menu_rb > input:enabled:checked:hover + img{ /* (RADIO CHECKED) IMAGE STYLES */\n  border-bottom: 2px solid #f00;\n  border-right: 2px solid #f00;\n}\n\n#menu_div input {\n  margin-top: 5px;\n  margin-bottom: 5px;\n}\n\n\n#export_formats .img_btn_disabled, #control_panel .img_btn_disabled{\n  opacity: 0.3;\n}\n\n#filter_div {\n  left: 56px;\n  top: 50%;\n  margin-top: -166px;\n  padding: 5px;\n  position: absolute;\n  min-width: 280px;\n}\n\n.filter_div_section {\n  position: relative;\n  clear: both;\n}\n\n.filter_div_header {\n  float: left;\n  width: 44px;\n  margin: 5px;\n  top: 50%;\n  transform: translate(0%,50%);\n}\n\n.filter_div_header text {\n  margin-left: -5px;\n}\n\n\n.filter_label {\n  display: block;\n}\n\n.filter_select {\n  margin-top: 5px;\n  width: 225px;\n  font-size: 10px;\n  border: solid #999 1px;\n  cursor:pointer;\n}\n\n.filter_select option:focus {\n  background-color: #000;\n}\n\nselect > option:focus:active {\n  background-color: #000;\n}\n\nselect > option {\n  background-color: #fff;\n  color: black;\n}\n\nselect > option:hover {\n  background-color: #999;\n  color: white;\n}\n\n/* The view options (top) and the scene bar (bottom) share one width: they leave room for the\n   side controls, grow with the window, and stop at a common maximum. */\n#option_div,\n#navigation_div {\n  left: 70px;\n  right: 70px;\n  width: auto;\n  max-width: 980px;\n  margin-left: auto;\n  margin-right: auto;\n  box-sizing: border-box;\n}\n\n#option_div {\n  top: 10px;\n  display: flex;\n  flex-wrap: nowrap;\n  justify-content: center;\n  overflow-x: auto;\n  overflow-y: hidden;\n  position: absolute;\n  padding-bottom: 5px;\n  padding-left: 0px;\n  padding-right: 0px;\n  padding-top: 5px;\n  user-select:none;\n}\n\n.option_rb {\n  margin-top: 20px;\n  vertical-align: top;\n  display: inline-block;\n  text-align: center;\n}\n\n.option_rb > input + img{ /* IMAGE STYLES */\n  cursor:pointer;\n  border: 2px solid transparent;\n}\n\n.option_rb > input:enabled:checked + img{ /* (RADIO CHECKED) IMAGE STYLES */\n  border-bottom: 2px solid #f00;\n  border-right: 2px solid #f00;\n}\n.option_rb > input:enabled:checked:hover + img{ /* (RADIO CHECKED) IMAGE STYLES */\n  border-bottom: 2px solid #f00;\n  border-right: 2px solid #f00;\n}\n.option_rb > input:enabled:hover + img{ /* (RADIO CHECKED) IMAGE STYLES */\n  border-bottom: 2px solid #666;\n  border-right: 2px solid #666;\n}\n\n.option_rb > input:enabled + img{ /* (RADIO CHECKED) IMAGE STYLES */\n  border: 2px solid #eee;\n  background-color: #fff;\n}\n\n.option_rb > .img_btn_enabled {\n  background-color: #fff;\n  background-image: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#fff));\n  background-image: -webkit-linear-gradient(top, #fff, #fff);\n  background-image: -moz-linear-gradient(top, #fff, #fff);\n  background-image: -ms-linear-gradient(top, #fff, #fff);\n  background-image: -o-linear-gradient(top, #fff, #fff);\n  background-image: linear-gradient(to bottom, #fff, #fff);\n  filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#fff, endColorstr=#fff);\n}\n\n.option_rb > .img_btn_enabled:hover {\n  background-color: #fff;\n  background-image: -webkit-gradient(linear, left top, left bottom, from(#eee), to(#ddd));\n  background-image: -webkit-linear-gradient(top, #fff, #eee);\n  background-image: -moz-linear-gradient(top, #fff, #eee);\n  background-image: -ms-linear-gradient(top, #fff, #eee);\n  background-image: -o-linear-gradient(top, #fff, #eee);\n  background-image: linear-gradient(to bottom, #fff, #eee);\n  filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#fff, endColorstr=#eee);\n}\n\n.option_rb > input:disabled + img{ /* (RADIO CHECKED) IMAGE STYLES */\n  filter: grayscale(100%);\n}\n\n.option_rb_label {\n  font-weight: normal;\n  font-size: 9px;\n  display: block;\n  color: #777;\n  user-select:none;\n}\n\n#rb_hint {\n  position: absolute;\n  border: 1px solid #444;\n  -webkit-border-radius: 10px;\n  -moz-border-radius: 10px;\n  border-radius: 10px;\n  max-width: 220px;\n  z-index: 1;\n  font-size: 12px;\n  padding: 5px;\n  font-style: italic;\n  background-color: #444;\n  color: #fff;\n  -webkit-box-shadow: 2px 2px 4px #888;\n  -moz-box-shadow: 2px 2px 4px #888;\n  box-shadow: 2px 2px 4px #888;\n}\n\n.rb_hint_left:before {\n  content: ' ';\n  position: absolute;\n  width: 0;\n  height: 0;\n  left: -15px;\n  top: 10px;\n  border-width: 10px 15px 10px 0;\n  border-style: solid;\n  border-color: transparent #444;\n}\n\n.rb_hint_right:before {\n  content: ' ';\n  position: absolute;\n  width: 0;\n  height: 0;\n  right: -15px;\n  top: 10px;\n  border-width: 10px 0px 10px 15px;\n  border-style: solid;\n  border-color: transparent #444;\n}\n\n.rb_hint_rep_highlight {\n  font-weight: bolder;\n  color: #2DAAE1;\n}\n\n.rb_hint_scale_highlight {\n  font-weight: bolder;\n  color: #E94E1B;\n}\n\n.rb_hint_layout_highlight {\n  font-weight: bolder;\n  color: #94C11F;\n}\n\n#hint_div {\n  right: 15px;\n  top: 20px;\n  height: 34px;\n  position: absolute;\n  padding: 5px;\n  transition: all 0.5s ease;\n  -webkit-transition: all 0.5s ease;\n}\n\n.introjs-hints a {\n    margin-left: -15px;\n    margin-top: -30px;\n}\n\n.introjs-hint-dot {\n  border: 10px solid rgba(255,165,0,0.7);\n}\n\n#export_div {\n  text-align: center;\n  position: absolute;\n  padding: 5px 5px 5px 5px;\n  vertical-align: middle;\n  top: -70px;\n  left: 10px;\n  right: 10px;\n  width: auto;\n  max-width: 650px;\n  margin-left: auto;\n  margin-right: auto;\n  user-select:none;\n}\n\n#export_formats {\n  text-align: center;\n  display: inline-flex;\n}\n\n#import_div {\n  text-align: center;\n  position: absolute;\n  top: -70px;\n  left: 10px;\n  right: 10px;\n  width: auto;\n  max-width: 650px;\n  margin-left: auto;\n  margin-right: auto;\n  user-select:none;\n}\n\n#boilerplate {\n  justify-content: center;\n  height: 25px;\n}\n\n#disclaimer {\n  justify-content: center;\n  border-top: 1px solid #999;\n  border-bottom: 1px solid #999;\n  padding: 5px;\n  clear: both;\n}\n\n.boilerplate_title {\n  text-align: center;\n  font-weight: 600;\n  font-stretch: ultra-expanded;\n  font-size: 16px;\n  color: #000;\n  bottom: 0px;\n  margin-left: -17px\n}\n\n.disclaimer_title {\n  text-align: center;\n  font-size: 12px;\n  color: #333;\n  margin-left: -17px\n}\n\n.metadata_title {\n  font-weight: bold;\n  font-size: 12px;\n  color: #333;\n  vertical-align: sub;\n}\n\n.boilerplate_text {\n  text-align: center;\n  font-size: 12px;\n  font-weight: bold;\n  color: #777;\n  bottom: 0px;\n  text-decoration: none;\n}\n\n.disclaimer_text {\n  font-weight: normal;\n  font-size: 10px;\n  text-align: center;\n  color: #333;\n}\n\n.metadata_content {\n  font-weight: normal;\n  font-size: 12px;\n  text-align: left;\n  color: #333;\n  margin-right: 10px;\n}\n\n.category_element {\n  width: auto;\n}\n\ninput[type=\"color\"]::-webkit-color-swatch-wrapper {\n\tpadding: 0;\n}\ninput[type=\"color\"]::-webkit-color-swatch {\n\tborder: none;\n}\n\ninput[type=\"color\"]::-moz-color-swatch-wrapper {\n\tpadding: 0;\n}\ninput[type=\"color\"]::-moz-color-swatch {\n\tborder: none;\n}\n\n.colorpicker_wrapper {\n  float: left;\n  width: 12px;\n  height: 12px;\n  margin-right: 5px;\n  margin-top: 2px;\n  cursor: pointer;\n  border: 1px solid #999;\n  padding: 0;\n  box-shadow: #999 0px 1px 1px;\n  -webkit-box-shadow: #999 0px 1px 1px;\n  -moz-box-shadow: #999 0px 1px 1px ;\n}\n\n.colorpicker {\n  /*width: 10px;\n  height: 10px;*/\n  width: 100%;\n  height: 100%;\n  cursor: pointer;\n  /*margin-right: 5px;\n  margin-top: 2px;*/\n  padding: 0;\n  /*opacity: 0;*/\n}\n\n.colorpicker:hover {\n  border: 1px solid #f00;\n}\n\n.colorpicker_wrapper:hover {\n  border: 1px solid #f00;\n}\n\n.footer_text_left {\n  text-align: left;\n  font-size: .8em;\n  margin-left: 24px;\n  color: #626262;\n  bottom: 0px;\n  text-decoration: none;\n}\n\n.footer_text {\n  text-align: right;\n  font-size: .8em;\n  margin-right: 24px;\n  color: #626262;\n  bottom: 0px;\n  text-decoration: none;\n}\n\n#data_picker {\n  width: 100%;\n  box-sizing: border-box;\n  transition: all 0.5s ease;\n  -webkit-transition: all 0.5s ease;\n  border-top: 1px solid #999;\n  padding-left: 0px;\n  padding-right: 0px;\n  padding-top: 0px;\n  padding-bottom: 0px;\n  margin-top: 0px;\n  margin-right: 0px;\n  margin-left: 0px;\n  margin-bottom: 0px;\n  display: flex;\n}\n\n.data_story_picker {\n  /*float: left;*/\n  flex: 1;\n  display: flex;\n  justify-content: center;\n  margin-top: 0px;\n  margin-right: 0px;\n  margin-left: 0px;\n  margin-bottom: 0px;\n  width: 320px;\n  border-right: 1px solid #999;\n}\n\n#timeline_metadata {\n  width: 100%;\n  box-sizing: border-box;\n  transition: all 0.5s ease;\n  border-top: 1px solid #999;\n  -webkit-transition: all 0.5s ease;\n  padding-left: 0px;\n  padding-right: 0px;\n  padding-top: 0px;\n  padding-bottom: 0px;\n  float: left;\n  font-size: 12px;\n}\n\n#timeline_metadata_contents{\n  width: 630px;\n  float: left;\n  padding-left: 10px;\n  padding-right: 10px;\n  padding-bottom: 0px;\n}\n\n.timeline_metadata_contents_div{\n  width: 630px;\n  clear: both;\n}\n\n.draw_timeline {\n  margin-left: 5px;\n  margin-left: 5px;\n  margin-bottom: 5px;\n  margin-top: 0px;\n  width: 320px;\n  padding-top: 15px;\n  padding-bottom: 15px;\n  height: 25px;\n  bottom: 0px;\n  right: 0px;\n  border-radius: 10px;\n  background-color: #ff7f0e;\n  border-color: #da6600;\n  background: #ff7f0e;\n  background-image: -webkit-linear-gradient(top, #ff7f0e, #da6600);\n  background-image: -moz-linear-gradient(top, #ff7f0e, #da6600);\n  background-image: -ms-linear-gradient(top, #ff7f0e, #da6600);\n  background-image: -o-linear-gradient(top, #ff7f0e, #da6600);\n  background-image: linear-gradient(to bottom, #ff7f0e, #da6600);\n}\n\n.draw_timeline:hover {\n  background-color: #da6600;\n  border-color: #ff7f0e;\n  background: #da6600;\n  background-image: -webkit-linear-gradient(top, #da6600, #ff7f0e);\n  background-image: -moz-linear-gradient(top, #da6600, #ff7f0e);\n  background-image: -ms-linear-gradient(top, #da6600, #ff7f0e);\n  background-image: -o-linear-gradient(top, #da6600, #ff7f0e);\n  background-image: linear-gradient(to bottom, #da6600, #ff7f0e);\n}\n\n.inputfile {\n  width: 0px;\n  height: 0px;\n  opacity: 0;\n  overflow: hidden;\n  position: absolute;\n  z-index: -1;\n  margin: auto;\n}\n\n#demo_dataset_picker {\n  width: 40px;\n  height: 40px;\n  opacity: 0;\n  border: 0px solid transparent;\n  cursor: pointer;\n  position: absolute;\n  z-index: 1;\n  font-size: 10px;\n  background: transparent;\n}\n\n.import_label > select + img {\n  border:1px solid #cccccc;\n}\n\n.import_label > select:hover + img:hover{ /* (RADIO CHECKED) IMAGE STYLES */\n  border-bottom: 1px solid #f00;\n}\n.import_label {\n  margin-top: 10px;\n}\n\n.demo_dataset_label {\n  border: 1px solid #cccccc;\n  width: 40px;\n  height: 40px;\n  margin-right: 2px;\n  margin-top: 20px;\n  border-radius: 5px;\n  background-color: #f4f5f5;\n  background-image: -webkit-gradient(linear, left top, left bottom, from(#f4f5f5), to(#dfdddd));\n  background-image: -webkit-linear-gradient(top, #f4f5f5, #dfdddd);\n  background-image: -moz-linear-gradient(top, #f4f5f5, #dfdddd);\n  background-image: -ms-linear-gradient(top, #f4f5f5, #dfdddd);\n  background-image: -o-linear-gradient(top, #f4f5f5, #dfdddd);\n  background-image: linear-gradient(to bottom, #f4f5f5, #dfdddd);\n  filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#f4f5f5, endColorstr=#dfdddd);\n}\n\n.demo_dataset_label:hover {\n  border: 1px solid #ff0000;\n  background-color: #d9dddd;\n  background-image: -webkit-gradient(linear, left top, left bottom, from(#d9dddd), to(#c6c3c3));\n  background-image: -webkit-linear-gradient(top, #d9dddd, #c6c3c3);\n  background-image: -moz-linear-gradient(top, #d9dddd, #c6c3c3);\n  background-image: -ms-linear-gradient(top, #d9dddd, #c6c3c3);\n  background-image: -o-linear-gradient(top, #d9dddd, #c6c3c3);\n  background-image: linear-gradient(to bottom, #d9dddd, #c6c3c3);\n  filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#d9dddd, endColorstr=#c6c3c3);\n}\n\n.annotation_div {\n  position: absolute;\n  text-align: center;\n  position: absolute;\n  padding: 5px 5px 5px 5px;\n  vertical-align: middle;\n  left: 56px;\n  top: 50%;\n}\n\n.annotation_circle {\n  fill: #fff;\n  stroke: #f00;\n  stroke-width: 1px;\n}\n\n.annotation_line {\n  fill: none;\n  stroke: #f00;\n  stroke-width: 1px;\n}\n\n.event_annotation_line {\n  stroke: dashed .5px #aaa;\n}\n\n.annotation_frame {\n  fill:#fff;\n  stroke-width: 1px;\n  stroke:transparent;\n}\n\n.annotation_control {\n  border: 1px solid #ccc;\n  stroke-width: 1px;\n  stroke: #ccc;\n  cursor: pointer;\n  fill: transparent;\n}\n\n#caption_div {\n  margin-top: -95px;\n}\n\n.caption_frame, .image_frame {\n  fill:#fff;\n  stroke-width: 1px;\n  stroke:transparent;\n}\n\n.caption_drag_area, .annotation_drag_area, .image_drag_area {\n  fill: transparent;\n  fill-opacity: 0;\n  stroke-width: 1px;\n  stroke: transparent;\n  cursor: move;\n  box-shadow: 2px 2px 2px #888888;\n  -webkit-box-shadow: 2px 2px 2px #888888;\n  -moz-box-shadow: 2px 2px 2px #888888;\n}\n\n.caption_label {\n  font-size: 18px;\n  position: absolute;\n  display: inline-block;\n  top: 0;\n  left: 0;\n  font-weight: normal;\n}\n\n#add_caption_text_input {\n  resize: vertical;\n  display: block;\n  float: left;\n  padding: 10px;\n}\n\n.add_image_popup {\n  margin-top: -55px;\n}\n\n.onhover {\n  opacity: 0.33;\n}\n\n.onhover:hover {\n  opacity: 1;\n}\n\n#playback_bar {\n  display: flex;\n  align-items: center;\n  width: 100%;\n}\n\n#navigation_div {\n  bottom: -100px;\n  position: absolute;\n  padding-bottom: 5px;\n  padding-left: 0px;\n  padding-right: 0px;\n  padding-top: 5px;\n}\n\n.playback_mode #navigation_div {\n  width: auto;\n  left: 10px;\n  right: auto;\n  margin-left: 0;\n  margin-right: 0;\n  -webkit-transition: all 0.5s;\n  transition: all 0.5s;\n}\n\n.nav_cb > input:enabled:checked + img {\n  border: 1px solid #f00;\n}\n\n\n#playback_bar .nav_bttn {\n  display: flex;\n  flex: 0 1 26px;\n}\n\n.nav_bttn .nav_cb {\n  display: inline-flex;\n}\n\n#stepper_container {\n  height: 50px;\n  padding: 0px;\n  margin-right: 5px;\n  background-color: white;\n  border: 1px solid #999;\n  padding: 5px;\n  border-radius: 5px;\n  vertical-align: middle;\n  overflow-y: hidden;\n  overflow-x: overlay;\n  flex: 1;\n}\n\n.playback_mode #stepper_container {\n  display: none;\n}\n\n#stepper_svg {\n  height: 50px;\n  padding: 0px;\n  float: left;\n}\n\n#stepper_svg_placeholder {\n  fill: #ccc;\n  font-size: 0.8em;\n}\n\n.scene_delete rect {\n  fill: transparent;\n  stroke: #ccc;\n  stroke-width: '1px';\n}\n\n.frame_hover {\n  height: 300px;\n  width: 300px;\n  background: #fff;\n  border: 1px solid #999;\n  z-index: 1;\n  box-shadow: 2px 2px 2px #888888;\n  -webkit-box-shadow: 2px 2px 2px #888888;\n  -moz-box-shadow: 2px 2px 2px #888888;\n  border-radius: 10px;\n  text-align: center;\n  position: absolute;\n  vertical-align: middle;\n  transition: all 0.5s ease;\n  -webkit-transition: all 0.5s ease;\n}\n\n.option_picker {\n  flex: 0 0 auto;\n  display: flex;\n  justify-content: center;\n  border-right: 1px solid #999;\n  padding-bottom: 0px;\n  padding-top: 0px;\n  padding-left: 5px;\n  padding-right: 5px;\n  margin: 0px;\n}\n\n.option_picker:last-child {\n  border-right: none;\n}\n\n#main_svg {\n  transition: all 0.5s ease;\n  -webkit-transition: all 0.5s ease;\n}\n\n.legend {\n  margin: 0px 0px 0px 0px;\n  fill: none;\n  position: absolute;\n  top: 0px;\n  left: 0px;\n  z-index: 1;\n}\n\n.legend_rect {\n  fill: #fff;\n  stroke: #aaa;\n  stroke-width: 1px;\n}\n\n.legend_title {\n  fill: #666;\n  font-size: 12px;\n  font-weight: bolder;\n  font-stretch: expanded;\n}\n\n.legend:hover > .legend_rect:hover, .legend_title:hover {\n  cursor:move;\n}\n\n.legend:hover > .legend_rect {\n  stroke: #f00;\n}\n\n.legend_element_g text {\n  fill: #666;\n  font-size: 12px;\n  cursor:pointer;\n}\n\n.legend_element rect {\n  stroke: #fff;\n  stroke-width: 0.25px;\n  cursor:pointer;\n}\n\n.time_elapsed {\n  fill:#aaa;\n  stroke: #aaa;\n  stroke-width: 0.5px;\n}\n\n.timeline_frame {\n  fill:transparent;\n  opacity: 0.1;\n  stroke: none;\n}\n\n.timeline_frame:hover {\n  stroke: #999;\n  stroke-width: 0.5px;\n}\n\n.timeline_facet_frame {\n  fill:none;\n  stroke: #999;\n  stroke-width: 0.5px;\n}\n\n.timeline_segment_frame {\n  fill:none;\n  stroke: #999;\n  stroke-width: 0.5px;\n}\n\n.form-group {\n  margin-bottom: 0px;\n  display:inline-block;\n}\n\n.radio-inline {\n  padding-left: 0px;\n  margin-left: 0px;\n}\n\n.radio-inline label {\n  padding-left: 0px;\n}\n\n.radio-inline input[type=radio] {\n  margin-left: 0px;\n}\n\n.unit_circle {\n  fill: #fff;\n  stroke: #000;\n  stroke-width: 1px;\n}\n\n.x_axis path, .interim_duration_axis path, .timeline_axis path {\n  fill: none;\n  stroke: #999;\n  stroke-width: 1px;\n  z-index: -1;\n}\n\n.radial_axis_tick path {\n  fill: none;\n  stroke: #999;\n  stroke-width: 1px;\n  stroke-dasharray: 2;\n  z-index: -1;\n}\n\n@keyframes dash {\n  to {\n    stroke-dashoffset: 0;\n  }\n}\n\n@keyframes undash {\n  from {\n    stroke-dashoffset: 0;\n  }\n  to {\n    stroke-dashoffset: -110%;\n  }\n}\n\n.x_axis line, .interim_duration_axis line, .timeline_axis line {\n  fill: none;\n  stroke: #999;\n  shape-rendering: crispEdges;\n  stroke-width: 1px;\n  stroke-dasharray: 2;\n  z-index: -1;\n}\n\n.x_axis text, .interim_duration_axis text, .timeline_axis text {\n  font-size: 12px;\n  z-index: 1;\n}\n\n.event_rect {\n  fill: #8dd3c7;\n  stroke: #fff;\n}\n\n.event_rect:hover {\n  fill: #8dd3c7;\n  stroke: #00f;\n}\n\n.event_span, .event_span_component {\n  stroke: #fff;\n  stroke-width: 0.25px;\n  cursor:pointer;\n}\n\n.event_span_selected {\n  stroke: #000;\n  stroke-width: 1px;\n}\n\n.event_dropline {\n  stroke: #00f;\n  stroke-width: 0px;\n}\n\n.frame_resizer:hover {\n  cursor: ew-resize;\n}\n\n.start_end_label, .radial_axis_tick, .weekday_label {\n  font-size: 12px;\n}\n\n.facet_title, .segment_title {\n  font-size: 13px;\n  font-weight:bold;\n  font-stretch: extra-expanded;\n}\n\n.event_label {\n  fill: #f00;\n  font-size: 12px;\n  position: absolute;\n  display: inline-block;\n  top: 0;\n  left: 0;\n  font-weight: normal;\n}\n\n.event_date {\n  font: 10px sans-serif;\n  display: none;\n}\n\n.spiral_seq_number {\n  font: 10px sans-serif;\n  fill: #666;\n}\n\n.event_text {\n  font: 10px sans-serif;\n  display: none;\n}\n\n.year_cell, .day_cell, .rad_center, .day_cell_rect {\n  stroke: #aaa;\n  stroke-width: 0.25px;\n  fill: none;\n}\n\n.rad_track {\n  stroke: #999;\n  stroke-width: 0.5px;\n  fill: none;\n  z-index: -1;\n}\n\n.timeline_start_line {\n  stroke: #aaa;\n  stroke-width: 0.5px;\n}\n\n.year_label {\n  font-size: 10px;\n}\n\n.day_cell_label {\n  font-size: 7px;\n}\n\n.month {\n  fill: none;\n  stroke: #999;\n  stroke-width: 1px;\n}\n\n.time_elapsed {\n  stroke: #aaa;\n  stroke-width: 0.5px;\n  fill: #ccc;\n}\n\n.time_elapsed:hover {\n  stroke: #00f;\n  stroke-width: 0.5px;\n  fill: #00f;\n  fill-opacity: 0.25;\n}\n\n.point_event {\n  fill: #000;\n  fill-opacity: .1;\n  stroke: #000;\n  stroke-width: 0.5px;\n}\n\n.event_start {\n  fill: #f00;\n  fill-opacity: .1;\n  stroke: #f00;\n  stroke-width: 0.5px;\n}\n\n.event_end {\n  fill: #00f;\n  fill-opacity: .1;\n  stroke: #00f;\n  stroke-width: 0.5px;\n}\n\n.non_event {\n  display: none;\n}\n\n.span_line {\n  stroke: #00f;\n  stroke-opacity: 0.2;\n  stroke-width: 5px;\n}\n\n.span_line:hover {\n  stroke: #ff0;\n  stroke-opacity: 1;\n  stroke-width: 5px;\n}\n\n.arc {\n  fill: #aaa;\n}\n\n.line {\n  fill: none;\n  stroke: #aaa;\n  stroke-width: 1px;\n  stroke-linejoin: round;\n  stroke-linecap: round;\n  z-index:-1;\n}\n\n.image_div_error {\n  color: red;\n}\n\n.path_end_indicator {\n  fill: none;\n  stroke: #fff;\n}\n\n#timecurve{\n  fill:none;\n  stroke-width:10px;\n  stroke:#777777;\n  opacity: .2;\n  transition: all 0.5s ease;\n  -webkit-transition: all 0.5s ease;\n}\n\n/* introjs overrides */\n\n.introjs-overlay {\n  background-color: #999;\n  background: -webkit-radial-gradient(center,ellipse cover,rgba(153,153,153,0.4) 0,rgba(153,153,153,0.9) 100%)\n}\n\n.introjs-helperLayer {\n  border: 1px solid #f00;\n  background-color: transparent;\n}\n\n.timeline_storyteller-container {\n  width: 100%;\n  height: 100%;\n  overflow: auto;\n  box-sizing: border-box;\n  padding-bottom: 50px;\n  padding-top: 50px;\n  padding-left: 50px;\n  padding-right: 50px;\n  text-align: center;\n}\n\n.show-about-bar .timeline_storyteller-container {\n    height: calc(100% - 25px);\n}\n\n.playback_mode .timeline_storyteller-container {\n  padding-left: 0;\n  padding-right: 0;\n}\n\nhtml, body {\n  width: 100%;\n  height: 100%;\n}\n\n.timeline_storyteller {\n  width: 100%;\n  height: 100%;\n  overflow: hidden;\n  position: relative;\n}\n\n.loading_data_indicator {\n  font-weight: bold;\n  margin-bottom: 10px;\n}\n\n\n/* Add Image Popup */\n.add_image_popup h4 {\n  margin: 3px;\n}\n.add_image_popup h5 {\n  margin: 3px;\n}\n\n.resize_width, .resize_height {\n  width: 55px;\n}\n\n.resize_options {\n  margin-bottom: 5px;\n}\n\n.add_image_selected_file {\n  font-size: 14px;\n  cursor: pointer;\n}\n\n.add_image_file_chooser {\n  margin-bottom: 5px;\n}\n\n.selected_file_remove_btn {\n  width: 18px;\n  height: 18px;\n  float: right;\n}\n\n.selected_files_container {\n  vertical-align: middle;\n  margin: 5px;\n}\n\n.image_div_container {\n   position: relative;\n}\n\n.image_div_container .add_image_link {\n  width: 100%;\n  box-sizing: border-box;\n}\n.image_local_add_drop_zone {\n  border: 2px dashed #bbb;\n  -moz-border-radius: 5px;\n  -webkit-border-radius: 5px;\n  border-radius: 5px;\n  padding: 10px;\n  color: #bbb;\n  width: 100%;\n  box-sizing: border-box;\n}\n\n.image_local_add_drop_zone.dragging {\n  border-color: #333;\n  color: #333;\n}\n\n.add_image_btn {\n  float: right;\n}\n\n.add_image_popup {\n  font-size: 14px;\n}\n\n.add_image_popup input[type=\"checkbox\"] {\n  vertical-align: middle;\n}\n\n.timeline_storyteller-error {\n  position: absolute;\n  top: 150px;\n  width: 100%;\n  margin: 0 auto;\n}\n\n/* Narrow windows: smaller option icons without captions, then tighter side margins. */\n@media (max-width: 900px) {\n  #option_div .option_rb img {\n    width: 30px;\n    height: 30px;\n  }\n\n  #option_div .option_rb_label {\n    display: none;\n  }\n}\n\n@media (max-width: 700px) {\n  #option_div,\n  #navigation_div {\n    left: 10px;\n  }\n\n  #option_div {\n    justify-content: flex-start;\n  }\n}\n\n/* Labels in other languages can be wider than the English ones: keep them on one line. */\n#menu_div .menu_label {\n  display: block;\n  margin-left: -5px;\n  margin-right: -5px;\n  text-align: center;\n  white-space: nowrap;\n}\n\n.filter_div_header {\n  white-space: nowrap;\n}\n", ""]);
+exports.push([module.i, "@charset \"UTF-8\";\n\nbody, input, textarea, select, text {\n  font-family: \"Segoe UI Web Regular\",\"wf_segoe-ui_normal\",\"Segoe UI\",\"Segoe UI Symbol\",\"Myriad\",\"Calibri\",\"UnDotum\",\"Optima\",\"Tahoma\",\"Century Gothic\",\"Helvetica Neue\",\"BBAlpha Sans\",\"S60 Sans\",\"Arial\",sans-serif;\n  margin: 0px;\n}\n\na {\n  text-decoration: none;\n  color: #626262;\n}\n\na:hover {\n  text-decoration: underline;\n}\n\n.img_btn_enabled {\n  filter: grayscale(0%);\n  cursor: pointer;\n  opacity: 1;\n  transition: all 0.3s ease;\n  border: 1px solid #CCCCCC;\n  margin: 2px;\n  border-radius: 5px;\n  -webkit-box-shadow: #FEFFFF 0px 1px 1px;\n  -moz-box-shadow: #FEFFFF 0px 1px 1px ;\n  box-shadow: #FEFFFF 0px 1px 1px ;\n  -webkit-border-radius: 5px;\n  -moz-border-radius: 5px;\n  display:inline-block;\n  background-color: #f4f5f5;\n  background-image: -webkit-gradient(linear, left top, left bottom, from(#f4f5f5), to(#dfdddd));\n  background-image: -webkit-linear-gradient(top, #f4f5f5, #dfdddd);\n  background-image: -moz-linear-gradient(top, #f4f5f5, #dfdddd);\n  background-image: -ms-linear-gradient(top, #f4f5f5, #dfdddd);\n  background-image: -o-linear-gradient(top, #f4f5f5, #dfdddd);\n  background-image: linear-gradient(to bottom, #f4f5f5, #dfdddd);\n  filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#f4f5f5, endColorstr=#dfdddd);\n  user-select: none;\n}\n\n.img_btn_enabled:hover {\n  border: 1px solid #ff0000;\n  background-color: #d9dddd;\n  background-image: -webkit-gradient(linear, left top, left bottom, from(#d9dddd), to(#c6c3c3));\n  background-image: -webkit-linear-gradient(top, #d9dddd, #c6c3c3);\n  background-image: -moz-linear-gradient(top, #d9dddd, #c6c3c3);\n  background-image: -ms-linear-gradient(top, #d9dddd, #c6c3c3);\n  background-image: -o-linear-gradient(top, #d9dddd, #c6c3c3);\n  background-image: linear-gradient(to bottom, #d9dddd, #c6c3c3);\n  filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#d9dddd, endColorstr=#c6c3c3);\n}\n\n.import-button-container {\n  position:absolute;\n  left:0;\n  top:0;\n  width:100%;\n  height:100%;\n  margin:2px;\n}\n\n.import-button {\n  margin-top:20px;\n  margin-bottom:10px;\n  margin-right:6px;\n  position:relative;\n}\n\n.import-button:hover {\n  cursor: pointer;\n}\n\n.import-button:hover img {\n  border: 1px solid #f00;\n  background-color: #d9dddd;\n  background-image: -webkit-gradient(linear, left top, left bottom, from(#d9dddd), to(#c6c3c3));\n  background-image: -webkit-linear-gradient(top, #d9dddd, #c6c3c3);\n  background-image: -moz-linear-gradient(top, #d9dddd, #c6c3c3);\n  background-image: -ms-linear-gradient(top, #d9dddd, #c6c3c3);\n  background-image: -o-linear-gradient(top, #d9dddd, #c6c3c3);\n  background-image: linear-gradient(to bottom, #d9dddd, #c6c3c3);\n  filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#d9dddd, endColorstr=#c6c3c3);\n}\n\n.img_btn_disabled {\n  filter: grayscale(100%);\n  cursor: default;\n  border: 1px solid #cccccc;\n  border-radius: 5px;\n  -webkit-box-shadow: #FEFFFF 0px 1px 1px ;\n  -moz-box-shadow: #FEFFFF 0px 1px 1px ;\n  box-shadow: #FEFFFF 0px 1px 1px ;\n  -webkit-border-radius: 5px;\n  -moz-border-radius: 5px5px;\n  margin: 2px;\n  user-select: none;\n}\n\n.filter_header_icon {\n  cursor: default;\n  border: 1px solid transparent;\n  user-select: none;\n  border-radius: 5px;\n  -webkit-box-shadow: #FEFFFF 0px 1px 1px ;\n  -moz-box-shadow: #FEFFFF 0px 1px 1px ;\n  box-shadow: #FEFFFF 0px 1px 1px ;\n  -webkit-border-radius: 5px;\n  -moz-border-radius: 5px5px;\n  margin: 2px;\n}\n\n.intro_btn {\n  width: 36px;\n  height: 36px;\n  float: left;\n}\n\n.text_input {\n  margin: 0px ;\n  line-height: 18px;\n  font-size: 14px;\n  padding: 9px;\n  border: 0;\n}\n\n/* This css rule is TOO broad, it makes it difficult to add new elements */\ninput {\n  display: block;\n  float: left;\n}\n\n/* Undo global input changes */\n.offline_image_cb,\n.add_image_popup input {\n  display: inline;\n  float: none;\n}\n\nlabel.option_rb > input,\nlabel.menu_rb > input,\nlabel.nav_cb > input  { /* HIDE RADIO */\n  visibility: hidden; /* Makes input not-clickable */\n  position: absolute; /* Remove input from document flow */\n  height: 0px;\n  width: 0px;\n}\n\ntext {\n  color: #666;\n  -webkit-user-select: none;\n  -moz-user-select: none;\n  user-select: none;\n  -ms-user-select: none;\n  cursor: default;\n}\n\n#footer {\n  bottom: 0px;\n  left: 0px;\n  position: absolute;\n  z-index: 1;\n  background: #F2F2F2;\n  border: 1px solid #999;\n  text-align: right;\n  vertical-align: middle;\n  width: 100%;\n  height: 25px;\n  transition: all 0.5s ease;\n  -webkit-transition: all 0.5s ease;\n  user-select:none;\n}\n\n#footer_left {\n  bottom: 0px;\n  left: 0px;\n  z-index: 1;\n  text-align: left;\n  vertical-align: middle;\n  margin-right: 0px;\n  height: 25px;\n  transition: all 0.5s ease;\n  -webkit-transition: all 0.5s ease;\n  float: left;\n}\n\n#footer_right {\n  bottom: 0px;\n  right: 0px;\n  z-index: 1;\n  text-align: right;\n  vertical-align: middle;\n  margin-left: 0px;\n  height: 25px;\n  transition: all 0.5s ease;\n  -webkit-transition: all 0.5s ease;\n  float: right;\n}\n\n.control_div {\n  background: #F2F2F2;\n  border: 1px solid #999;\n  z-index: 1;\n  box-shadow: 2px 2px 2px #888888;\n  border-radius: 10px;\n  text-align: center;\n  vertical-align: middle;\n  transition: all 0.5s ease;\n  -webkit-transition: all 0.5s ease;\n}\n\n.ui_label {\n  margin-left: auto;\n  margin-right: auto;\n  position: absolute;\n  text-align: center;\n  vertical-align: top;\n  font-size: 12px;\n}\n\n#menu_div {\n  left: -50px;\n  top: 50%;\n  width: 34px;\n  margin-top: -166px;\n  position: absolute;\n  padding: 5px;\n}\n\n.menu_label {\n  font-weight: normal;\n  font-size: 10px;\n}\n\n.menu_hr {\n  margin-bottom: 0px;\n  margin-top: 5px\n}\n\n.menu_rb {\n  float: left;\n}\n\n.menu_rb > input:disabled + img{ /* IMAGE STYLES */\n  cursor:default;\n  opacity: 0.3;\n}\n\n.menu_rb > input:enabled + img{ /* (RADIO CHECKED) IMAGE STYLES */\n  border: 2px solid #ccc;\n  cursor:pointer;\n  opacity: 1;\n}\n\n.menu_rb > input:enabled:hover + img{ /* (RADIO CHECKED) IMAGE STYLES */\n  border-bottom: 2px solid #666;\n  border-right: 2px solid #666;\n}\n\n.menu_rb > input:enabled:checked + img{ /* (RADIO CHECKED) IMAGE STYLES */\n  border-bottom: 2px solid #f00;\n  border-right: 2px solid #f00;\n}\n.menu_rb > input:enabled:checked:hover + img{ /* (RADIO CHECKED) IMAGE STYLES */\n  border-bottom: 2px solid #f00;\n  border-right: 2px solid #f00;\n}\n\n#menu_div input {\n  margin-top: 5px;\n  margin-bottom: 5px;\n}\n\n\n#export_formats .img_btn_disabled, #control_panel .img_btn_disabled{\n  opacity: 0.3;\n}\n\n#filter_div {\n  left: 56px;\n  top: 50%;\n  margin-top: -166px;\n  padding: 5px;\n  position: absolute;\n  min-width: 280px;\n}\n\n.filter_div_section {\n  position: relative;\n  clear: both;\n}\n\n.filter_div_header {\n  float: left;\n  width: 44px;\n  margin: 5px;\n  top: 50%;\n  transform: translate(0%,50%);\n}\n\n.filter_div_header text {\n  margin-left: -5px;\n}\n\n\n.filter_label {\n  display: block;\n}\n\n.filter_select {\n  margin-top: 5px;\n  width: 225px;\n  font-size: 10px;\n  border: solid #999 1px;\n  cursor:pointer;\n}\n\n.filter_select option:focus {\n  background-color: #000;\n}\n\nselect > option:focus:active {\n  background-color: #000;\n}\n\nselect > option {\n  background-color: #fff;\n  color: black;\n}\n\nselect > option:hover {\n  background-color: #999;\n  color: white;\n}\n\n/* The view options (top) and the scene bar (bottom) share one width: they leave room for the\n   side controls, grow with the window, and stop at a common maximum. */\n#option_div,\n#navigation_div {\n  left: 70px;\n  right: 70px;\n  width: auto;\n  max-width: 980px;\n  margin-left: auto;\n  margin-right: auto;\n  box-sizing: border-box;\n}\n\n#option_div {\n  top: 10px;\n  display: flex;\n  flex-wrap: nowrap;\n  justify-content: center;\n  overflow-x: auto;\n  overflow-y: hidden;\n  position: absolute;\n  padding-bottom: 5px;\n  padding-left: 0px;\n  padding-right: 0px;\n  padding-top: 5px;\n  user-select:none;\n}\n\n.option_rb {\n  margin-top: 20px;\n  vertical-align: top;\n  display: inline-block;\n  text-align: center;\n}\n\n.option_rb > input + img{ /* IMAGE STYLES */\n  cursor:pointer;\n  border: 2px solid transparent;\n}\n\n.option_rb > input:enabled:checked + img{ /* (RADIO CHECKED) IMAGE STYLES */\n  border-bottom: 2px solid #f00;\n  border-right: 2px solid #f00;\n}\n.option_rb > input:enabled:checked:hover + img{ /* (RADIO CHECKED) IMAGE STYLES */\n  border-bottom: 2px solid #f00;\n  border-right: 2px solid #f00;\n}\n.option_rb > input:enabled:hover + img{ /* (RADIO CHECKED) IMAGE STYLES */\n  border-bottom: 2px solid #666;\n  border-right: 2px solid #666;\n}\n\n.option_rb > input:enabled + img{ /* (RADIO CHECKED) IMAGE STYLES */\n  border: 2px solid #eee;\n  background-color: #fff;\n}\n\n.option_rb > .img_btn_enabled {\n  background-color: #fff;\n  background-image: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#fff));\n  background-image: -webkit-linear-gradient(top, #fff, #fff);\n  background-image: -moz-linear-gradient(top, #fff, #fff);\n  background-image: -ms-linear-gradient(top, #fff, #fff);\n  background-image: -o-linear-gradient(top, #fff, #fff);\n  background-image: linear-gradient(to bottom, #fff, #fff);\n  filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#fff, endColorstr=#fff);\n}\n\n.option_rb > .img_btn_enabled:hover {\n  background-color: #fff;\n  background-image: -webkit-gradient(linear, left top, left bottom, from(#eee), to(#ddd));\n  background-image: -webkit-linear-gradient(top, #fff, #eee);\n  background-image: -moz-linear-gradient(top, #fff, #eee);\n  background-image: -ms-linear-gradient(top, #fff, #eee);\n  background-image: -o-linear-gradient(top, #fff, #eee);\n  background-image: linear-gradient(to bottom, #fff, #eee);\n  filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#fff, endColorstr=#eee);\n}\n\n.option_rb > input:disabled + img{ /* (RADIO CHECKED) IMAGE STYLES */\n  filter: grayscale(100%);\n}\n\n.option_rb_label {\n  font-weight: normal;\n  font-size: 9px;\n  display: block;\n  color: #777;\n  user-select:none;\n}\n\n#rb_hint {\n  position: absolute;\n  border: 1px solid #444;\n  -webkit-border-radius: 10px;\n  -moz-border-radius: 10px;\n  border-radius: 10px;\n  max-width: 220px;\n  z-index: 1;\n  font-size: 12px;\n  padding: 5px;\n  font-style: italic;\n  background-color: #444;\n  color: #fff;\n  -webkit-box-shadow: 2px 2px 4px #888;\n  -moz-box-shadow: 2px 2px 4px #888;\n  box-shadow: 2px 2px 4px #888;\n}\n\n.rb_hint_left:before {\n  content: ' ';\n  position: absolute;\n  width: 0;\n  height: 0;\n  left: -15px;\n  top: 10px;\n  border-width: 10px 15px 10px 0;\n  border-style: solid;\n  border-color: transparent #444;\n}\n\n.rb_hint_right:before {\n  content: ' ';\n  position: absolute;\n  width: 0;\n  height: 0;\n  right: -15px;\n  top: 10px;\n  border-width: 10px 0px 10px 15px;\n  border-style: solid;\n  border-color: transparent #444;\n}\n\n.rb_hint_rep_highlight {\n  font-weight: bolder;\n  color: #2DAAE1;\n}\n\n.rb_hint_scale_highlight {\n  font-weight: bolder;\n  color: #E94E1B;\n}\n\n.rb_hint_layout_highlight {\n  font-weight: bolder;\n  color: #94C11F;\n}\n\n#hint_div {\n  right: 15px;\n  top: 20px;\n  height: 34px;\n  position: absolute;\n  padding: 5px;\n  transition: all 0.5s ease;\n  -webkit-transition: all 0.5s ease;\n}\n\n.introjs-hints a {\n    margin-left: -15px;\n    margin-top: -30px;\n}\n\n.introjs-hint-dot {\n  border: 10px solid rgba(255,165,0,0.7);\n}\n\n#export_div {\n  text-align: center;\n  position: absolute;\n  padding: 5px 5px 5px 5px;\n  vertical-align: middle;\n  top: -70px;\n  left: 10px;\n  right: 10px;\n  width: auto;\n  max-width: 650px;\n  margin-left: auto;\n  margin-right: auto;\n  user-select:none;\n}\n\n#export_formats {\n  text-align: center;\n  display: inline-flex;\n}\n\n#import_div {\n  text-align: center;\n  position: absolute;\n  top: -70px;\n  left: 10px;\n  right: 10px;\n  width: auto;\n  max-width: 650px;\n  margin-left: auto;\n  margin-right: auto;\n  user-select:none;\n}\n\n#boilerplate {\n  justify-content: center;\n  height: 25px;\n}\n\n#disclaimer {\n  justify-content: center;\n  border-top: 1px solid #999;\n  border-bottom: 1px solid #999;\n  padding: 5px;\n  clear: both;\n}\n\n.boilerplate_title {\n  text-align: center;\n  font-weight: 600;\n  font-stretch: ultra-expanded;\n  font-size: 16px;\n  color: #000;\n  bottom: 0px;\n  margin-left: -17px\n}\n\n.disclaimer_title {\n  text-align: center;\n  font-size: 12px;\n  color: #333;\n  margin-left: -17px\n}\n\n.metadata_title {\n  font-weight: bold;\n  font-size: 12px;\n  color: #333;\n  vertical-align: sub;\n}\n\n.boilerplate_text {\n  text-align: center;\n  font-size: 12px;\n  font-weight: bold;\n  color: #777;\n  bottom: 0px;\n  text-decoration: none;\n}\n\n.disclaimer_text {\n  font-weight: normal;\n  font-size: 10px;\n  text-align: center;\n  color: #333;\n}\n\n.metadata_content {\n  font-weight: normal;\n  font-size: 12px;\n  text-align: left;\n  color: #333;\n  margin-right: 10px;\n}\n\n.category_element {\n  width: auto;\n}\n\ninput[type=\"color\"]::-webkit-color-swatch-wrapper {\n\tpadding: 0;\n}\ninput[type=\"color\"]::-webkit-color-swatch {\n\tborder: none;\n}\n\ninput[type=\"color\"]::-moz-color-swatch-wrapper {\n\tpadding: 0;\n}\ninput[type=\"color\"]::-moz-color-swatch {\n\tborder: none;\n}\n\n.colorpicker_wrapper {\n  float: left;\n  width: 12px;\n  height: 12px;\n  margin-right: 5px;\n  margin-top: 2px;\n  cursor: pointer;\n  border: 1px solid #999;\n  padding: 0;\n  box-shadow: #999 0px 1px 1px;\n  -webkit-box-shadow: #999 0px 1px 1px;\n  -moz-box-shadow: #999 0px 1px 1px ;\n}\n\n.colorpicker {\n  /*width: 10px;\n  height: 10px;*/\n  width: 100%;\n  height: 100%;\n  cursor: pointer;\n  /*margin-right: 5px;\n  margin-top: 2px;*/\n  padding: 0;\n  /*opacity: 0;*/\n}\n\n.colorpicker:hover {\n  border: 1px solid #f00;\n}\n\n.colorpicker_wrapper:hover {\n  border: 1px solid #f00;\n}\n\n.footer_text_left {\n  text-align: left;\n  font-size: .8em;\n  margin-left: 24px;\n  color: #626262;\n  bottom: 0px;\n  text-decoration: none;\n}\n\n.footer_text {\n  text-align: right;\n  font-size: .8em;\n  margin-right: 24px;\n  color: #626262;\n  bottom: 0px;\n  text-decoration: none;\n}\n\n#data_picker {\n  width: 100%;\n  box-sizing: border-box;\n  transition: all 0.5s ease;\n  -webkit-transition: all 0.5s ease;\n  border-top: 1px solid #999;\n  padding-left: 0px;\n  padding-right: 0px;\n  padding-top: 0px;\n  padding-bottom: 0px;\n  margin-top: 0px;\n  margin-right: 0px;\n  margin-left: 0px;\n  margin-bottom: 0px;\n  display: flex;\n}\n\n.data_story_picker {\n  /*float: left;*/\n  flex: 1;\n  display: flex;\n  justify-content: center;\n  margin-top: 0px;\n  margin-right: 0px;\n  margin-left: 0px;\n  margin-bottom: 0px;\n  width: 320px;\n  border-right: 1px solid #999;\n}\n\n#timeline_metadata {\n  width: 100%;\n  box-sizing: border-box;\n  transition: all 0.5s ease;\n  border-top: 1px solid #999;\n  -webkit-transition: all 0.5s ease;\n  padding-left: 0px;\n  padding-right: 0px;\n  padding-top: 0px;\n  padding-bottom: 0px;\n  float: left;\n  font-size: 12px;\n}\n\n#timeline_metadata_contents{\n  width: 630px;\n  float: left;\n  padding-left: 10px;\n  padding-right: 10px;\n  padding-bottom: 0px;\n}\n\n.timeline_metadata_contents_div{\n  width: 630px;\n  clear: both;\n}\n\n.draw_timeline {\n  margin-left: 5px;\n  margin-left: 5px;\n  margin-bottom: 5px;\n  margin-top: 0px;\n  width: 320px;\n  padding-top: 15px;\n  padding-bottom: 15px;\n  height: 25px;\n  bottom: 0px;\n  right: 0px;\n  border-radius: 10px;\n  background-color: #ff7f0e;\n  border-color: #da6600;\n  background: #ff7f0e;\n  background-image: -webkit-linear-gradient(top, #ff7f0e, #da6600);\n  background-image: -moz-linear-gradient(top, #ff7f0e, #da6600);\n  background-image: -ms-linear-gradient(top, #ff7f0e, #da6600);\n  background-image: -o-linear-gradient(top, #ff7f0e, #da6600);\n  background-image: linear-gradient(to bottom, #ff7f0e, #da6600);\n}\n\n.draw_timeline:hover {\n  background-color: #da6600;\n  border-color: #ff7f0e;\n  background: #da6600;\n  background-image: -webkit-linear-gradient(top, #da6600, #ff7f0e);\n  background-image: -moz-linear-gradient(top, #da6600, #ff7f0e);\n  background-image: -ms-linear-gradient(top, #da6600, #ff7f0e);\n  background-image: -o-linear-gradient(top, #da6600, #ff7f0e);\n  background-image: linear-gradient(to bottom, #da6600, #ff7f0e);\n}\n\n.inputfile {\n  width: 0px;\n  height: 0px;\n  opacity: 0;\n  overflow: hidden;\n  position: absolute;\n  z-index: -1;\n  margin: auto;\n}\n\n#demo_dataset_picker {\n  width: 40px;\n  height: 40px;\n  opacity: 0;\n  border: 0px solid transparent;\n  cursor: pointer;\n  position: absolute;\n  z-index: 1;\n  font-size: 10px;\n  background: transparent;\n}\n\n.import_label > select + img {\n  border:1px solid #cccccc;\n}\n\n.import_label > select:hover + img:hover{ /* (RADIO CHECKED) IMAGE STYLES */\n  border-bottom: 1px solid #f00;\n}\n.import_label {\n  margin-top: 10px;\n}\n\n.demo_dataset_label {\n  border: 1px solid #cccccc;\n  width: 40px;\n  height: 40px;\n  margin-right: 2px;\n  margin-top: 20px;\n  border-radius: 5px;\n  background-color: #f4f5f5;\n  background-image: -webkit-gradient(linear, left top, left bottom, from(#f4f5f5), to(#dfdddd));\n  background-image: -webkit-linear-gradient(top, #f4f5f5, #dfdddd);\n  background-image: -moz-linear-gradient(top, #f4f5f5, #dfdddd);\n  background-image: -ms-linear-gradient(top, #f4f5f5, #dfdddd);\n  background-image: -o-linear-gradient(top, #f4f5f5, #dfdddd);\n  background-image: linear-gradient(to bottom, #f4f5f5, #dfdddd);\n  filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#f4f5f5, endColorstr=#dfdddd);\n}\n\n.demo_dataset_label:hover {\n  border: 1px solid #ff0000;\n  background-color: #d9dddd;\n  background-image: -webkit-gradient(linear, left top, left bottom, from(#d9dddd), to(#c6c3c3));\n  background-image: -webkit-linear-gradient(top, #d9dddd, #c6c3c3);\n  background-image: -moz-linear-gradient(top, #d9dddd, #c6c3c3);\n  background-image: -ms-linear-gradient(top, #d9dddd, #c6c3c3);\n  background-image: -o-linear-gradient(top, #d9dddd, #c6c3c3);\n  background-image: linear-gradient(to bottom, #d9dddd, #c6c3c3);\n  filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#d9dddd, endColorstr=#c6c3c3);\n}\n\n.annotation_div {\n  position: absolute;\n  text-align: center;\n  position: absolute;\n  padding: 5px 5px 5px 5px;\n  vertical-align: middle;\n  left: 56px;\n  top: 50%;\n}\n\n.annotation_circle {\n  fill: #fff;\n  stroke: #f00;\n  stroke-width: 1px;\n}\n\n.annotation_line {\n  fill: none;\n  stroke: #f00;\n  stroke-width: 1px;\n}\n\n.event_annotation_line {\n  stroke: dashed .5px #aaa;\n}\n\n.annotation_frame {\n  fill:#fff;\n  stroke-width: 1px;\n  stroke:transparent;\n}\n\n.annotation_control {\n  border: 1px solid #ccc;\n  stroke-width: 1px;\n  stroke: #ccc;\n  cursor: pointer;\n  fill: transparent;\n}\n\n#caption_div {\n  margin-top: -95px;\n}\n\n.caption_frame, .image_frame {\n  fill:#fff;\n  stroke-width: 1px;\n  stroke:transparent;\n}\n\n.caption_drag_area, .annotation_drag_area, .image_drag_area {\n  fill: transparent;\n  fill-opacity: 0;\n  stroke-width: 1px;\n  stroke: transparent;\n  cursor: move;\n  box-shadow: 2px 2px 2px #888888;\n  -webkit-box-shadow: 2px 2px 2px #888888;\n  -moz-box-shadow: 2px 2px 2px #888888;\n}\n\n.caption_label {\n  font-size: 18px;\n  position: absolute;\n  display: inline-block;\n  top: 0;\n  left: 0;\n  font-weight: normal;\n}\n\n#add_caption_text_input {\n  resize: vertical;\n  display: block;\n  float: left;\n  padding: 10px;\n}\n\n.add_image_popup {\n  margin-top: -55px;\n}\n\n.onhover {\n  opacity: 0.33;\n}\n\n.onhover:hover {\n  opacity: 1;\n}\n\n#playback_bar {\n  display: flex;\n  align-items: center;\n  width: 100%;\n}\n\n#navigation_div {\n  bottom: -100px;\n  position: absolute;\n  padding-bottom: 5px;\n  padding-left: 0px;\n  padding-right: 0px;\n  padding-top: 5px;\n}\n\n.playback_mode #navigation_div {\n  width: auto;\n  left: 10px;\n  right: auto;\n  margin-left: 0;\n  margin-right: 0;\n  -webkit-transition: all 0.5s;\n  transition: all 0.5s;\n}\n\n.nav_cb > input:enabled:checked + img {\n  border: 1px solid #f00;\n}\n\n\n#playback_bar .nav_bttn {\n  display: flex;\n  flex: 0 1 26px;\n}\n\n.nav_bttn .nav_cb {\n  display: inline-flex;\n}\n\n#stepper_container {\n  height: 50px;\n  padding: 0px;\n  margin-right: 5px;\n  background-color: white;\n  border: 1px solid #999;\n  padding: 5px;\n  border-radius: 5px;\n  vertical-align: middle;\n  overflow-y: hidden;\n  overflow-x: overlay;\n  flex: 1;\n}\n\n.playback_mode #stepper_container {\n  display: none;\n}\n\n#stepper_svg {\n  height: 50px;\n  padding: 0px;\n  float: left;\n}\n\n#stepper_svg_placeholder {\n  fill: #ccc;\n  font-size: 0.8em;\n}\n\n.scene_delete rect {\n  fill: transparent;\n  stroke: #ccc;\n  stroke-width: '1px';\n}\n\n.frame_hover {\n  height: 300px;\n  width: 300px;\n  background: #fff;\n  border: 1px solid #999;\n  z-index: 1;\n  box-shadow: 2px 2px 2px #888888;\n  -webkit-box-shadow: 2px 2px 2px #888888;\n  -moz-box-shadow: 2px 2px 2px #888888;\n  border-radius: 10px;\n  text-align: center;\n  position: absolute;\n  vertical-align: middle;\n  transition: all 0.5s ease;\n  -webkit-transition: all 0.5s ease;\n}\n\n.option_picker {\n  flex: 0 0 auto;\n  display: flex;\n  justify-content: center;\n  border-right: 1px solid #999;\n  padding-bottom: 0px;\n  padding-top: 0px;\n  padding-left: 5px;\n  padding-right: 5px;\n  margin: 0px;\n}\n\n.option_picker:last-child {\n  border-right: none;\n}\n\n#main_svg {\n  transition: all 0.5s ease;\n  -webkit-transition: all 0.5s ease;\n}\n\n.legend {\n  margin: 0px 0px 0px 0px;\n  fill: none;\n  position: absolute;\n  top: 0px;\n  left: 0px;\n  z-index: 1;\n}\n\n.legend_rect {\n  fill: #fff;\n  stroke: #aaa;\n  stroke-width: 1px;\n}\n\n.legend_title {\n  fill: #666;\n  font-size: 12px;\n  font-weight: bolder;\n  font-stretch: expanded;\n}\n\n.legend:hover > .legend_rect:hover, .legend_title:hover {\n  cursor:move;\n}\n\n.legend:hover > .legend_rect {\n  stroke: #f00;\n}\n\n.legend_element_g text {\n  fill: #666;\n  font-size: 12px;\n  cursor:pointer;\n}\n\n.legend_element rect {\n  stroke: #fff;\n  stroke-width: 0.25px;\n  cursor:pointer;\n}\n\n.time_elapsed {\n  fill:#aaa;\n  stroke: #aaa;\n  stroke-width: 0.5px;\n}\n\n.timeline_frame {\n  fill:transparent;\n  opacity: 0.1;\n  stroke: none;\n}\n\n.timeline_frame:hover {\n  stroke: #999;\n  stroke-width: 0.5px;\n}\n\n.timeline_facet_frame {\n  fill:none;\n  stroke: #999;\n  stroke-width: 0.5px;\n}\n\n.timeline_segment_frame {\n  fill:none;\n  stroke: #999;\n  stroke-width: 0.5px;\n}\n\n.form-group {\n  margin-bottom: 0px;\n  display:inline-block;\n}\n\n.radio-inline {\n  padding-left: 0px;\n  margin-left: 0px;\n}\n\n.radio-inline label {\n  padding-left: 0px;\n}\n\n.radio-inline input[type=radio] {\n  margin-left: 0px;\n}\n\n.unit_circle {\n  fill: #fff;\n  stroke: #000;\n  stroke-width: 1px;\n}\n\n.x_axis path, .interim_duration_axis path, .timeline_axis path {\n  fill: none;\n  stroke: #999;\n  stroke-width: 1px;\n  z-index: -1;\n}\n\n.radial_axis_tick path {\n  fill: none;\n  stroke: #999;\n  stroke-width: 1px;\n  stroke-dasharray: 2;\n  z-index: -1;\n}\n\n@keyframes dash {\n  to {\n    stroke-dashoffset: 0;\n  }\n}\n\n@keyframes undash {\n  from {\n    stroke-dashoffset: 0;\n  }\n  to {\n    stroke-dashoffset: -110%;\n  }\n}\n\n.x_axis line, .interim_duration_axis line, .timeline_axis line {\n  fill: none;\n  stroke: #999;\n  shape-rendering: crispEdges;\n  stroke-width: 1px;\n  stroke-dasharray: 2;\n  z-index: -1;\n}\n\n.x_axis text, .interim_duration_axis text, .timeline_axis text {\n  font-size: 12px;\n  fill: #000;\n  z-index: 1;\n}\n\n/* d3-axis sets its own font on the axis group; keep the app's font. */\n.interim_duration_axis, .timeline_axis {\n  font-family: inherit;\n}\n\n.event_rect {\n  fill: #8dd3c7;\n  stroke: #fff;\n}\n\n.event_rect:hover {\n  fill: #8dd3c7;\n  stroke: #00f;\n}\n\n.event_span, .event_span_component {\n  stroke: #fff;\n  stroke-width: 0.25px;\n  cursor:pointer;\n}\n\n.event_span_selected {\n  stroke: #000;\n  stroke-width: 1px;\n}\n\n.event_dropline {\n  stroke: #00f;\n  stroke-width: 0px;\n}\n\n.frame_resizer:hover {\n  cursor: ew-resize;\n}\n\n.start_end_label, .radial_axis_tick, .weekday_label {\n  font-size: 12px;\n}\n\n.facet_title, .segment_title {\n  font-size: 13px;\n  font-weight:bold;\n  font-stretch: extra-expanded;\n}\n\n.event_label {\n  fill: #f00;\n  font-size: 12px;\n  position: absolute;\n  display: inline-block;\n  top: 0;\n  left: 0;\n  font-weight: normal;\n}\n\n.event_date {\n  font: 10px sans-serif;\n  display: none;\n}\n\n.spiral_seq_number {\n  font: 10px sans-serif;\n  fill: #666;\n}\n\n.event_text {\n  font: 10px sans-serif;\n  display: none;\n}\n\n.year_cell, .day_cell, .rad_center, .day_cell_rect {\n  stroke: #aaa;\n  stroke-width: 0.25px;\n  fill: none;\n}\n\n.rad_track {\n  stroke: #999;\n  stroke-width: 0.5px;\n  fill: none;\n  z-index: -1;\n}\n\n.timeline_start_line {\n  stroke: #aaa;\n  stroke-width: 0.5px;\n}\n\n.year_label {\n  font-size: 10px;\n}\n\n.day_cell_label {\n  font-size: 7px;\n}\n\n.month {\n  fill: none;\n  stroke: #999;\n  stroke-width: 1px;\n}\n\n.time_elapsed {\n  stroke: #aaa;\n  stroke-width: 0.5px;\n  fill: #ccc;\n}\n\n.time_elapsed:hover {\n  stroke: #00f;\n  stroke-width: 0.5px;\n  fill: #00f;\n  fill-opacity: 0.25;\n}\n\n.point_event {\n  fill: #000;\n  fill-opacity: .1;\n  stroke: #000;\n  stroke-width: 0.5px;\n}\n\n.event_start {\n  fill: #f00;\n  fill-opacity: .1;\n  stroke: #f00;\n  stroke-width: 0.5px;\n}\n\n.event_end {\n  fill: #00f;\n  fill-opacity: .1;\n  stroke: #00f;\n  stroke-width: 0.5px;\n}\n\n.non_event {\n  display: none;\n}\n\n.span_line {\n  stroke: #00f;\n  stroke-opacity: 0.2;\n  stroke-width: 5px;\n}\n\n.span_line:hover {\n  stroke: #ff0;\n  stroke-opacity: 1;\n  stroke-width: 5px;\n}\n\n.arc {\n  fill: #aaa;\n}\n\n.line {\n  fill: none;\n  stroke: #aaa;\n  stroke-width: 1px;\n  stroke-linejoin: round;\n  stroke-linecap: round;\n  z-index:-1;\n}\n\n.image_div_error {\n  color: red;\n}\n\n.path_end_indicator {\n  fill: none;\n  stroke: #fff;\n}\n\n#timecurve{\n  fill:none;\n  stroke-width:10px;\n  stroke:#777777;\n  opacity: .2;\n  transition: all 0.5s ease;\n  -webkit-transition: all 0.5s ease;\n}\n\n/* introjs overrides */\n\n.introjs-overlay {\n  background-color: #999;\n  background: -webkit-radial-gradient(center,ellipse cover,rgba(153,153,153,0.4) 0,rgba(153,153,153,0.9) 100%)\n}\n\n.introjs-helperLayer {\n  border: 1px solid #f00;\n  background-color: transparent;\n}\n\n.timeline_storyteller-container {\n  width: 100%;\n  height: 100%;\n  overflow: auto;\n  box-sizing: border-box;\n  padding-bottom: 50px;\n  padding-top: 50px;\n  padding-left: 50px;\n  padding-right: 50px;\n  text-align: center;\n}\n\n.show-about-bar .timeline_storyteller-container {\n    height: calc(100% - 25px);\n}\n\n.playback_mode .timeline_storyteller-container {\n  padding-left: 0;\n  padding-right: 0;\n}\n\nhtml, body {\n  width: 100%;\n  height: 100%;\n}\n\n.timeline_storyteller {\n  width: 100%;\n  height: 100%;\n  overflow: hidden;\n  position: relative;\n}\n\n.loading_data_indicator {\n  font-weight: bold;\n  margin-bottom: 10px;\n}\n\n\n/* Add Image Popup */\n.add_image_popup h4 {\n  margin: 3px;\n}\n.add_image_popup h5 {\n  margin: 3px;\n}\n\n.resize_width, .resize_height {\n  width: 55px;\n}\n\n.resize_options {\n  margin-bottom: 5px;\n}\n\n.add_image_selected_file {\n  font-size: 14px;\n  cursor: pointer;\n}\n\n.add_image_file_chooser {\n  margin-bottom: 5px;\n}\n\n.selected_file_remove_btn {\n  width: 18px;\n  height: 18px;\n  float: right;\n}\n\n.selected_files_container {\n  vertical-align: middle;\n  margin: 5px;\n}\n\n.image_div_container {\n   position: relative;\n}\n\n.image_div_container .add_image_link {\n  width: 100%;\n  box-sizing: border-box;\n}\n.image_local_add_drop_zone {\n  border: 2px dashed #bbb;\n  -moz-border-radius: 5px;\n  -webkit-border-radius: 5px;\n  border-radius: 5px;\n  padding: 10px;\n  color: #bbb;\n  width: 100%;\n  box-sizing: border-box;\n}\n\n.image_local_add_drop_zone.dragging {\n  border-color: #333;\n  color: #333;\n}\n\n.add_image_btn {\n  float: right;\n}\n\n.add_image_popup {\n  font-size: 14px;\n}\n\n.add_image_popup input[type=\"checkbox\"] {\n  vertical-align: middle;\n}\n\n.timeline_storyteller-error {\n  position: absolute;\n  top: 150px;\n  width: 100%;\n  margin: 0 auto;\n}\n\n/* Narrow windows: smaller option icons without captions, then tighter side margins. */\n@media (max-width: 900px) {\n  #option_div .option_rb img {\n    width: 30px;\n    height: 30px;\n  }\n\n  #option_div .option_rb_label {\n    display: none;\n  }\n}\n\n@media (max-width: 700px) {\n  #option_div,\n  #navigation_div {\n    left: 10px;\n  }\n\n  #option_div {\n    justify-content: flex-start;\n  }\n}\n\n/* Labels in other languages can be wider than the English ones: keep them on one line. */\n#menu_div .menu_label {\n  display: block;\n  margin-left: -5px;\n  margin-right: -5px;\n  text-align: center;\n  white-space: nowrap;\n}\n\n.filter_div_header {\n  white-space: nowrap;\n}\n", ""]);
 
 // exports
 
